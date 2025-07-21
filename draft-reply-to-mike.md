@@ -22,7 +22,7 @@ I've already set up my optimization workspace with:
 - Code snippet library for reusable solutions
 - **Live dashboard for real-time progress tracking** 📊
 
-🔗 **Check out the optimization dashboard:** [Your Streamlit URL here]
+🔗 **Check out the optimization dashboard:** https://modedash.streamlit.app/
 
 Shows our property status, CPL tracking, priorities, and daily optimization checklist. Updates automatically as I work - you'll see our wins in real-time!
 
