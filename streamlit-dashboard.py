@@ -18,77 +18,12 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom CSS for better card styling
+# Minimal styling for clean look
 st.markdown("""
 <style>
-.metric-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 1rem;
-    border-radius: 10px;
-    margin: 0.5rem 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    color: white;
-}
-
-.priority-card {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    padding: 1rem;
-    border-radius: 10px;
-    margin: 0.5rem 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    color: white;
-}
-
-.success-card {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    padding: 1rem;
-    border-radius: 10px;
-    margin: 0.5rem 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    color: white;
-}
-
-.warning-card {
-    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-    padding: 1rem;
-    border-radius: 10px;
-    margin: 0.5rem 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    color: white;
-}
-
-.build-card {
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    padding: 1rem;
-    border-radius: 10px;
-    margin: 0.5rem 0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    color: #333;
-}
-
-.main-header {
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    padding: 2rem;
-    border-radius: 15px;
-    margin-bottom: 2rem;
-    text-align: center;
-    color: white;
-}
-
-.property-link {
-    background: rgba(255,255,255,0.2);
-    padding: 0.3rem 0.6rem;
-    border-radius: 5px;
-    text-decoration: none;
-    color: white !important;
-    display: inline-block;
-    margin-top: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.property-link:hover {
-    background: rgba(255,255,255,0.3);
-    transform: translateY(-2px);
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -103,26 +38,17 @@ def load_project_data():
         return {}
 
 def main():
-    # Header with logo
-    col1, col2, col3 = st.columns([1, 2, 1])
-    
-    with col1:
-        # Mode Free Finds logo
-        st.image("https://lh3.googleusercontent.com/hOi8rYWOfLYZQ0YjqAJlRLw-NRsDd3_s1YAp6XkUTwV4d2C5W1opPn4E1gSFlrlAXZaF3bTUl8vKuXkgNgf1kfFXrQmDzZRlS4I=w383", 
-                 width=150, caption="ModeFreeFinds.com")
+    # Clean header with centered logo
+    col1, col2, col3 = st.columns([1, 1, 1])
     
     with col2:
-        st.markdown("""
-        <div class="main-header">
-            <h1>🚀 Mode Optimization Dashboard</h1>
-            <p>Lead Generation Empire • 3.4M+ Subscribers • Revenue Optimization</p>
-        </div>
-        """, unsafe_allow_html=True)
+        # Mode Free Finds logo - centered
+        st.image("https://lh3.googleusercontent.com/hOi8rYWOfLYZQ0YjqAJlRLw-NRsDd3_s1YAp6XkUTwV4d2C5W1opPn4E1gSFlrlAXZaF3bTUl8vKuXkgNgf1kfFXrQmDzZRlS4I=w383", 
+                 width=200)
     
-    with col3:
-        st.metric("Properties", "4", delta="Active")
-        st.metric("Target CPL", "$0.45")
-    
+    # Clean title
+    st.title("🚀 Mode Optimization Dashboard")
+    st.markdown("**Lead Generation Empire • 3.4M+ Subscribers • Revenue Optimization**")
     st.markdown(f"📅 **Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     st.markdown("---")
     
@@ -143,63 +69,51 @@ def main():
     # MFF Card
     with col1:
         mff = properties.get('mode_free_finds', {})
-        st.markdown(f"""
-        <div class="success-card">
-            <h3>📈 ModeFreeFinds.com</h3>
-            <h2>CPL: {mff.get('meta_cpl', 'N/A')} ✅</h2>
-            <p><strong>Revenue:</strong> {mff.get('monthly_revenue', 'N/A')}</p>
-            <p><strong>Email List:</strong> {mff.get('email_list', 'N/A')}</p>
-            <p><strong>Status:</strong> Target Met - Scaling Opportunity</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            label="📈 ModeFreeFinds",
+            value=mff.get('meta_cpl', 'N/A'),
+            delta="✅ Target Met"
+        )
+        st.text(f"Revenue: {mff.get('monthly_revenue', 'N/A')}")
+        st.text(f"List: {mff.get('email_list', 'N/A')}")
         if 'leadpages_example' in mff:
-            st.markdown(f'<a href="{mff["leadpages_example"]}" class="property-link" target="_blank">🔗 View Signup Flow</a>', unsafe_allow_html=True)
+            st.markdown(f"🔗 [View Signup Flow]({mff['leadpages_example']})")
     
     # MMM Card  
     with col2:
         mmm = properties.get('mode_market_munchies', {})
-        st.markdown(f"""
-        <div class="warning-card">
-            <h3>📊 ModeMarketMunchies.com</h3>
-            <h2>CPL: {mmm.get('meta_cpl', 'N/A')} ⚠️</h2>
-            <p><strong>Target:</strong> {mmm.get('target_cpl', 'N/A')}</p>
-            <p><strong>Email List:</strong> {mmm.get('email_list', 'N/A')}</p>
-            <p><strong>🚨 PRIORITY:</strong> CPL Optimization Required!</p>
-            <p><strong>Impact:</strong> 90% cost reduction potential</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric(
+            label="📊 ModeMarketMunchies", 
+            value=mmm.get('meta_cpl', 'N/A'),
+            delta=f"Target: {mmm.get('target_cpl', 'N/A')}",
+            delta_color="inverse"
+        )
+        st.text(f"List: {mmm.get('email_list', 'N/A')}")
+        st.error("🚨 PRIORITY: CPL too high!")
         if 'leadpages_example' in mmm:
-            st.markdown(f'<a href="{mmm["leadpages_example"]}" class="property-link" target="_blank">🔗 View Signup Flow</a>', unsafe_allow_html=True)
+            st.markdown(f"🔗 [View Signup Flow]({mmm['leadpages_example']})")
     
     # MCAD Card
     with col3:
         mcad = properties.get('mode_class_actions', {})
-        st.markdown(f"""
-        <div class="build-card">
-            <h3>⚖️ ModeClassActionsDaily.com</h3>
-            <h2>Status: Missing Flows 🔨</h2>
-            <p><strong>Email List:</strong> {mcad.get('email_list', 'N/A')}</p>
-            <p><strong>Focus:</strong> Class Action Alerts</p>
-            <p><strong>Priority:</strong> Build Signup/TY Flows</p>
-            <p><strong>Timeline:</strong> Week 2-3</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown('<a href="https://modeclassactionsdaily.com" class="property-link" target="_blank">🔨 Build Signup Flow</a>', unsafe_allow_html=True)
+        st.metric(
+            label="⚖️ ModeClassActions",
+            value="Missing Flows",
+            delta="🔨 To Build"
+        )
+        st.text(f"List: {mcad.get('email_list', 'N/A')}")
+        st.markdown("🔗 [Build Signup Flow](https://modeclassactionsdaily.com) 🔨")
     
     # MMD Card
     with col4:
         mmd = properties.get('mode_mobile_daily', {})
-        st.markdown(f"""
-        <div class="build-card">
-            <h3>📱 ModeMobileDaily.com</h3>
-            <h2>Status: Missing Setup 🔨</h2>
-            <p><strong>Daily Active Users:</strong> {mmd.get('audience', 'N/A')}</p>
-            <p><strong>Focus:</strong> Viral News & Trends</p>
-            <p><strong>Priority:</strong> Build Email Integration</p>
-            <p><strong>Timeline:</strong> Week 3-4</p>
-        </div>
-        """, unsafe_allow_html=True)
-        st.markdown('<a href="https://modemobiledaily.com" class="property-link" target="_blank">🔨 Build Signup Flow</a>', unsafe_allow_html=True)
+        st.metric(
+            label="📱 ModeMobileDaily",
+            value="Missing Setup", 
+            delta="🔨 To Build"
+        )
+        st.text(f"DAU: {mmd.get('audience', 'N/A')}")
+        st.markdown("🔗 [Build Signup Flow](https://modemobiledaily.com) 🔨")
     
     st.markdown("---")
     
