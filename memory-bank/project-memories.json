@@ -1,0 +1,117 @@
+{
+  "project_overview": {
+    "company": "Mode",
+    "role": "Lead Web UI Optimizer",
+    "focus": "User Acquisition Flows & Conversion Optimization",
+    "reporting_to": "Mike (Lead Revenue Optimization)",
+    "last_updated": "2025-01-27"
+  },
+  "properties": {
+    "mode_free_finds": {
+      "url": "ModeFreeFinds.com",
+      "focus": "Free Samples & Deals",
+      "email_list": "1.5M subscribers",
+      "monthly_pageviews": "~1M",
+      "monthly_revenue": "$40k programmatic ads",
+      "meta_cpl": "$0.45",
+      "affiliate_payout": "$1.00/signup",
+      "status": "Performing well - optimization opportunities for scale",
+      "leadpages_example": "https://join.modefreefinds.com/mff-signup-affiliate/"
+    },
+    "mode_market_munchies": {
+      "url": "ModeMarketMunchies.com", 
+      "focus": "Financial news, insights, and bite-sized tips",
+      "email_list": "900k subscribers",
+      "monthly_revenue": "New site - setting up programmatic ads",
+      "meta_cpl": "$5-10 (TOO HIGH)",
+      "target_cpl": "$0.45",
+      "affiliate_payout": "$1.50/signup",
+      "status": "PRIORITY - CPL needs immediate optimization",
+      "leadpages_example": "https://signups.modemobile.com/mm-signup-affv1/"
+    },
+    "mode_class_actions": {
+      "url": "ModeClassActionsDaily.com",
+      "focus": "Class Action lawsuit alerts for consumer opt-ins",
+      "email_list": "1M subscribers",
+      "status": "Site live, missing signup/TY flows - TO BUILD",
+      "monthly_revenue": "No content/ads yet"
+    },
+    "mode_mobile_daily": {
+      "url": "ModeMobileDaily.com",
+      "focus": "Viral news & trending stories",
+      "audience": "Mode Earn App users (50k daily active)",
+      "app_installs": "tens of millions",
+      "status": "Site live, missing email list/content/ads - TO BUILD",
+      "monthly_revenue": "No setup yet"
+    }
+  },
+  "tech_stack": {
+    "landing_pages": "LeadPages.com",
+    "websites": "WordPress builds",
+    "affiliate_platform": "Tune (HasOffers)",
+    "user_acquisition": "Meta Ads + Affiliates",
+    "tracking": "URL parameter passing, custom scripts",
+    "optimization_tool": "Exploring Revmatics.ai"
+  },
+  "immediate_priorities": [
+    {
+      "priority": 1,
+      "task": "Fix ModeMarketMunchies CPL from $5-10 to $0.45",
+      "impact": "90% cost reduction - massive revenue impact",
+      "timeline": "Week 1-2"
+    },
+    {
+      "priority": 2, 
+      "task": "Build signup/TY flows for ModeClassActionsDaily",
+      "impact": "Activate 1M subscriber potential",
+      "timeline": "Week 2-3"
+    },
+    {
+      "priority": 3,
+      "task": "Build signup/TY flows for ModeMobileDaily", 
+      "impact": "Activate 50k daily active users",
+      "timeline": "Week 3-4"
+    },
+    {
+      "priority": 4,
+      "task": "Optimize ModeFreeFinds flow",
+      "impact": "1M pageviews = massive scale opportunity",
+      "timeline": "Ongoing"
+    }
+  ],
+  "key_needs": [
+    "Build and optimize signup flows (LeadPages + custom code)",
+    "Develop coregistration (coreg) pages for partner offers",
+    "Code snippets for data capture and URL passing",
+    "Field prepopulation for LeadPages dynamic handling",
+    "API integrations (Revmatics, future platforms)",
+    "Improve Tune/HasOffers integration and validation",
+    "AI-based optimizations for flow performance"
+  ],
+  "success_metrics": {
+    "primary_kpis": [
+      "CPL by property (target vs actual)",
+      "Conversion rates by funnel step", 
+      "Revenue attribution accuracy",
+      "Email list growth rates"
+    ],
+    "tools_for_tracking": [
+      "Tune/HasOffers for attribution",
+      "URL parameter validation",
+      "Custom conversion tracking scripts",
+      "LeadPages analytics integration"
+    ]
+  },
+  "optimization_wins_to_track": {
+    "cpl_improvements": "Document what reduces cost per lead",
+    "conversion_optimizations": "A/B test winners and losers",
+    "code_patterns": "Reusable snippets that work across properties",
+    "revenue_attribution": "Attribution flows that validate correctly",
+    "leadpages_optimizations": "Layout/copy/form optimizations"
+  },
+  "notes": {
+    "mikes_priorities": "Revenue optimization leader - focus on attribution and scale",
+    "adhd_friendly": "Clear conversion goals, backwards optimization from revenue, data-driven decisions",
+    "revenue_model": "Lead gen machine - optimize the hell out of conversion flows"
+  }
+} 
