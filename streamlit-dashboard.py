@@ -57,6 +57,8 @@ def main():
         )
         st.text(f"Revenue: {mff.get('monthly_revenue', 'N/A')}")
         st.text(f"List: {mff.get('email_list', 'N/A')}")
+        if 'leadpages_example' in mff:
+            st.markdown(f"🔗 [View Signup Flow]({mff['leadpages_example']})")
     
     # MMM Card  
     with col2:
@@ -69,6 +71,8 @@ def main():
         )
         st.text(f"List: {mmm.get('email_list', 'N/A')}")
         st.error("🚨 PRIORITY: CPL too high!")
+        if 'leadpages_example' in mmm:
+            st.markdown(f"🔗 [View Signup Flow]({mmm['leadpages_example']})")
     
     # MCAD Card
     with col3:
@@ -79,6 +83,7 @@ def main():
             delta="🔨 To Build"
         )
         st.text(f"List: {mcad.get('email_list', 'N/A')}")
+        st.markdown("🔗 [Build Signup Flow](https://modeClassActionsDaily.com) 🔨")
     
     # MMD Card
     with col4:
@@ -89,6 +94,7 @@ def main():
             delta="🔨 To Build"
         )
         st.text(f"DAU: {mmd.get('audience', 'N/A')}")
+        st.markdown("🔗 [Build Signup Flow](https://modeMobileDaily.com) 🔨")
     
     st.markdown("---")
     
