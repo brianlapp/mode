@@ -227,21 +227,21 @@ st.header("✅ Today's Optimization Checklist")
 
 # Core Development Tasks
 st.subheader("**Build & Optimize Flows**")
-st.checkbox("✅ Get familiar with LeadPages builds for MFF & MM", value=False)
-st.checkbox("✅ Review existing code snippets (URL parameter passing)", value=False)
-st.checkbox("✅ Build signup/TY flows for MCAD & MMD", value=False)
-st.checkbox("✅ Develop coregistration (coreg) pages for partner offers", value=False)
+st.checkbox("Get familiar with LeadPages builds for MFF & MM", value=False)
+st.checkbox("Review existing code snippets (URL parameter passing)", value=False)
+st.checkbox("Build signup/TY flows for MCAD & MMD", value=False)
+st.checkbox("Develop coregistration (coreg) pages for partner offers", value=False)
 
 st.subheader("**Code & Integration Work**")
-st.checkbox("🔗 Data capture and passing (URL/querystring)", value=False)
-st.checkbox("🔗 Field prepopulation (LeadPages dynamic field handling)", value=False)
-st.checkbox("🔗 API integrations (Revmatics, future platforms)", value=False)
-st.checkbox("🔗 Tune/HasOffers integration and validation", value=False)
+st.checkbox("Data capture and passing (URL/querystring)", value=False)
+st.checkbox("Field prepopulation (LeadPages dynamic field handling)", value=False)
+st.checkbox("API integrations (Revmatics, future platforms)", value=False)
+st.checkbox("Tune/HasOffers integration and validation", value=False)
 
 st.subheader("**Optimization & Testing**")
-st.checkbox("🤖 Help explore/test Revmatics.ai for dynamic optimization", value=False)
-st.checkbox("🤖 Streamline repetitive coding tasks", value=False)
-st.checkbox("🤖 Incorporate AI-based optimizations for flow performance", value=False)
+st.checkbox("Help explore/test Revmatics.ai for dynamic optimization", value=False)
+st.checkbox("Streamline repetitive coding tasks", value=False)
+st.checkbox("Incorporate AI-based optimizations for flow performance", value=False)
 
 st.text_input("Add new task:", placeholder="Future: Mike can add via @mode-optimizer")
 
