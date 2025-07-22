@@ -21,6 +21,14 @@ st.markdown("""
     .stTabs [data-baseweb="tab-list"] {
         gap: 2px;
     }
+    .stAlert {
+        max-width: 50%;
+        margin: 0;
+    }
+    .stAlert[data-baseweb="notification"] {
+        max-width: 50%;
+        margin: 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -63,7 +71,7 @@ with col1:
         delta="⚠️ Breaking Even",
         delta_color="normal"
     )
-    st.warning("📊 Low volume, barely profitable")
+    st.warning("📊 Just breaking even")
     st.text("Revenue: $40k/month")
     st.text("List: 1.5M subscribers")
     if 'leadpages_example' in mff:
@@ -121,9 +129,8 @@ with col3:
 
 # MMD Card
 with col4:
-    # MMD Logo - placeholder until real logo is provided
-    st.markdown("📱 **ModeMobileDaily Logo**")
-    st.text("(Logo needed)")
+    st.image("https://modemobiledaily.com/wp-content/uploads/2025/06/cropped-Daily-2a.png",
+             width=150)
     
     st.metric(
         label="ModeMobileDaily",
@@ -160,7 +167,7 @@ with links_col3:
     st.markdown("*Meta Ads management*")
 
 with links_col4:
-    st.subheader("�� **Properties**")
+    st.subheader(" **Properties**")
     st.markdown("**[ModeFreeFinds.com](https://modefreefinds.com/)**")
     st.markdown("**[ModeMarketMunchies.com](https://modemarketmunchies.com/)**")
     st.markdown("**[ModeClassActionsDaily.com](https://modeclassactionsdaily.com/)**")
