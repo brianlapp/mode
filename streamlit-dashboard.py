@@ -107,9 +107,8 @@ col3, col4 = st.columns(2)
 
 # MCAD Card
 with col3:
-    # MCAD Logo - placeholder until real logo is provided
-    st.markdown("📋 **ModeClassActionsDaily Logo**")
-    st.text("(Logo needed)")
+    st.image("https://modeclassactionsdaily.com/wp-content/uploads/2025/04/class-actions-logo.png",
+             width=150)
 
     st.metric(
         label="ModeClassActionsDaily",
