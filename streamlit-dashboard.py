@@ -21,13 +21,15 @@ st.markdown("""
     .stTabs [data-baseweb="tab-list"] {
         gap: 2px;
     }
-    .stAlert {
+    .info-pill {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        border: 1px solid #bee5eb;
         max-width: 50%;
-        margin: 0;
-    }
-    .stAlert[data-baseweb="notification"] {
-        max-width: 50%;
-        margin: 0;
+        margin: 0.5rem 0;
+        display: inline-block;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -124,7 +126,7 @@ with col3:
         value="TO BUILD",
         delta="1M list waiting"
     )
-    st.info("📋 Missing signup/TY flows")
+    st.markdown('<div class="info-pill">📋 Missing signup/TY flows</div>', unsafe_allow_html=True)
     st.text("List: 1M subscribers")
     st.text("Revenue: $0 (no setup)")
 
@@ -138,7 +140,7 @@ with col4:
         value="TO BUILD", 
         delta="50k DAU potential"
     )
-    st.info("📱 Missing email setup")
+    st.markdown('<div class="info-pill">📱 Missing email setup</div>', unsafe_allow_html=True)
     st.text("App Users: 50k daily")
     st.text("Revenue: $0 (no setup)")
 
