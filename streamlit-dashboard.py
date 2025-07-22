@@ -18,12 +18,31 @@ st.set_page_config(
     layout="wide"
 )
 
-# Minimal styling for clean look
+# Minimal styling for clean look with black header
 st.markdown("""
 <style>
 .main-content {
     max-width: 1200px;
     margin: 0 auto;
+}
+.header-section {
+    background-color: #000000;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+.header-title {
+    color: white;
+    margin-bottom: 0.5rem;
+}
+.header-subtitle {
+    color: #cccccc;
+    margin-bottom: 0.5rem;
+}
+.header-timestamp {
+    color: #999999;
+    font-size: 0.9em;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -38,19 +57,18 @@ def load_project_data():
         return {}
 
 def main():
-    # Clean header with centered logo
-    col1, col2, col3 = st.columns([1, 1, 1])
-    
-    with col2:
-        # Main Mode logo - centered
-        st.image("https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg", 
-                 width=250)
-    
-    # Clean title
-    st.title("🚀 Mode Optimization Dashboard")
-    st.markdown("**Lead Generation Empire • 3.4M+ Subscribers • Revenue Optimization**")
-    st.markdown(f"📅 **Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    st.markdown("---")
+    # Header with black background and centered logo
+    st.markdown("""
+    <div class="header-section">
+        <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
+            <img src="https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg" 
+                 width="250" style="max-width: 100%; height: auto;">
+        </div>
+        <h1 class="header-title">🚀 Mode Optimization Dashboard</h1>
+        <p class="header-subtitle"><strong>Lead Generation Empire • 3.4M+ Subscribers • Revenue Optimization</strong></p>
+        <p class="header-timestamp">📅 <strong>Last Updated:</strong> """ + datetime.now().strftime('%Y-%m-%d %H:%M:%S') + """</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Load data
     data = load_project_data()
