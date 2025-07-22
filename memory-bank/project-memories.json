@@ -57,28 +57,42 @@
     {
       "priority": 1,
       "task": "Fix ModeMarketMunchies CPL from $5-10 to $0.45",
-      "impact": "90% cost reduction - massive revenue impact",
-      "timeline": "Week 1-2",
+      "impact": "70-85% cost reduction - massive revenue impact",
+      "timeline": "Week 1-4",
       "audit_completed": "2025-01-27",
-      "key_fixes": ["Remove phone field", "Simplify value prop", "Add trust signals"]
+      "corrected_strategy": "Visual optimization + USA audience psychology",
+      "key_fixes": [
+        "Add lifestyle visuals (money=freedom imagery)",
+        "USA psychology messaging (turn phone into money machine)", 
+        "Reframe phone field as 'Money Alert Line'",
+        "Success testimonials with dollar amounts"
+      ],
+      "week_1_focus": "Visual overhaul - lifestyle imagery + clear value prop",
+      "expected_week_1_cpl": "$2.75-3.50"
     },
     {
       "priority": 2, 
       "task": "Build signup/TY flows for ModeClassActionsDaily",
       "impact": "Activate 1M subscriber potential",
-      "timeline": "Week 2-3"
+      "timeline": "Week 3-4",
+      "status": "Pending MMM optimization completion",
+      "approach": "Apply successful MMM visual strategy to legal niche"
     },
     {
       "priority": 3,
       "task": "Build signup/TY flows for ModeMobileDaily", 
-      "impact": "Activate 50k daily active users",
-      "timeline": "Week 3-4"
+      "impact": "Activate 50k daily active app users",
+      "timeline": "Week 4-5",
+      "status": "Pending MMM optimization completion",
+      "approach": "Leverage app user psychology with mobile-first optimization"
     },
     {
       "priority": 4,
       "task": "Optimize ModeFreeFinds flow",
       "impact": "1M pageviews = massive scale opportunity",
-      "timeline": "Ongoing"
+      "timeline": "Month 2",
+      "status": "Learn from MMM improvements first",
+      "approach": "A/B test refinements on already-successful foundation"
     }
   ],
   "key_needs": [
@@ -111,9 +125,44 @@
     "revenue_attribution": "Attribution flows that validate correctly",
     "leadpages_optimizations": "Layout/copy/form optimizations"
   },
+  "immediate_next_steps": {
+    "week_1_implementation": [
+      {
+        "task": "Source/create lifestyle visuals for MMM hero section",
+        "details": "Person with phone showing money/gains, family financial freedom imagery",
+        "owner": "Lead Web UI Optimizer",
+        "timeline": "Days 1-2"
+      },
+      {
+        "task": "Write USA audience psychology headlines",
+        "details": "Test variations: 'Turn Phone Into Money Machine', 'Daily Profit Alerts'", 
+        "owner": "Lead Web UI Optimizer",
+        "timeline": "Day 3"
+      },
+      {
+        "task": "Implement hero section visual redesign",
+        "details": "LeadPages update with new imagery and messaging",
+        "owner": "Mike + Lead Web UI Optimizer",
+        "timeline": "Days 4-5"
+      },
+      {
+        "task": "Reframe phone field context",
+        "details": "Change label to 'Your Money Alert Line' with value explanation",
+        "owner": "Lead Web UI Optimizer", 
+        "timeline": "Day 5"
+      }
+    ],
+    "success_metrics": [
+      "CPL reduction to $2.75-3.50 range",
+      "Form start rate improvement",
+      "Time on page increase",
+      "Phone field completion rate"
+    ]
+  },
   "notes": {
     "mikes_priorities": "Revenue optimization leader - focus on attribution and scale",
-    "adhd_friendly": "Clear conversion goals, backwards optimization from revenue, data-driven decisions",
-    "revenue_model": "Lead gen machine - optimize the hell out of conversion flows"
+    "adhd_friendly": "Clear conversion goals, backwards optimization from revenue, data-driven decisions", 
+    "revenue_model": "Lead gen machine - optimize the hell out of conversion flows",
+    "key_insight": "Phone field is service requirement - optimize around it, not against it"
   }
 } 
