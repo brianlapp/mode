@@ -42,14 +42,9 @@ def main():
     col1, col2, col3 = st.columns([1, 1, 1])
     
     with col2:
-        # Mode logos - centered
-        col_a, col_b = st.columns(2)
-        with col_a:
-            st.image("https://lh3.googleusercontent.com/hOi8rYWOfLYZQ0YjqAJlRLw-NRsDd3_s1YAp6XkUTwV4d2C5W1opPn4E1gSFlrlAXZaF3bTUl8vKuXkgNgf1kfFXrQmDzZRlS4I=w383", 
-                     width=120, caption="ModeFreeFinds")
-        with col_b:
-            st.image("https://lh3.googleusercontent.com/lt64vW20ku4h6VAEOduskIyi9yv8tg5WHZX8vU9znMdwQAaLpNOQWbJqLA1F_cP4NA8WC4GqD3GoyoLPqXqpvK6FC81KHiuO3Yc=w1064", 
-                     width=120, caption="ModeMarketMunchies")
+        # Main Mode logo - centered
+        st.image("https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg", 
+                 width=250)
     
     # Clean title
     st.title("🚀 Mode Optimization Dashboard")
