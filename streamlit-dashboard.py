@@ -74,7 +74,7 @@ with col1:
         delta="⚠️ Breaking Even",
         delta_color="normal"
     )
-    st.warning("📊 Just breaking even")
+    st.markdown('<div class="info-pill">📊 Just breaking even</div>', unsafe_allow_html=True)
     st.text("Revenue: $40k/month")
     st.text("List: 1.5M subscribers")
     if 'leadpages_example' in mff:
