@@ -197,36 +197,28 @@ with analysis_col3:
     st.markdown("- $1M+/month spend capacity")  
     st.markdown("- Industry-leading ROI")
 
-# CORRECTED PRIORITIES SECTION
+# KEY NEEDS & PRIORITIES (From Mike's Document)
 st.markdown("---")
-st.header("**Optimization Priorities**")
+st.header("**Key Needs & Priorities**")
 
-priorities = data.get('corrected_priorities', data.get('immediate_priorities', []))
+col1, col2 = st.columns(2)
 
-for i, priority in enumerate(priorities[:4]):
-    priority_col1, priority_col2, priority_col3 = st.columns([1, 2, 1])
-    
-    with priority_col1:
-        if i == 0:
-            st.error(f"🥇 **Priority {priority['priority']}**")
-        elif i == 1:
-            st.warning(f"🥈 **Priority {priority['priority']}**")
-        else:
-            st.info(f"🥉 **Priority {priority['priority']}**")
-    
-    with priority_col2:
-        st.markdown(f"**{priority['task']}**")
-        st.text(f"Impact: {priority['impact']}")
-        st.text(f"Timeline: {priority['timeline']}")
-        
-        if 'focus' in priority:
-            st.markdown(f"*Focus: {priority['focus']}*")
-    
-    with priority_col3:
-        if 'goal' in priority:
-            st.metric("Goal", priority['goal'])
-        elif 'expected_week_1_cpl' in priority:
-            st.metric("Week 1 Target", priority['expected_week_1_cpl'])
+with col1:
+    st.subheader("**Core Development Work**")
+    st.success("✅ Build and optimize signup flows (LeadPages + custom code)")
+    st.success("✅ Develop coregistration (coreg) pages for partner offers")
+    st.success("✅ Write & maintain code snippets for:")
+    st.markdown("• Data capture and passing (URL/querystring)")
+    st.markdown("• Field prepopulation (LeadPages dynamic field handling)")
+    st.markdown("• API integrations (Revmatics or future platforms)")
+
+with col2:
+    st.subheader("**Performance & Attribution**")
+    st.success("✅ Improve data/revenue attribution:")
+    st.markdown("• Tune/HasOffers integration and validation")
+    st.success("✅ Speed up dev time:")
+    st.markdown("• Streamline repetitive coding tasks")
+    st.markdown("• Incorporate AI-based optimizations for flow performance")
 
 # Today's Optimization Checklist - SINGLE LIST
 st.markdown("---")
