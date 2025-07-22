@@ -52,6 +52,7 @@ except:
         data = json.load(f)
 
 # Property Status Cards - UPDATED LAYOUT
+# 📊 DATA OVERVIEW SECTION
 st.header("Property Status")
 
 # Row 1: MFF and MM (with more space for MM traffic data)
@@ -141,42 +142,10 @@ with col4:
     st.text("App Users: 50k daily")
     st.text("Revenue: $0 (no setup)")
 
-# Quick Links Section - INSERT AFTER PROPERTY STATUS
-st.markdown("---")
-st.header("Quick Links")
-
-# Organize links by category
-links_col1, links_col2, links_col3, links_col4 = st.columns(4)
-
-with links_col1:
-    st.subheader("**Landing Pages**")
-    st.markdown("**[LeadPages Dashboard](https://my.leadpages.com/#/dashboard)**")
-    st.markdown("- [MFF Signup Flow](https://join.modefreefinds.com/mff-signup-affiliate/)")
-    st.markdown("- [MM Signup Flow](https://signups.modemobile.com/mm-signup-affv1/)")
-
-with links_col2:
-    st.subheader("**AI & Optimization**")
-    st.markdown("**[Revmatics.ai](https://revmatics.ai/)**")
-    st.markdown("*AI-powered landing page optimization*")
-
-with links_col3:
-    st.subheader("**Revenue & Tracking**")
-    st.markdown("**[Tune (HasOffers)](https://modemobile.go2cloud.org/)**")
-    st.markdown("*Affiliate platform & revenue attribution*")
-    st.markdown("**[Meta Business Manager](https://business.facebook.com/)**")
-    st.markdown("*Meta Ads management*")
-
-with links_col4:
-    st.subheader("**Properties**")
-    st.markdown("**[ModeFreeFinds.com](https://modefreefinds.com/)**")
-    st.markdown("**[ModeMarketMunchies.com](https://modemarketmunchies.com/)**")
-    st.markdown("**[ModeClassActionsDaily.com](https://modeclassactionsdaily.com/)**")
-    st.markdown("**[ModeMobileDaily.com](https://modemobiledaily.com/)**")
-    st.markdown("**[Mode Earn App](https://play.google.com/store/apps/details?id=us.current.android&hl=en_CA)**")
-
 
 # MM TRAFFIC ANALYSIS SECTION
 st.markdown("---")
+# 🔍 ANALYSIS SECTION
 st.header("**MM Traffic Performance Analysis**")
 
 analysis_col1, analysis_col2, analysis_col3 = st.columns(3)
@@ -259,7 +228,8 @@ for i, priority in enumerate(priorities[:4]):
 
 # Today's Optimization Checklist - SINGLE LIST
 st.markdown("---")
-st.header("Today's Optimization Checklist")
+# ⚡ ACTION SECTION
+st.header("✅ Today's Optimization Checklist")
 
 # Single unified checklist
 st.checkbox("Review corrected strategy document", value=False)
@@ -317,6 +287,7 @@ with impact_col3:
 
 # Quick Stats
 st.markdown("---")
+# 📈 METRICS SECTION
 st.header("Quick Stats")
 
 stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
@@ -332,6 +303,43 @@ with stat_col3:
 
 with stat_col4:
     st.metric("Optimization Potential", "$1M+/month", delta="Meta CPL optimization")
+
+
+# Quick Links Section
+st.markdown("---")
+# 🔗 RESOURCES SECTION
+st.header("Quick Links")
+
+# Organize links by category
+links_col1, links_col2, links_col3, links_col4 = st.columns(4)
+
+with links_col1:
+    st.subheader("**Landing Pages**")
+    st.markdown("**[LeadPages Dashboard](https://my.leadpages.com/#/dashboard)**")
+    st.markdown("- [MFF Signup Flow](https://join.modefreefinds.com/mff-signup-affiliate/)")
+    st.markdown("- [MM Signup Flow](https://signups.modemobile.com/mm-signup-affv1/)")
+
+with links_col2:
+    st.subheader("**AI & Optimization**")
+    st.markdown("**[Revmatics.ai](https://revmatics.ai/)**")
+    st.markdown("*AI-powered landing page optimization*")
+
+with links_col3:
+    st.subheader("**Revenue & Tracking**")
+    st.markdown("**[Tune (HasOffers)](https://modemobile.go2cloud.org/)**")
+    st.markdown("*Affiliate platform & revenue attribution*")
+    st.markdown("**[Meta Business Manager](https://business.facebook.com/)**")
+    st.markdown("*Meta Ads management*")
+
+with links_col4:
+    st.subheader("**Properties**")
+    st.markdown("**[ModeFreeFinds.com](https://modefreefinds.com/)**")
+    st.markdown("**[ModeMarketMunchies.com](https://modemarketmunchies.com/)**")
+    st.markdown("**[ModeClassActionsDaily.com](https://modeclassactionsdaily.com/)**")
+    st.markdown("**[ModeMobileDaily.com](https://modemobiledaily.com/)**")
+    st.markdown("**[Mode Earn App](https://play.google.com/store/apps/details?id=us.current.android&hl=en_CA)**")
+
+
 
 # Footer
 st.markdown("---")
