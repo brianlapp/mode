@@ -42,9 +42,14 @@ def main():
     col1, col2, col3 = st.columns([1, 1, 1])
     
     with col2:
-        # Mode Free Finds logo - centered
-        st.image("https://lh3.googleusercontent.com/hOi8rYWOfLYZQ0YjqAJlRLw-NRsDd3_s1YAp6XkUTwV4d2C5W1opPn4E1gSFlrlAXZaF3bTUl8vKuXkgNgf1kfFXrQmDzZRlS4I=w383", 
-                 width=200)
+        # Mode logos - centered
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.image("https://lh3.googleusercontent.com/hOi8rYWOfLYZQ0YjqAJlRLw-NRsDd3_s1YAp6XkUTwV4d2C5W1opPn4E1gSFlrlAXZaF3bTUl8vKuXkgNgf1kfFXrQmDzZRlS4I=w383", 
+                     width=120, caption="ModeFreeFinds")
+        with col_b:
+            st.image("https://lh3.googleusercontent.com/lt64vW20ku4h6VAEOduskIyi9yv8tg5WHZX8vU9znMdwQAaLpNOQWbJqLA1F_cP4NA8WC4GqD3GoyoLPqXqpvK6FC81KHiuO3Yc=w1064", 
+                     width=120, caption="ModeMarketMunchies")
     
     # Clean title
     st.title("🚀 Mode Optimization Dashboard")
@@ -68,9 +73,13 @@ def main():
     
     # MFF Card
     with col1:
+        # MFF Logo
+        st.image("https://lh3.googleusercontent.com/hOi8rYWOfLYZQ0YjqAJlRLw-NRsDd3_s1YAp6XkUTwV4d2C5W1opPn4E1gSFlrlAXZaF3bTUl8vKuXkgNgf1kfFXrQmDzZRlS4I=w383", 
+                 width=150)
+        
         mff = properties.get('mode_free_finds', {})
         st.metric(
-            label="📈 ModeFreeFinds",
+            label="ModeFreeFinds.com",
             value=mff.get('meta_cpl', 'N/A'),
             delta="✅ Target Met"
         )
@@ -81,9 +90,13 @@ def main():
     
     # MMM Card  
     with col2:
+        # MMM Logo
+        st.image("https://lh3.googleusercontent.com/lt64vW20ku4h6VAEOduskIyi9yv8tg5WHZX8vU9znMdwQAaLpNOQWbJqLA1F_cP4NA8WC4GqD3GoyoLPqXqpvK6FC81KHiuO3Yc=w1064", 
+                 width=150)
+        
         mmm = properties.get('mode_market_munchies', {})
         st.metric(
-            label="📊 ModeMarketMunchies", 
+            label="ModeMarketMunchies.com", 
             value=mmm.get('meta_cpl', 'N/A'),
             delta=f"Target: {mmm.get('target_cpl', 'N/A')}",
             delta_color="inverse"
@@ -95,9 +108,13 @@ def main():
     
     # MCAD Card
     with col3:
+        # MCAD Logo
+        st.image("https://modeclassactionsdaily.com/wp-content/uploads/2025/04/class-actions-logo.png", 
+                 width=150)
+        
         mcad = properties.get('mode_class_actions', {})
         st.metric(
-            label="⚖️ ModeClassActions",
+            label="ModeClassActionsDaily.com",
             value="Missing Flows",
             delta="🔨 To Build"
         )
@@ -106,9 +123,13 @@ def main():
     
     # MMD Card
     with col4:
+        # MMD Logo
+        st.image("https://modemobiledaily.com/wp-content/uploads/2025/06/cropped-Daily-2a.png", 
+                 width=150)
+        
         mmd = properties.get('mode_mobile_daily', {})
         st.metric(
-            label="📱 ModeMobileDaily",
+            label="ModeMobileDaily.com",
             value="Missing Setup", 
             delta="🔨 To Build"
         )
