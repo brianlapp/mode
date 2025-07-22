@@ -44,7 +44,7 @@ except:
         data = json.load(f)
 
 # Property Status Cards - UPDATED LAYOUT
-st.header("🏢 Property Status")
+st.header("Property Status")
 
 # Row 1: MFF and MM (with more space for MM traffic data)
 col1, col2 = st.columns(2)
@@ -99,14 +99,18 @@ with col2:
     if 'leadpages_example' in properties.get('mode_market_munchies', {}):
         st.markdown(f"🔗 [View Flow]({properties['mode_market_munchies']['leadpages_example']})")
 
-# Row 2: MCAD and MMD
+# Add spacing between rows
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Row 2: MCAD and MMD  
 col3, col4 = st.columns(2)
 
 # MCAD Card
 with col3:
-    st.image("https://lh3.googleusercontent.com/k0uyODgbmWC9WJA8K1ZFZRJMhm4HX7LcfpbHOHEoVSfq4ykVE8xJlg1CgH-vYw11Hd5G_Ew5JnlLKMz7tq8QV0PpS8J9TZa4ow=w1064", 
-             width=150)
-    
+    # MCAD Logo - placeholder until real logo is provided
+    st.markdown("📋 **ModeClassActionsDaily Logo**")
+    st.text("(Logo needed)")
+
     st.metric(
         label="ModeClassActionsDaily",
         value="TO BUILD",
@@ -118,8 +122,9 @@ with col3:
 
 # MMD Card
 with col4:
-    st.image("https://lh3.googleusercontent.com/dQw4w9WgXcQ1Vw8XJhH2YQxqZ3K4F5G6H7J8K9L0MN1O2P3Q4R5S6T7U8V9W0X1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R=w1064", 
-             width=150)
+    # MMD Logo - placeholder until real logo is provided
+    st.markdown("📱 **ModeMobileDaily Logo**")
+    st.text("(Logo needed)")
     
     st.metric(
         label="ModeMobileDaily",
@@ -132,7 +137,7 @@ with col4:
 
 # Quick Links Section - INSERT AFTER PROPERTY STATUS
 st.markdown("---")
-st.header("🔗 Quick Links")
+st.header("Quick Links")
 
 # Organize links by category
 links_col1, links_col2, links_col3, links_col4 = st.columns(4)
@@ -166,12 +171,12 @@ with links_col4:
 
 # MM TRAFFIC ANALYSIS SECTION
 st.markdown("---")
-st.header("🎯 **MM Traffic Performance Analysis**")
+st.header("**MM Traffic Performance Analysis**")
 
 analysis_col1, analysis_col2, analysis_col3 = st.columns(3)
 
 with analysis_col1:
-    st.subheader("💰 Affiliate Traffic (WINNING)")
+    st.subheader("Affiliate Traffic (WINNING)")
     st.success("**CRUSHING IT - $3 profit per lead**")
     
     affiliate_data = {
@@ -186,7 +191,7 @@ with analysis_col1:
     st.markdown("- Financial niche understanding")
 
 with analysis_col2:
-    st.subheader("💸 Meta Traffic (PROBLEM)")
+    st.subheader("Meta Traffic (PROBLEM)")
     st.error("**BLEEDING MONEY - losing $3-5.50/lead**")
     
     meta_data = {
@@ -201,7 +206,7 @@ with analysis_col2:
     st.markdown("- Need immediate value clarity")
 
 with analysis_col3:
-    st.subheader("🎯 Target Opportunity")
+    st.subheader("Target Opportunity")
     st.info("**Get Meta to match Affiliate performance**")
     
     target_data = {
@@ -217,7 +222,7 @@ with analysis_col3:
 
 # CORRECTED PRIORITIES SECTION
 st.markdown("---")
-st.header("🎯 **Optimization Priorities**")
+st.header("**Optimization Priorities**")
 
 priorities = data.get('corrected_priorities', data.get('immediate_priorities', []))
 
@@ -248,7 +253,7 @@ for i, priority in enumerate(priorities[:4]):
 
 # Today's Optimization Checklist - SINGLE LIST
 st.markdown("---")
-st.header("📋 Today's Optimization Checklist")
+st.header("Today's Optimization Checklist")
 
 # Single unified checklist
 st.checkbox("Review corrected strategy document", value=False)
@@ -264,12 +269,12 @@ st.text_input("Add new task:", placeholder="Future: Mike can add via @mode-optim
 
 # Meta Optimization Strategy Section
 st.markdown("---")
-st.header("🧠 **Meta Traffic Optimization Strategy**")
+st.header("**Meta Traffic Optimization Strategy**")
 
 strategy_col1, strategy_col2 = st.columns(2)
 
 with strategy_col1:
-    st.subheader("🎯 Cold Traffic Psychology")
+    st.subheader("Cold Traffic Psychology")
     st.markdown("**Key Differences from Affiliate Traffic:**")
     st.markdown("- ❄️ **Cold audience** - no prior financial interest")
     st.markdown("- 🚫 **Zero trust** - never heard of MM before")
@@ -278,7 +283,7 @@ with strategy_col1:
     st.markdown("- 🎯 **Beginner-friendly** - avoid financial jargon")
 
 with strategy_col2:
-    st.subheader("🛠️ Implementation Approach")
+    st.subheader("Implementation Approach")
     st.markdown("**Meta-Specific Optimizations:**")
     st.markdown("- 📸 **Social proof visuals** - real success stories")
     st.markdown("- 💰 **Instant value promise** - clear financial benefit")
@@ -288,7 +293,7 @@ with strategy_col2:
 
 # Business Impact Section
 st.markdown("---")
-st.header("💰 **Business Impact Potential**")
+st.header("**Business Impact Potential**")
 
 impact_col1, impact_col2, impact_col3 = st.columns(3)
 
@@ -306,7 +311,7 @@ with impact_col3:
 
 # Quick Stats
 st.markdown("---")
-st.header("📊 Quick Stats")
+st.header("Quick Stats")
 
 stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
 
