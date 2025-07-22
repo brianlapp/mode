@@ -43,25 +43,15 @@ except:
     with open("memory-bank/project-memories.json") as f:
         data = json.load(f)
 
-# 🚨 CORRECTION ALERT
-st.markdown("---")
-st.error("🚨 **MAJOR STRATEGY CORRECTION BASED ON MIKE'S CONVERSATION**")
-st.markdown("""
-**REALITY CHECK:** 
-- ❌ **MFF (pretty) ≠ Winner** - Breaking even at low volume despite $0.45 CPL
-- ✅ **MM (ugly) = SLAYING** - $3 profit per lead on affiliate traffic!  
-- 🎯 **Real Problem:** Meta cold traffic psychology, not visual design
-- 💰 **Opportunity:** $1M+/month if Meta CPL cracked for MM
-""")
+# Property Status Cards - UPDATED LAYOUT
+st.header("🏢 Property Status")
 
-# Property Status Cards - CORRECTED VERSION
-st.header("🏢 Property Status - **CORRECTED REALITY**")
-
-col1, col2, col3, col4 = st.columns(4)
+# Row 1: MFF and MM (with more space for MM traffic data)
+col1, col2 = st.columns(2)
 
 properties = data.get('properties', {})
 
-# MFF Card - CORRECTED
+# MFF Card
 with col1:
     st.image("https://lh3.googleusercontent.com/hOi8rYWOfLYZQ0YjqAJlRLw-NRsDd3_s1YAp6XkUTwV4d2C5W1opPn4E1gSFlrlAXZaF3bTUl8vKuXkgNgf1kfFXrQmDzZRlS4I=w383", 
              width=150)
@@ -79,7 +69,7 @@ with col1:
     if 'leadpages_example' in mff:
         st.markdown(f"🔗 [View Flow]({mff['leadpages_example']})")
 
-# MM Card - CORRECTED WITH TRAFFIC SPLIT
+# MM Card - EXPANDED with traffic breakdown
 with col2:
     st.image("https://lh3.googleusercontent.com/lt64vW20ku4h6VAEOduskIyi9yv8tg5WHZX8vU9znMdwQAaLpNOQWbJqLA1F_cP4NA8WC4GqD3GoyoLPqXqpvK6FC81KHiuO3Yc=w1064", 
              width=150)
@@ -90,17 +80,27 @@ with col2:
         delta="See breakdown below"
     )
     
-    # Affiliate Performance
-    st.success("🔥 **AFFILIATE TRAFFIC**")
-    st.metric("Affiliate CPL", "$1.50", delta="+$3.00 profit/lead")
+    # Create two sub-columns for traffic data
+    traffic_col1, traffic_col2 = st.columns(2)
     
-    # Meta Performance  
-    st.error("💸 **META TRAFFIC**")
-    st.metric("Meta CPL", "$5-10", delta="-$3.00 loss/lead")
+    with traffic_col1:
+        st.success("🔥 **AFFILIATE TRAFFIC**")
+        st.metric("CPL", "$1.50", delta="+$3.00 profit/lead")
+        st.text("ROI: 200%")
+        st.text("Status: CRUSHING IT")
+    
+    with traffic_col2:
+        st.error("💸 **META TRAFFIC**")
+        st.metric("CPL", "$5-10", delta="-$3.00 loss/lead")
+        st.text("ROI: -40% to -122%")
+        st.text("Status: BLEEDING MONEY")
     
     st.text("List: 900k subscribers")
     if 'leadpages_example' in properties.get('mode_market_munchies', {}):
         st.markdown(f"🔗 [View Flow]({properties['mode_market_munchies']['leadpages_example']})")
+
+# Row 2: MCAD and MMD
+col3, col4 = st.columns(2)
 
 # MCAD Card
 with col3:
@@ -183,7 +183,7 @@ with analysis_col3:
 
 # CORRECTED PRIORITIES SECTION
 st.markdown("---")
-st.header("🎯 **CORRECTED Optimization Priorities**")
+st.header("🎯 **Optimization Priorities**")
 
 priorities = data.get('corrected_priorities', data.get('immediate_priorities', []))
 
@@ -212,29 +212,21 @@ for i, priority in enumerate(priorities[:4]):
         elif 'expected_week_1_cpl' in priority:
             st.metric("Week 1 Target", priority['expected_week_1_cpl'])
 
-# Today's Optimization Checklist
+# Today's Optimization Checklist - SINGLE LIST
 st.markdown("---")
 st.header("📋 Today's Optimization Checklist")
 
-checklist_col1, checklist_col2 = st.columns(2)
+# Single unified checklist
+st.checkbox("Review corrected strategy document", value=False)
+st.checkbox("Approve Meta-specific MM approach", value=False) 
+st.checkbox("Share current affiliate vs Meta data", value=False)
+st.checkbox("Set Week 1 Meta optimization budget", value=False)
+st.checkbox("Research cold traffic psychology for financial offers", value=False)
+st.checkbox("Design Meta-specific MM landing page", value=False)
+st.checkbox("Set up traffic source segmentation", value=False) 
+st.checkbox("Plan API integration for Tune + Meta data", value=False)
 
-with checklist_col1:
-    st.subheader("🎯 Mike's Priorities")
-    st.checkbox("Review corrected strategy document", value=False)
-    st.checkbox("Approve Meta-specific MM approach", value=False) 
-    st.checkbox("Share current affiliate vs Meta data", value=False)
-    st.checkbox("Set Week 1 Meta optimization budget", value=False)
-    
-    st.markdown("**💡 Future: Mike can add tasks via Slack agent!**")
-
-with checklist_col2:
-    st.subheader("⚡ Your Tasks (Night Shift)")
-    st.checkbox("Research cold traffic psychology for financial offers", value=False)
-    st.checkbox("Design Meta-specific MM landing page", value=False)
-    st.checkbox("Set up traffic source segmentation", value=False) 
-    st.checkbox("Plan API integration for Tune + Meta data", value=False)
-    
-    st.text_input("Add new task:", placeholder="Future: Mike can add via @mode-optimizer")
+st.text_input("Add new task:", placeholder="Future: Mike can add via @mode-optimizer")
 
 # Meta Optimization Strategy Section
 st.markdown("---")
