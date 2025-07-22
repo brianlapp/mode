@@ -228,6 +228,83 @@ def main():
         else:
             st.metric("Optimization Wins", "0", delta="Directory not found")
     
+    # Landing Page Audit Section
+    st.markdown("---")
+    st.header("🕵️‍♂️ Landing Page Audit Findings")
+    
+    audit_col1, audit_col2 = st.columns(2)
+    
+    with audit_col1:
+        st.subheader("🎯 Audit Summary")
+        st.metric("CPL Gap Analysis", "10-20x Higher", delta="MMM vs MFF")
+        st.metric("Critical Issues Found", "10", delta="High Impact")
+        st.metric("Quick Wins Available", "3", delta="24-48hrs")
+        
+        st.markdown("**📊 Key Findings:**")
+        st.markdown("- Phone field adds 20-30% friction")
+        st.markdown("- Abstract value vs tangible proof")
+        st.markdown("- Complex messaging dilutes focus")
+        st.markdown("- Missing trust signals")
+    
+    with audit_col2:
+        st.subheader("🚀 Optimization Roadmap")
+        
+        # Progress bars for implementation phases
+        st.markdown("**Week 1: Quick Wins**")
+        st.progress(0.0, text="Remove phone field (Ready)")
+        
+        st.markdown("**Week 2: Strategic Tests**")
+        st.progress(0.0, text="A/B test headlines (Planned)")
+        
+        st.markdown("**Week 3-4: Advanced**")
+        st.progress(0.0, text="Mobile optimization (Planned)")
+        
+        st.markdown("**🎯 Expected Impact:**")
+        st.metric("Target CPL Reduction", "60-80%", delta="$5-10 → $0.45-1.00")
+    
+    # Detailed audit findings expander
+    with st.expander("📋 View Detailed Audit Findings", expanded=False):
+        st.markdown("### 🔥 High-Impact Fixes (24-48 hours)")
+        
+        fix_col1, fix_col2, fix_col3 = st.columns(3)
+        
+        with fix_col1:
+            st.markdown("**1. Remove Phone Field**")
+            st.markdown("- Current: 4 fields")
+            st.markdown("- Fix: Match MFF's 3 fields")
+            st.markdown("- Impact: 20-30% improvement")
+        
+        with fix_col2:
+            st.markdown("**2. Simplify Value Prop**")
+            st.markdown("- Current: Complex investment")
+            st.markdown("- Fix: 'Daily Financial Opportunities'")
+            st.markdown("- Impact: 15-25% clarity boost")
+        
+        with fix_col3:
+            st.markdown("**3. Add Trust Elements**")
+            st.markdown("- Current: Text-heavy")
+            st.markdown("- Fix: Testimonials, social proof")
+            st.markdown("- Impact: 10-20% trust increase")
+        
+        st.markdown("---")
+        st.markdown("### 📈 Success Pattern Analysis")
+        
+        comparison_data = {
+            'Factor': ['Visual Trust', 'Form Friction', 'Message Clarity', 'Risk Perception', 'Social Proof'],
+            'MFF (Winner)': ['Product photos', '3 fields', 'Single benefit', 'No-risk freebies', 'Facebook integration'],
+            'MMM (Problem)': ['Abstract concept', '4 fields + phone', 'Multiple concepts', 'Financial risk', 'Missing'],
+            'Impact Level': ['HIGH', 'CRITICAL', 'HIGH', 'CRITICAL', 'MEDIUM']
+        }
+        
+        import pandas as pd
+        df = pd.DataFrame(comparison_data)
+        st.dataframe(df, use_container_width=True)
+        
+        st.markdown("**💡 Key Insight:** MFF succeeds with tangible, simple, low-risk value proposition. MMM needs systematic friction removal.")
+        
+        # Link to full audit document
+        st.markdown("📄 **Complete audit report available in project files** for detailed analysis and implementation steps.")
+
     # Footer
     st.markdown("---")
     st.markdown("🚀 **Mode Optimization Dashboard** | Built for revenue optimization")
