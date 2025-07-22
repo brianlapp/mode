@@ -241,23 +241,23 @@ def main():
         st.metric("Quick Wins Available", "3", delta="24-48hrs")
         
         st.markdown("**📊 Key Findings:**")
-        st.markdown("- Phone field adds 20-30% friction")
-        st.markdown("- Abstract value vs tangible proof")
-        st.markdown("- Complex messaging dilutes focus")
-        st.markdown("- Missing trust signals")
+        st.markdown("- Abstract concept vs visual lifestyle proof")
+        st.markdown("- Complex messaging dilutes focus") 
+        st.markdown("- Missing USA audience psychology")
+        st.markdown("- Phone field needs value reframing")
     
     with audit_col2:
         st.subheader("🚀 Optimization Roadmap")
         
         # Progress bars for implementation phases
-        st.markdown("**Week 1: Quick Wins**")
-        st.progress(0.0, text="Remove phone field (Ready)")
+        st.markdown("**Week 1: Visual Overhaul**")
+        st.progress(0.0, text="Lifestyle visuals + clear value prop (Ready)")
         
-        st.markdown("**Week 2: Strategic Tests**")
-        st.progress(0.0, text="A/B test headlines (Planned)")
+        st.markdown("**Week 2: USA Psychology**")
+        st.progress(0.0, text="Money=freedom messaging (Planned)")
         
-        st.markdown("**Week 3-4: Advanced**")
-        st.progress(0.0, text="Mobile optimization (Planned)")
+        st.markdown("**Week 3-4: Trust Building**")
+        st.progress(0.0, text="Success stories + social proof (Planned)")
         
         st.markdown("**🎯 Expected Impact:**")
         st.metric("Target CPL Reduction", "60-80%", delta="$5-10 → $0.45-1.00")
@@ -269,38 +269,38 @@ def main():
         fix_col1, fix_col2, fix_col3 = st.columns(3)
         
         with fix_col1:
-            st.markdown("**1. Remove Phone Field**")
-            st.markdown("- Current: 4 fields")
-            st.markdown("- Fix: Match MFF's 3 fields")
-            st.markdown("- Impact: 20-30% improvement")
+            st.markdown("**1. Add Lifestyle Visuals**")
+            st.markdown("- Current: Abstract concept")
+            st.markdown("- Fix: Money=freedom lifestyle imagery")
+            st.markdown("- Impact: 25-40% visual trust boost")
         
         with fix_col2:
-            st.markdown("**2. Simplify Value Prop**")
-            st.markdown("- Current: Complex investment")
-            st.markdown("- Fix: 'Daily Financial Opportunities'")
-            st.markdown("- Impact: 15-25% clarity boost")
+            st.markdown("**2. USA Psychology Messaging**")
+            st.markdown("- Current: 'Investment insights'")
+            st.markdown("- Fix: 'Turn phone into money machine'")
+            st.markdown("- Impact: 20-30% clarity boost")
         
         with fix_col3:
-            st.markdown("**3. Add Trust Elements**")
-            st.markdown("- Current: Text-heavy")
-            st.markdown("- Fix: Testimonials, social proof")
-            st.markdown("- Impact: 10-20% trust increase")
+            st.markdown("**3. Reframe Phone Field**")
+            st.markdown("- Current: 'Optional' (confusing)")
+            st.markdown("- Fix: 'Your Money Alert Line'")
+            st.markdown("- Impact: 10-15% completion boost")
         
         st.markdown("---")
         st.markdown("### 📈 Success Pattern Analysis")
         
         comparison_data = {
-            'Factor': ['Visual Trust', 'Form Friction', 'Message Clarity', 'Risk Perception', 'Social Proof'],
-            'MFF (Winner)': ['Product photos', '3 fields', 'Single benefit', 'No-risk freebies', 'Facebook integration'],
-            'MMM (Problem)': ['Abstract concept', '4 fields + phone', 'Multiple concepts', 'Financial risk', 'Missing'],
-            'Impact Level': ['HIGH', 'CRITICAL', 'HIGH', 'CRITICAL', 'MEDIUM']
+            'Factor': ['Visual Trust', 'USA Psychology', 'Message Clarity', 'Phone Field Context', 'Social Proof'],
+            'MFF (Winner)': ['Product photos', 'Tangible freebies', 'Single benefit', 'Not required', 'Facebook integration'],
+            'MMM (Problem)': ['Abstract concept', 'Complex investment', 'Multiple concepts', 'Poorly framed', 'Missing testimonials'],
+            'Impact Level': ['CRITICAL', 'HIGH', 'HIGH', 'MEDIUM', 'HIGH']
         }
         
         import pandas as pd
         df = pd.DataFrame(comparison_data)
         st.dataframe(df, use_container_width=True)
         
-        st.markdown("**💡 Key Insight:** MFF succeeds with tangible, simple, low-risk value proposition. MMM needs systematic friction removal.")
+        st.markdown("**💡 Key Insight:** MFF succeeds with tangible visual proof. MMM needs lifestyle visuals + USA money psychology messaging.")
         
         # Link to full audit document
         st.markdown("📄 **Complete audit report available in project files** for detailed analysis and implementation steps.")
