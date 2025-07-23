@@ -583,7 +583,7 @@ elif page == "💻 Code Repository":
         # Link to full files
         st.markdown("---")
         st.markdown("""
-        <div style="background-color: #ba11d6; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
             <h3 style="color: white; margin: 0;">🎯 ALL 6 LANDING PAGE SECTIONS READY!</h3>
             <p style="color: white; margin: 0.5rem 0 0 0;">Start with Sections 1-2 (lowest risk)</p>
         </div>
@@ -867,7 +867,7 @@ elif page == "💻 Code Repository":
         # Link to full files
         st.markdown("---")
         st.markdown("""
-        <div style="background-color: #ba11d6; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
             <h3 style="color: white; margin: 0;">🎯 ALL 7 THANK YOU PAGE SECTIONS READY!</h3>
             <p style="color: white; margin: 0.5rem 0 0 0;">Start with Sections 1-2 (lowest risk)</p>
         </div>
