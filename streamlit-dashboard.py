@@ -57,6 +57,19 @@ if st.sidebar.button("📊 Property Deep Dive", use_container_width=True):
 if st.sidebar.button("📈 Analytics & Reports", use_container_width=True):
     st.session_state.page = "📈 Analytics & Reports"
 
+# Handle URL parameters for direct navigation
+query_params = st.query_params
+if "page" in query_params:
+    page_param = query_params["page"]
+    if page_param == "code":
+        st.session_state.page = "💻 Code Repository"
+    elif page_param == "global":
+        st.session_state.page = "🔧 Global Scripts Implementation"
+    elif page_param == "analytics":
+        st.session_state.page = "📈 Analytics & Reports"
+    elif page_param == "properties":
+        st.session_state.page = "📊 Property Deep Dive"
+
 # Set default page if not already set
 if 'page' not in st.session_state:
     st.session_state.page = "🏠 Overview Dashboard"
@@ -79,6 +92,9 @@ properties = data.get('properties', {})
 if page == "🏠 Overview Dashboard":
     st.title("🎯 Mode Properties Optimization Dashboard")
     st.markdown("**Real-time tracking and optimization for 4 Mode properties**")
+    
+    # Quick Direct Links
+    st.info("🔗 **Direct Links:** [Code Repository](https://modedash.streamlit.app/?page=code) | [Global Scripts Guide](https://modedash.streamlit.app/?page=global) | [Property Analysis](https://modedash.streamlit.app/?page=properties) | [Analytics](https://modedash.streamlit.app/?page=analytics)")
     
     # Today's Major Update
     st.success("🚀 **TODAY'S BREAKTHROUGH:** Complete MFF $0.45 CPL system analyzed! Landing Page + Thank You Page code cleaned up and ready for Global Scripts implementation. 13 sections prepared for LeadPages.")
@@ -175,8 +191,10 @@ if page == "🏠 Overview Dashboard":
 
     with link_col2:
         st.subheader("💻 Code & Scripts")
-        st.markdown("[Landing Page Scripts](https://github.com/brianlapp/mode/blob/main/global-scripts-ready-code.js)")
-        st.markdown("[Thank You Page Scripts](https://github.com/brianlapp/mode/blob/main/thankyou-global-scripts-ready.js)")
+        st.markdown("[📋 **Dashboard Code Repository**](https://modedash.streamlit.app/?page=code)")
+        st.markdown("[🔧 **Global Scripts Guide**](https://modedash.streamlit.app/?page=global)")
+        st.markdown("[Landing Page Scripts (GitHub)](https://github.com/brianlapp/mode/blob/main/global-scripts-ready-code.js)")
+        st.markdown("[Thank You Page Scripts (GitHub)](https://github.com/brianlapp/mode/blob/main/thankyou-global-scripts-ready.js)")
         
         st.subheader("🤖 AI & Optimization")
         st.markdown("[Revmatics.ai](https://revmatics.ai/)")
