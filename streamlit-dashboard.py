@@ -115,38 +115,20 @@ if page == "🏠 Overview Dashboard":
     nav_col1, nav_col2, nav_col3 = st.columns(3)
     
     with nav_col1:
-        st.markdown("""
-        <div style="background-color: #2c3e50; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #28a745;">
-            <h4 style="margin-top: 0; color: white;">🏢 Properties Portfolio</h4>
-            <p style="color: #ecf0f1;">Complete visual audit with mobile screenshots, logos, and optimization strategies for all 4 Mode properties.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("📱 View Properties Portfolio", use_container_width=True, key="nav_properties"):
+        if st.button("🏢 Properties Portfolio\n\nComplete visual audit with mobile screenshots, logos, and optimization strategies for all 4 Mode properties.", 
+                     use_container_width=True, key="nav_properties", type="primary"):
             st.session_state.page = "🏢 Properties Portfolio"
             st.rerun()
     
     with nav_col2:
-        st.markdown("""
-        <div style="background-color: #2c3e50; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #007bff;">
-            <h4 style="margin-top: 0; color: white;">🔧 Global Scripts</h4>
-            <p style="color: #ecf0f1;">LeadPages implementation guide with Mike's optimized tracking code ready for deployment.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("⚙️ Global Scripts Setup", use_container_width=True, key="nav_global"):
+        if st.button("🔧 Global Scripts\n\nLeadPages implementation guide with Mike's optimized tracking code ready for deployment.", 
+                     use_container_width=True, key="nav_global", type="primary"):
             st.session_state.page = "🔧 Global Scripts Implementation"
             st.rerun()
     
     with nav_col3:
-        st.markdown("""
-        <div style="background-color: #2c3e50; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #ffc107;">
-            <h4 style="margin-top: 0; color: white;">💻 Code Repository</h4>
-            <p style="color: #ecf0f1;">All optimization code, scripts, and technical implementations organized by property and function.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("📋 Access Code Repository", use_container_width=True, key="nav_code"):
+        if st.button("💻 Code Repository\n\nAll optimization code, scripts, and technical implementations organized by property and function.", 
+                     use_container_width=True, key="nav_code", type="primary"):
             st.session_state.page = "💻 Code Repository"
             st.rerun()
 
