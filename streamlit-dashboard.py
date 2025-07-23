@@ -40,6 +40,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Sidebar Navigation
+st.sidebar.image("img/logo.svg", width=200)
 st.sidebar.title("🚀 Mode Optimization")
 st.sidebar.markdown("---")
 
