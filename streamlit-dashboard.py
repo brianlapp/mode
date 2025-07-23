@@ -98,7 +98,7 @@ if page == "🏠 Overview Dashboard":
     
     # Today's Major Update
     st.markdown("""
-    <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+    <div style="background-color: #F7007C; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
         <h3 style="color: white; margin: 0;">🚀 TODAY'S BREAKTHROUGH</h3>
         <p style="color: white; margin: 0.5rem 0 0 0;">Complete MFF $0.45 CPL system analyzed! Landing Page + Thank You Page code cleaned up and ready for Global Scripts implementation. 13 sections prepared for LeadPages.</p>
     </div>
@@ -246,7 +246,7 @@ elif page == "🔧 Global Scripts Implementation":
         st.subheader("🎯 LeadPages Global Scripts - Official Guide")
         
         st.markdown("""
-        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+        <div style="background-color: #07C8F7; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
             <h4 style="color: white; margin: 0;">🎯 GREAT NEWS: Global Scripts are exactly what we need for Mike's system!</h4>
         </div>
         """, unsafe_allow_html=True)
@@ -278,7 +278,7 @@ elif page == "🔧 Global Scripts Implementation":
         
         st.write("**Step 4: Implementation Strategy**")
         st.markdown("""
-        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+        <div style="background-color: #07C8F7; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
             <h4 style="color: white; margin: 0;">🎯 UNIVERSAL FIRST: Start with scripts that work for all properties</h4>
         </div>
         """, unsafe_allow_html=True)
@@ -296,7 +296,7 @@ console.log('✅ Test completed at:', new Date().toISOString());
             
         st.markdown("---")
         st.markdown("""
-        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+        <div style="background-color: #07C8F7; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
             <h4 style="color: white; margin: 0;">🎯 READY TO IMPLEMENT: Our sections are perfectly designed for this system!</h4>
         </div>
         """, unsafe_allow_html=True)
@@ -332,7 +332,7 @@ console.log('✅ Test completed at:', new Date().toISOString());
         st.write("**7 sections ready for implementation - Complete revenue system**")
         
         st.markdown("""
-        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+        <div style="background-color: #F7007C; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
             <h4 style="color: white; margin: 0;">🔥 THE MONEY MAKER: URL Injection section works universally - perfect for Global Scripts!</h4>
         </div>
         """, unsafe_allow_html=True)
@@ -604,7 +604,7 @@ elif page == "💻 Code Repository":
         # Link to full files
         st.markdown("---")
         st.markdown("""
-        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+        <div style="background-color: #F7007C; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
             <h3 style="color: white; margin: 0;">🎯 ALL 6 LANDING PAGE SECTIONS READY!</h3>
             <p style="color: white; margin: 0.5rem 0 0 0;">Start with Sections 1-2 (lowest risk)</p>
         </div>
@@ -888,7 +888,7 @@ elif page == "💻 Code Repository":
         # Link to full files
         st.markdown("---")
         st.markdown("""
-        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+        <div style="background-color: #F7007C; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
             <h3 style="color: white; margin: 0;">🎯 ALL 7 THANK YOU PAGE SECTIONS READY!</h3>
             <p style="color: white; margin: 0.5rem 0 0 0;">Start with Sections 1-2 (lowest risk)</p>
         </div>
