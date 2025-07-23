@@ -48,14 +48,24 @@ st.sidebar.markdown("### 📋 Navigation")
 
 if st.sidebar.button("🏠 Overview Dashboard", use_container_width=True):
     st.session_state.page = "🏠 Overview Dashboard"
+    st.query_params.clear()  # Clear URL parameters
+    st.rerun()
 if st.sidebar.button("🔧 Global Scripts Implementation", use_container_width=True):
     st.session_state.page = "🔧 Global Scripts Implementation"
+    st.query_params.clear()  # Clear URL parameters
+    st.rerun()
 if st.sidebar.button("💻 Code Repository", use_container_width=True):
     st.session_state.page = "💻 Code Repository"
+    st.query_params.clear()  # Clear URL parameters
+    st.rerun()
 if st.sidebar.button("📊 Property Deep Dive", use_container_width=True):
     st.session_state.page = "📊 Property Deep Dive"
+    st.query_params.clear()  # Clear URL parameters
+    st.rerun()
 if st.sidebar.button("📈 Analytics & Reports", use_container_width=True):
     st.session_state.page = "📈 Analytics & Reports"
+    st.query_params.clear()  # Clear URL parameters
+    st.rerun()
 
 # Handle URL parameters for direct navigation
 query_params = st.query_params
