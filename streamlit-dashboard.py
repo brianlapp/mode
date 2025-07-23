@@ -156,22 +156,43 @@ if page == "🏠 Overview Dashboard":
     with stat_col4:
         st.metric("Optimization Target", "$1M+/month", "Meta scaling potential")
 
-    # Quick Actions
+    # Quick Links
     st.markdown("---")
-    st.header("Quick Actions")
+    st.header("🔗 Quick Links")
     
-    action_col1, action_col2, action_col3 = st.columns(3)
-    with action_col1:
-        if st.button("🔧 Start Global Scripts", use_container_width=True):
+    link_col1, link_col2, link_col3 = st.columns(3)
+    
+    with link_col1:
+        st.subheader("🔗 LeadPages")
+        st.markdown("[MFF Signup Flow](https://join.modefreefinds.com/mff-signup-affiliate/)")
+        st.markdown("[MM Signup Flow](https://signups.modemobile.com/mm-signup-affv1/)")
+        
+        st.subheader("🌐 Properties") 
+        st.markdown("[ModeFreeFinds.com](https://modefreefinds.com/)")
+        st.markdown("[ModeMarketMunchies.com](https://modemarketmunchies.com/)")
+        st.markdown("[ModeClassActionsDaily.com](https://modeclassactionsdaily.com/)")
+        st.markdown("[ModeMobileDaily.com](https://modemobiledaily.com/)")
+
+    with link_col2:
+        st.subheader("💻 Code & Scripts")
+        st.markdown("[Landing Page Scripts](https://github.com/brianlapp/mode/blob/main/global-scripts-ready-code.js)")
+        st.markdown("[Thank You Page Scripts](https://github.com/brianlapp/mode/blob/main/thankyou-global-scripts-ready.js)")
+        
+        st.subheader("🤖 AI & Optimization")
+        st.markdown("[Revmatics.ai](https://revmatics.ai/)")
+        st.markdown("[Revmatics Demo](https://revmatics.ai/funnels)")
+        
+    with link_col3:
+        st.subheader("📊 Tracking & Revenue")
+        st.markdown("[Tune (HasOffers)](https://modemobile.go2cloud.org/)")
+        st.markdown("[Meta Business Manager](https://business.facebook.com/)")
+        
+        st.subheader("🚀 Navigation Shortcuts")
+        if st.button("🔧 Global Scripts Implementation", use_container_width=True):
             st.session_state.page = "🔧 Global Scripts Implementation"
             st.rerun()
-    with action_col2:
-        if st.button("💻 View Clean Code", use_container_width=True):
+        if st.button("💻 Code Repository", use_container_width=True):
             st.session_state.page = "💻 Code Repository"
-            st.rerun()
-    with action_col3:
-        if st.button("📈 View Analytics", use_container_width=True):
-            st.session_state.page = "📈 Analytics & Reports"
             st.rerun()
 
 # ============================================================================
@@ -641,35 +662,8 @@ elif page == "📈 Analytics & Reports":
         st.subheader("Replication Strategy")
         st.info("This exact system can be applied to MM, MCAD, and MMD using Global Scripts!")
 
-# ============================================================================
-# SIDEBAR QUICK LINKS (Always Visible)
-# ============================================================================
-st.sidebar.markdown("---")
-st.sidebar.header("Quick Links")
-
-st.sidebar.markdown("**🔗 LeadPages**")
-st.sidebar.markdown("[MFF Signup Flow](https://join.modefreefinds.com/mff-signup-affiliate/)")
-st.sidebar.markdown("[MM Signup Flow](https://signups.modemobile.com/mm-signup-affv1/)")
-
-st.sidebar.markdown("**💻 Code & Scripts**")
-st.sidebar.markdown("[Landing Page Scripts](https://github.com/brianlapp/mode/blob/main/global-scripts-ready-code.js)")
-st.sidebar.markdown("[Thank You Page Scripts](https://github.com/brianlapp/mode/blob/main/thankyou-global-scripts-ready.js)")
-
-st.sidebar.markdown("**🤖 AI & Optimization**")
-st.sidebar.markdown("[Revmatics.ai](https://revmatics.ai/)")
-st.sidebar.markdown("[Revmatics Demo](https://revmatics.ai/funnels)")
-
-st.sidebar.markdown("**📊 Tracking & Revenue**")
-st.sidebar.markdown("[Tune (HasOffers)](https://modemobile.go2cloud.org/)")
-st.sidebar.markdown("[Meta Business Manager](https://business.facebook.com/)")
-
-st.sidebar.markdown("**🌐 Properties**") 
-st.sidebar.markdown("[ModeFreeFinds.com](https://modefreefinds.com/)")
-st.sidebar.markdown("[ModeMarketMunchies.com](https://modemarketmunchies.com/)")
-st.sidebar.markdown("[ModeClassActionsDaily.com](https://modeclassactionsdaily.com/)")
-st.sidebar.markdown("[ModeMobileDaily.com](https://modemobiledaily.com/)")
-
 # Footer
 st.sidebar.markdown("---")
 st.sidebar.markdown("*Dashboard updated: 2025-01-27*")
 st.sidebar.markdown("**🚀 Multi-page dashboard with honest metrics!**")
+st.sidebar.markdown("**Navigation:** Always-visible buttons (no dropdown!)")
