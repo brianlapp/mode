@@ -379,14 +379,169 @@ elif page == "💻 Code Repository":
             if st.button("Copy Facebook SDK Code", key="copy_fb_landing"):
                 st.success("✅ Code copied! Paste into LeadPages Global Scripts")
         
-        # Continue with other sections...
-        st.info("💡 **More sections available in the actual code files.** Start with Tune SDK and Facebook SDK first!")
+        # Section 3: Smart Recognition
+        with st.expander("🟢 Section 3: Smart Recognition (LOW RISK)"):
+            st.markdown("**Purpose:** Additional tracking layer for enhanced attribution")
+            st.code("""
+(function initializeSmartRecognition() {
+    // Smart Recognition tracking system
+    var _avp = _avp || [];
+    (function() {
+        var s = document.createElement('script');
+        s.type = 'text/javascript'; 
+        s.async = true; 
+        s.src = 'https://portal.smartrecognition.com/js/libcode3.js';
+        var x = document.getElementsByTagName('script')[0];
+        x.parentNode.insertBefore(s, x);
+        
+        console.log('✅ Smart Recognition initialized');
+    })();
+})();
+            """, language="javascript")
+            
+            if st.button("Copy Smart Recognition Code", key="copy_smart_landing"):
+                st.success("✅ Code copied! Paste into LeadPages Global Scripts")
+
+        # Section 4: Mobile Navigation
+        with st.expander("🟡 Section 4: Mobile Navigation (MEDIUM RISK)"):
+            st.markdown("**Purpose:** Responsive navigation with hamburger menu")
+            st.code("""
+(function initializeMobileNavigation() {
+    function addNavigationHTML() {
+        const navHTML = `
+        <nav class="lp-custom-nav">
+            <div class="menu-toggle" id="mobileMenuToggle">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <ul class="menu-links" id="navLinks">
+                <li><a href="https://modefreefinds.com/" target="_blank" rel="noopener">Home</a></li>
+                <li><a href="https://helpdesk.modemobile.com/hc/en-us" target="_blank" rel="noopener">Contact Us</a></li>
+                <li><a href="https://modefreefinds.com/terms-of-service/" target="_blank" rel="noopener">T&Cs</a></li>
+                <li><a href="https://modefreefinds.com/privacy-policy-2/" target="_blank" rel="noopener">Privacy</a></li>
+            </ul>
+        </nav>`;
+        
+        // Insert navigation at top of body
+        document.body.insertAdjacentHTML('afterbegin', navHTML);
+        
+        // Add mobile toggle functionality
+        const toggleBtn = document.getElementById('mobileMenuToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        if (toggleBtn && navLinks) {
+            toggleBtn.addEventListener('click', function() {
+                navLinks.style.display = (navLinks.style.display === "none" || navLinks.style.display === "") ? "flex" : "none";
+            });
+        }
+        
+        console.log('✅ Mobile navigation initialized');
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', addNavigationHTML);
+    } else {
+        addNavigationHTML();
+    }
+})();
+            """, language="javascript")
+            
+            if st.button("Copy Mobile Navigation Code", key="copy_nav_landing"):
+                st.success("✅ Code copied! Note: Customize URLs for each property")
+
+        # Section 5: Form Enhancement
+        with st.expander("🔴 Section 5: Form Enhancement (HIGH RISK)"):
+            st.markdown("**Purpose:** Mike's genius placeholder-based form detection system")
+            st.warning("⚠️ This is the complex form logic - test thoroughly!")
+            st.code("""
+(function initializeFormEnhancement() {
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("📝 Form Enhancement Loading");
+
+        const form = document.querySelector("form");
+        if (!form) return console.error("❌ No form found.");
+
+        const originalThankYouURL = form.getAttribute("data-thank-you") || "";
+        const urlParams = new URLSearchParams(window.location.search);
+        const source = urlParams.get("source") || "";
+
+        // Mike's genius: Match by input type + placeholder
+        function getInput(placeholderText) {
+            return [...form.querySelectorAll("input")].find(input =>
+                (input.placeholder || "").toLowerCase().includes(placeholderText.toLowerCase())
+            );
+        }
+
+        form.addEventListener("submit", function () {
+            const email = getInput("email")?.value.trim() || "";
+            const firstName = getInput("first")?.value.trim() || "";
+            const lastName = getInput("last")?.value.trim() || "";
+            const phone = getInput("phone")?.value.trim() || "";
+
+            try {
+                const thankYouURL = new URL(originalThankYouURL);
+                if (email) thankYouURL.searchParams.set("email", email);
+                if (firstName) thankYouURL.searchParams.set("first_name", firstName);
+                if (lastName) thankYouURL.searchParams.set("last_name", lastName);
+                if (phone) thankYouURL.searchParams.set("phone", phone);
+                if (source) thankYouURL.searchParams.set("source", source);
+
+                form.setAttribute("data-thank-you", thankYouURL.toString());
+                console.log("🚀 Thank You URL updated:", thankYouURL.toString());
+            } catch (err) {
+                console.error("⚠ Failed to update thank-you URL:", err);
+            }
+        }, { once: true });
+    });
+})();
+            """, language="javascript")
+            
+            if st.button("Copy Form Enhancement Code", key="copy_form_landing"):
+                st.success("🔥 THE GENIUS SYSTEM copied! Test form submission carefully")
+
+        # Section 6: Meta Pixel
+        with st.expander("🔴 Section 6: Meta Pixel (HIGHEST RISK)"):
+            st.markdown("**Purpose:** Property-specific Facebook tracking")
+            st.error("⚠️ CRITICAL: Update Pixel ID for each property!")
+            st.code("""
+(function initializeMetaPixel() {
+    // ⚠️ IMPORTANT: Change pixel ID for each property
+    const PIXEL_ID = '1153754019617349'; // MFF Pixel - UPDATE FOR OTHER PROPERTIES
+    
+    // Meta Pixel implementation with error handling
+    !function(f,b,e,v,n,t,s) {
+        if(f.fbq) return; // Prevent double-loading
+        n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)
+    }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    
+    fbq('init', PIXEL_ID);
+    fbq('track', 'PageView');
+    
+    // Add noscript fallback
+    const noscript = document.createElement('noscript');
+    noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1"/>`;
+    document.head.appendChild(noscript);
+    
+    console.log('✅ Meta Pixel initialized:', PIXEL_ID);
+})();
+            """, language="javascript")
+            
+            if st.button("Copy Meta Pixel Code", key="copy_meta_landing"):
+                st.error("🚨 CRITICAL: Update PIXEL_ID before implementing!")
         
         # Link to full files
         st.markdown("---")
-        st.write("**Complete Code Files:**")
+        st.success("🎯 **ALL 6 LANDING PAGE SECTIONS READY!** Start with Sections 1-2 (lowest risk)")
+        st.markdown("**Complete Code Files:**")
         st.markdown("- [Full Landing Page Code](https://github.com/brianlapp/mode/blob/main/global-scripts-ready-code.js)")
-        st.markdown("- All 6 sections with detailed comments and implementation order")
+        st.markdown("- All sections with CSS and detailed implementation notes")
 
     with code_tab2:
         st.header("Thank You Page Global Scripts")
@@ -456,13 +611,217 @@ elif page == "💻 Code Repository":
             if st.button("Copy URL Injection Code", key="copy_url_thankyou"):
                 st.success("🔥 THE MONEY MAKER copied! This maintains revenue attribution on every click!")
         
-        st.info("💡 **More sections available in the actual code files.** The URL Injection section is the revenue core!")
+        # Section 3: Error Monitoring
+        with st.expander("🟢 Section 3: Error Monitoring (LOW RISK)"):
+            st.markdown("**Purpose:** Email.js system protection and error alerts")
+            st.code("""
+(function initializeErrorMonitoring() {
+    // Load Email.js library
+    const emailScript = document.createElement('script');
+    emailScript.src = 'https://cdn.emailjs.com/dist/email.min.js';
+    document.head.appendChild(emailScript);
+    
+    emailScript.onload = function() {
+        emailjs.init("service_twy8maf");
+        
+        // Global error alert function
+        window.sendErrorAlert = function({ fromName, message, pageUrl, errorType }) {
+            emailjs.send("service_twy8maf", "template_02ts48r", {
+                from_name: fromName,
+                message: message,
+                page_url: pageUrl,
+                error_type: errorType
+            }).then(() => {
+                console.log("📧 EmailJS alert sent!");
+            }).catch((err) => {
+                console.error("❌ EmailJS failed to send alert:", err);
+            });
+        };
+        
+        console.log('✅ Error monitoring initialized');
+    };
+})();
+            """, language="javascript")
+            
+            if st.button("Copy Error Monitoring Code", key="copy_error_thankyou"):
+                st.success("✅ Code copied! System protection ready")
+
+        # Section 4: Facebook SDK
+        with st.expander("🟡 Section 4: Facebook SDK (MEDIUM RISK)"):
+            st.markdown("**Purpose:** Social integration for Thank You page features")
+            st.code("""
+(function initializeFacebookSDKThankyou() {
+    function setupFacebookSDK() {
+        // Create fb-root div if it doesn't exist
+        if (!document.getElementById('fb-root')) {
+            const fbRoot = document.createElement('div');
+            fbRoot.id = 'fb-root';
+            document.body.insertBefore(fbRoot, document.body.firstChild);
+        }
+        
+        // Load Facebook SDK script
+        const fbScript = document.createElement('script');
+        fbScript.async = true;
+        fbScript.defer = true;
+        fbScript.crossOrigin = 'anonymous';
+        fbScript.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v22.0';
+        document.head.appendChild(fbScript);
+        
+        console.log('✅ Facebook SDK (Thank You) initialized');
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupFacebookSDK);
+    } else {
+        setupFacebookSDK();
+    }
+})();
+            """, language="javascript")
+            
+            if st.button("Copy Facebook SDK Code", key="copy_fb_thankyou"):
+                st.success("✅ Code copied! Social features ready")
+
+        # Section 5: Impression Pixel
+        with st.expander("🟡 Section 5: Impression Pixel (MEDIUM RISK)"):
+            st.markdown("**Purpose:** Affiliate tracking pixel with source injection")
+            st.code("""
+(function initializeImpressionPixel() {
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("📊 Impression Pixel Loading");
+        
+        // Parse source from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const sourceVal = urlParams.get('source') || '';
+        
+        // Create impression pixel (hidden)
+        const pixelContainer = document.createElement('div');
+        pixelContainer.style.display = 'none';
+        
+        const pixelImg = document.createElement('img');
+        pixelImg.id = 'mode-impression-pixel';
+        pixelImg.width = 0;
+        pixelImg.height = 0;
+        pixelImg.style.cssText = 'position:absolute;visibility:hidden;';
+        pixelImg.border = 0;
+        
+        // Build pixel URL with source injection
+        const baseUrl = 'https://track.modemobile.com/aff_i?offer_id=6571&aff_id=42946';
+        const finalUrl = `${baseUrl}&aff_sub2=${encodeURIComponent(sourceVal)}`;
+        
+        pixelImg.src = finalUrl;
+        pixelContainer.appendChild(pixelImg);
+        document.body.appendChild(pixelContainer);
+        
+        console.log('✅ Impression pixel fired:', finalUrl);
+    });
+})();
+            """, language="javascript")
+            
+            if st.button("Copy Impression Pixel Code", key="copy_pixel_thankyou"):
+                st.success("✅ Code copied! Affiliate tracking ready")
+
+        # Section 6: Mode UA API
+        with st.expander("🔴 Section 6: Mode UA API (HIGH RISK)"):
+            st.markdown("**Purpose:** CRM integration for email marketing")
+            st.warning("⚠️ Property-specific endpoints - customize for each property")
+            st.code("""
+(function initializeModeUAAPI() {
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("🧠 Mode UA API Integration Loading");
+
+        function sendToModeUA() {
+            const params = new URLSearchParams(window.location.search);
+            const email = params.get("email") || "";
+            const firstName = params.get("first_name") || "";
+            const lastName = params.get("last_name") || "";
+            const phone = params.get("phone") || "";
+            const source = params.get("source") || "";
+
+            if (!email) {
+                console.warn("⚠ No email in URL. Skipping Mode UA API.");
+                return;
+            }
+
+            // ⚠️ CUSTOMIZE: Update campaign name for each property
+            const apiUrl = `https://nodejs-serverless-connector.vercel.app/api/mode_ua_leadgen?action=add` +
+                `&email=${encodeURIComponent(email)}` +
+                `&lead_source=${encodeURIComponent("Leadpages")}` +
+                `&campaign=${encodeURIComponent("ModeFreeFinds")}` + // UPDATE THIS
+                `&country=${encodeURIComponent("United States")}` +
+                `&type=${encodeURIComponent("opt-in")}`;
+
+            console.log("📡 Sending Mode UA API:", apiUrl);
+
+            fetch(apiUrl)
+                .then(r => r.json())
+                .then(data => {
+                    if (data?.success) {
+                        console.log("✅ Mode UA API Success:", data);
+                    } else {
+                        console.warn("⚠ Mode UA API responded but failed:", data);
+                    }
+                })
+                .catch(err => {
+                    console.error("🚨 Mode UA API call failed:", err);
+                });
+        }
+
+        // Delayed execution for better performance
+        if ("requestIdleCallback" in window) {
+            requestIdleCallback(sendToModeUA, { timeout: 3000 });
+        } else {
+            setTimeout(sendToModeUA, 3000);
+        }
+    });
+})();
+            """, language="javascript")
+            
+            if st.button("Copy Mode UA API Code", key="copy_api_thankyou"):
+                st.warning("⚠️ Remember to update campaign name for each property!")
+
+        # Section 7: Meta Conversion
+        with st.expander("🔴 Section 7: Meta Conversion (HIGHEST RISK)"):
+            st.markdown("**Purpose:** Property-specific conversion tracking")
+            st.error("⚠️ CRITICAL: Update Pixel ID AND conversion event for each property!")
+            st.code("""
+(function initializeMetaConversion() {
+    // ⚠️ IMPORTANT: Change pixel ID for each property
+    const PIXEL_ID = '1153754019617349'; // MFF Pixel - UPDATE FOR OTHER PROPERTIES
+    
+    // Meta Pixel implementation with conversion tracking
+    !function(f,b,e,v,n,t,s) {
+        if(f.fbq) return; // Prevent double-loading
+        n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)
+    }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    
+    fbq('init', PIXEL_ID);
+    fbq('track', 'Lead'); // CONVERSION EVENT - not PageView
+    
+    // Add noscript fallback
+    const noscript = document.createElement('noscript');
+    noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${PIXEL_ID}&ev=Lead&noscript=1"/>`;
+    document.head.appendChild(noscript);
+    
+    console.log('✅ Meta conversion tracking initialized:', PIXEL_ID);
+})();
+            """, language="javascript")
+            
+            if st.button("Copy Meta Conversion Code", key="copy_meta_conv_thankyou"):
+                st.error("🚨 CRITICAL: Update PIXEL_ID and verify conversion event!")
         
         # Link to full files
         st.markdown("---")
-        st.write("**Complete Code Files:**")
+        st.success("🎯 **ALL 7 THANK YOU PAGE SECTIONS READY!** Start with Sections 1-2 (lowest risk)")
+        st.markdown("**Complete Code Files:**")
         st.markdown("- [Full Thank You Page Code](https://github.com/brianlapp/mode/blob/main/thankyou-global-scripts-ready.js)")
-        st.markdown("- All 7 sections including the complete revenue attribution system")
+        st.markdown("- All sections including the complete revenue attribution system")
+        st.markdown("- **THE MONEY MAKER:** Section 2 (URL Injection) is the revenue core!")
 
 # ============================================================================
 # PAGE 4: PROPERTY DEEP DIVE
