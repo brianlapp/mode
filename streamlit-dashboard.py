@@ -207,11 +207,11 @@ elif page == "🔧 Global Scripts Implementation":
     
     status_col1, status_col2, status_col3 = st.columns(3)
     with status_col1:
-        st.metric("Setup Time", "30 min", "vs 2-4 hours manual")
+        st.metric("Setup Process", "Add → Save → Done", "applies to ALL content")
     with status_col2:
-        st.metric("Maintenance", "1 update", "vs 4 separate updates") 
+        st.metric("Universal Coverage", "ALL assets", "landing pages, pop-ups, sites") 
     with status_col3:
-        st.metric("Error Reduction", "90% fewer", "centralized code")
+        st.metric("Implementation", "Copy-Paste Ready", "13 sections prepared")
 
     # Implementation Steps
     st.markdown("---")
@@ -220,33 +220,57 @@ elif page == "🔧 Global Scripts Implementation":
     tab1, tab2, tab3 = st.tabs(["🚀 Getting Started", "📄 Landing Pages", "🎯 Thank You Pages"])
     
     with tab1:
-        st.subheader("Phase 1: Test Global Scripts Feature")
+        st.subheader("🎯 LeadPages Global Scripts - Official Guide")
         
-        st.write("**Step 1: Access LeadPages Global Scripts**")
-        st.info("1. Log into LeadPages dashboard\n2. Find Global Scripts section (Settings > Scripts?)\n3. Test with simple script first")
+        st.success("**GREAT NEWS:** Global Scripts are exactly what we need for Mike's system!")
         
-        with st.expander("Test Script (Copy This First)"):
+        st.write("**Step 1: Access Global Scripts**")
+        st.info("✅ **CONFIRMED LOCATION:** Click 'Scripts' in your LeadPages account navigation menu")
+        
+        st.write("**Step 2: How Global Scripts Work**")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**✅ What They Do:**")
+            st.write("• Apply to ALL content automatically")
+            st.write("• Landing pages, pop-ups, sites, conversion tools")
+            st.write("• Apply to new AND existing content")
+            st.write("• Available on Pro and Advanced plans")
+        with col2:
+            st.markdown("**🎯 Perfect for Mike:**")
+            st.write("• Universal tracking across all properties")
+            st.write("• No more copy-paste errors")
+            st.write("• Instant deployment to everything")
+            st.write("• Can customize per asset if needed")
+        
+        st.write("**Step 3: Script Types Available**")
+        script_col1, script_col2 = st.columns(2)
+        with script_col1:
+            st.info("**Google Analytics 4:** Just enter your GA4 ID")
+        with script_col2:
+            st.info("**Custom Script:** Perfect for our Meta Pixel, Tune SDK, etc.")
+        
+        st.write("**Step 4: Implementation Strategy**")
+        st.success("**UNIVERSAL FIRST:** Start with scripts that work for all properties")
+        st.write("1. Add Tune SDK as Custom Script (universal)")
+        st.write("2. Add Facebook SDK as Custom Script (universal)")
+        st.write("3. Add Smart Recognition as Custom Script (universal)")
+        st.write("4. Use 'Manage Global Scripts' per asset for property-specific elements")
+        
+        st.write("**Step 5: Test Script (Optional)**")
+        with st.expander("Simple Test Script - Use if you want to verify first"):
             st.code("""
 console.log('🚀 Global Scripts Working!', window.location.hostname);
 console.log('✅ Test completed at:', new Date().toISOString());
             """, language="javascript")
             
-        st.write("**Step 2: Verify Test Script**")
-        st.warning("⚠️ Important: Make sure the test script logs appear in browser console before proceeding!")
-        
-        test_complete = st.checkbox("✅ Test script working correctly")
-        
-        if test_complete:
-            st.success("Great! Now you're ready to implement the actual sections.")
-            st.write("**Recommended Implementation Order:**")
-            st.write("1. Start with Tune SDK (lowest risk)")
-            st.write("2. Add Facebook SDK (universal)")  
-            st.write("3. Gradually add other sections")
-            st.write("4. Save Meta Pixel for last (property-specific)")
+        st.markdown("---")
+        st.success("🎯 **READY TO IMPLEMENT:** Our sections are perfectly designed for this system!")
 
     with tab2:
         st.subheader("Landing Page Global Scripts")
         st.write("**6 sections ready for implementation**")
+        
+        st.info("🎯 **STRATEGY:** Add universal sections as Global Scripts, customize property-specific per asset")
         
         landing_sections = [
             ("Tune SDK", "LOWEST", "Universal revenue attribution"),
@@ -271,6 +295,8 @@ console.log('✅ Test completed at:', new Date().toISOString());
     with tab3:
         st.subheader("Thank You Page Global Scripts")
         st.write("**7 sections ready for implementation - Complete revenue system**")
+        
+        st.success("🔥 **THE MONEY MAKER:** URL Injection section works universally - perfect for Global Scripts!")
         
         thankyou_sections = [
             ("Tune Conversion", "LOWEST", "Revenue attribution"),
