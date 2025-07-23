@@ -1377,60 +1377,55 @@ elif page == "🏢 Properties Portfolio":
         
         st.info("💡 **Custom Replacement Strategy:** These popup examples show the variety of offers Thanks.co rotates. Our custom Tune integration can replicate this diversity while keeping 100% revenue.")
         
-        # Interactive Demo Section
-        st.subheader("🎬 Interactive Popup Demo Concept")
+        # Interactive Demo Section  
+        st.subheader("🎬 Thanks.co Popup Visual Demo")
         
-        demo_tabs = st.tabs(["📱 Thanks.co Current", "🔧 Custom Concept", "📊 Comparison"])
+        st.info("💡 **Live Thanks.co Popup Screenshots:** These are the actual popup offers captured from Mike's Thank You page showing the 5-slide carousel system generating ~$75 RPM.")
+        
+        demo_tabs = st.tabs(["📱 Live Screenshots", "🔧 Custom Concept", "📊 Comparison"])
         
         with demo_tabs[0]:
-            st.markdown("**Current Thanks.co 5-Slide Carousel System:**")
+            st.markdown("**🎯 Actual Thanks.co Popup Screenshots Captured:**")
             
-            # Thanks.co carousel simulation
-            slide_option = st.selectbox(
-                "View Popup Slides:",
-                ["Slide 1: Sam's Club (36% off)", "Slide 2: TopCashback ($20)", "Slide 3: Capital One Shopping ($30)", "Slide 4: Kraken Crypto ($25)", "Slide 5: FreeShipping.com ($10)"]
-            )
+            # Show actual captured popup screenshot
+            st.image("https://service.firecrawl.dev/storage/v1/object/public/media/screenshot-bf2ee1ba-8bed-4078-96d4-b4c1c43992ba.png", 
+                     caption="📱 Thanks.co Popup on ModeFreeFinds Thank You Page", 
+                     width=400)
             
-            if "Sam's Club" in slide_option:
-                st.markdown("""
-                **Sam's Club Plus Membership**
-                - 🎯 36% off membership (Save $40)
-                - ✅ Free shipping, early shopping hours
-                - 💰 Earn 2% Sam's Cash back
-                - 👨‍👩‍👧‍👦 Family-focused imagery with products
-                """)
-            elif "TopCashback" in slide_option:
-                st.markdown("""
-                **TopCashback Platform**
-                - 🎯 $20 cashback on today's purchase
-                - ✅ 7000+ stores, highest rates
-                - 💰 Unbeatable cashback program
-                - 🏪 Major retailer logos (Walmart, Best Buy, Nike)
-                """)
-            elif "Capital One" in slide_option:
-                st.markdown("""
-                **Capital One Shopping Extension**
-                - 🎯 $30 bonus redemption
-                - ✅ Auto-apply coupons instantly
-                - 💰 Free browser extension
-                - 💻 Shopping comparison interface
-                """)
-            elif "Kraken" in slide_option:
-                st.markdown("""
-                **Kraken Crypto Platform**
-                - 🎯 $25 crypto bonus
-                - ✅ 325+ cryptocurrencies
-                - 💰 Deposit $100, get $25 bonus
-                - 🚀 15M+ users globally
-                """)
-            elif "FreeShipping" in slide_option:
-                st.markdown("""
-                **FreeShipping.com Platform**
-                - 🎯 $10 cash back today
-                - ✅ 10% cashback at 1000+ stores
-                - 💰 Free to join, instant claim
-                - 🛍️ Major retailer network
-                """)
+            st.markdown("""
+            **🎬 Live Popup Analysis:**
+            - **Current Offer:** Who Gives A Crap eco-friendly toilet paper (20% off)
+            - **Promotional Code:** ecosave20
+            - **Value Proposition:** "Better for earth, 50% profits to build toilets"
+            - **Visual Design:** Clean eco-friendly packaging imagery
+            - **CTA Button:** "Unlock offer" (white button, prominent)
+            - **Revenue Model:** Thanks.co takes commission, ~$75 RPM
+            """)
+            
+            st.success("✅ **Key Insight:** This popup shows sophisticated offer rotation system with branded imagery and clear value propositions. Mike's custom replacement can replicate this high-converting format while keeping 100% revenue.")
+            
+            # Show the technical implementation
+            with st.expander("🔧 View Thanks.co Technical Code"):
+                st.code("""
+// Mike's Thanks.co Implementation
+<div id="thanks-widget"></div>
+<script>
+  function getUrlParameter(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name) || '';
+  }
+  
+  const source = getUrlParameter('source');
+  const affSub = getUrlParameter('aff_sub');
+  const traceId = `${source}-${affSub}`.replace(/^-|-$/g, '').replace(/--+/g, '-');
+  
+  __thanks = {
+    partnerId: 'plat28b62ac9-0624-4c1a-bb09-2ef507ed',
+    traceId: traceId || 'default-traceid'
+  };
+</script>
+<script src="https://s.thanks.is/v1/widget.js" defer></script>
+                """, language="html")
         
         with demo_tabs[1]:
             st.markdown("**Custom Mode Popup with Tune CPL Inventory:**")
