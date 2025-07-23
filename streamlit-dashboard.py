@@ -41,7 +41,6 @@ st.markdown("""
 
 # Sidebar Navigation
 st.sidebar.image("img/logo.svg", width=200)
-st.sidebar.title("🚀 Mode Optimization")
 st.sidebar.markdown("---")
 
 # Always visible navigation buttons instead of dropdown
