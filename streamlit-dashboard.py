@@ -501,7 +501,9 @@ elif page == "📊 Property Deep Dive":
             
         st.subheader("Implementation Plan")
         if st.button("Start MM Global Scripts Setup"):
+            st.session_state.page = "🔧 Global Scripts Implementation"
             st.success("Ready to apply MFF's $0.45 CPL system to MM!")
+            st.rerun()
 
     with property_tabs[2]:
         st.header("ModeClassActionsDaily - Setup Plan")
@@ -521,7 +523,9 @@ elif page == "📊 Property Deep Dive":
             st.write(step)
             
         if st.button("Start MCAD Global Scripts Setup"):
+            st.session_state.page = "🔧 Global Scripts Implementation"
             st.success("Ready to build MCAD with proven foundation!")
+            st.rerun()
 
     with property_tabs[3]:
         st.header("ModeMobileDaily - Setup Plan") 
@@ -544,7 +548,9 @@ elif page == "📊 Property Deep Dive":
             st.write("• App user conversion focus")
             
         if st.button("Start MMD Global Scripts Setup"):
+            st.session_state.page = "🔧 Global Scripts Implementation"
             st.success("Ready to build MMD with proven foundation!")
+            st.rerun()
 
 # ============================================================================
 # PAGE 5: ANALYTICS & REPORTS  
