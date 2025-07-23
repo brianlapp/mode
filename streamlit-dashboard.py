@@ -252,9 +252,9 @@ console.log('✅ Test completed at:', new Date().toISOString());
             ("Tune SDK", "LOWEST", "Universal revenue attribution"),
             ("Facebook SDK", "LOW", "Social integration"),
             ("Smart Recognition", "LOW", "Additional tracking"),
-            ("Mobile Navigation", "MEDIUM", "UI enhancement"),
-            ("Form Enhancement", "HIGH", "Mike's genius system"),
-            ("Meta Pixel", "HIGHEST", "Property-specific IDs")
+            ("Mobile Navigation", "LOW", "UI enhancement - just adds nav bar"),
+            ("Form Enhancement", "MEDIUM", "Mike's proven system"),
+            ("Meta Pixel", "MEDIUM", "Just update the Pixel ID")
         ]
         
         for i, (name, risk, desc) in enumerate(landing_sections, 1):
@@ -276,10 +276,10 @@ console.log('✅ Test completed at:', new Date().toISOString());
             ("Tune Conversion", "LOWEST", "Revenue attribution"),
             ("URL Injection", "LOW", "Link monetization - THE MONEY MAKER"),
             ("Error Monitoring", "LOW", "System protection"),
-            ("Facebook SDK", "MEDIUM", "Social features"),
-            ("Impression Pixel", "MEDIUM", "Affiliate tracking"),
-            ("Mode UA API", "HIGH", "CRM integration"),
-            ("Meta Conversion", "HIGHEST", "Property-specific pixels")
+            ("Facebook SDK", "LOW", "Social features"),
+            ("Impression Pixel", "LOW", "Affiliate tracking"),
+            ("Mode UA API", "MEDIUM", "CRM integration - just update campaign name"),
+            ("Meta Conversion", "MEDIUM", "Just update Pixel ID")
         ]
         
         for i, (name, risk, desc) in enumerate(thankyou_sections, 1):
@@ -403,7 +403,7 @@ elif page == "💻 Code Repository":
                 st.success("✅ Code copied! Paste into LeadPages Global Scripts")
 
         # Section 4: Mobile Navigation
-        with st.expander("🟡 Section 4: Mobile Navigation (MEDIUM RISK)"):
+        with st.expander("🟢 Section 4: Mobile Navigation (LOW RISK)"):
             st.markdown("**Purpose:** Responsive navigation with hamburger menu")
             st.code("""
 (function initializeMobileNavigation() {
@@ -452,9 +452,9 @@ elif page == "💻 Code Repository":
                 st.success("✅ Code copied! Note: Customize URLs for each property")
 
         # Section 5: Form Enhancement
-        with st.expander("🔴 Section 5: Form Enhancement (HIGH RISK)"):
+        with st.expander("🟡 Section 5: Form Enhancement (MEDIUM RISK)"):
             st.markdown("**Purpose:** Mike's genius placeholder-based form detection system")
-            st.warning("⚠️ This is the complex form logic - test thoroughly!")
+            st.info("💡 This is Mike's proven system - already works on MFF!")
             st.code("""
 (function initializeFormEnhancement() {
     document.addEventListener("DOMContentLoaded", function () {
@@ -502,9 +502,9 @@ elif page == "💻 Code Repository":
                 st.success("🔥 THE GENIUS SYSTEM copied! Test form submission carefully")
 
         # Section 6: Meta Pixel
-        with st.expander("🔴 Section 6: Meta Pixel (HIGHEST RISK)"):
+        with st.expander("🟡 Section 6: Meta Pixel (MEDIUM RISK)"):
             st.markdown("**Purpose:** Property-specific Facebook tracking")
-            st.error("⚠️ CRITICAL: Update Pixel ID for each property!")
+            st.info("💡 Simple: Just update the Pixel ID for each property!")
             st.code("""
 (function initializeMetaPixel() {
     // ⚠️ IMPORTANT: Change pixel ID for each property
@@ -534,7 +534,7 @@ elif page == "💻 Code Repository":
             """, language="javascript")
             
             if st.button("Copy Meta Pixel Code", key="copy_meta_landing"):
-                st.error("🚨 CRITICAL: Update PIXEL_ID before implementing!")
+                st.info("💡 Remember: Update PIXEL_ID for each property")
         
         # Link to full files
         st.markdown("---")
@@ -647,7 +647,7 @@ elif page == "💻 Code Repository":
                 st.success("✅ Code copied! System protection ready")
 
         # Section 4: Facebook SDK
-        with st.expander("🟡 Section 4: Facebook SDK (MEDIUM RISK)"):
+        with st.expander("🟢 Section 4: Facebook SDK (LOW RISK)"):
             st.markdown("**Purpose:** Social integration for Thank You page features")
             st.code("""
 (function initializeFacebookSDKThankyou() {
@@ -683,7 +683,7 @@ elif page == "💻 Code Repository":
                 st.success("✅ Code copied! Social features ready")
 
         # Section 5: Impression Pixel
-        with st.expander("🟡 Section 5: Impression Pixel (MEDIUM RISK)"):
+        with st.expander("🟢 Section 5: Impression Pixel (LOW RISK)"):
             st.markdown("**Purpose:** Affiliate tracking pixel with source injection")
             st.code("""
 (function initializeImpressionPixel() {
@@ -722,9 +722,9 @@ elif page == "💻 Code Repository":
                 st.success("✅ Code copied! Affiliate tracking ready")
 
         # Section 6: Mode UA API
-        with st.expander("🔴 Section 6: Mode UA API (HIGH RISK)"):
+        with st.expander("🟡 Section 6: Mode UA API (MEDIUM RISK)"):
             st.markdown("**Purpose:** CRM integration for email marketing")
-            st.warning("⚠️ Property-specific endpoints - customize for each property")
+            st.info("💡 Simple: Just update the campaign name for each property")
             st.code("""
 (function initializeModeUAAPI() {
     document.addEventListener("DOMContentLoaded", function () {
@@ -778,12 +778,12 @@ elif page == "💻 Code Repository":
             """, language="javascript")
             
             if st.button("Copy Mode UA API Code", key="copy_api_thankyou"):
-                st.warning("⚠️ Remember to update campaign name for each property!")
+                st.info("💡 Remember to update campaign name for each property!")
 
         # Section 7: Meta Conversion
-        with st.expander("🔴 Section 7: Meta Conversion (HIGHEST RISK)"):
+        with st.expander("🟡 Section 7: Meta Conversion (MEDIUM RISK)"):
             st.markdown("**Purpose:** Property-specific conversion tracking")
-            st.error("⚠️ CRITICAL: Update Pixel ID AND conversion event for each property!")
+            st.info("💡 Simple: Just update the Pixel ID for each property!")
             st.code("""
 (function initializeMetaConversion() {
     // ⚠️ IMPORTANT: Change pixel ID for each property
@@ -813,7 +813,7 @@ elif page == "💻 Code Repository":
             """, language="javascript")
             
             if st.button("Copy Meta Conversion Code", key="copy_meta_conv_thankyou"):
-                st.error("🚨 CRITICAL: Update PIXEL_ID and verify conversion event!")
+                st.info("💡 Remember: Update PIXEL_ID for each property")
         
         # Link to full files
         st.markdown("---")
