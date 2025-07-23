@@ -393,6 +393,8 @@ with links_col2:
     st.markdown("*Complete revenue attribution system*")
     st.markdown("**[Revmatics.ai](https://revmatics.ai/)**")
     st.markdown("*AI-powered landing page optimization*")
+    st.markdown("**[Revmatics Demo Page](https://revmatics.ai/funnels)**")
+    st.markdown("*Mike's demo funnel - not live yet*")
 
 with links_col3:
     st.subheader("**Revenue & Tracking**")
