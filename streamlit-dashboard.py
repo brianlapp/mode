@@ -7,7 +7,7 @@ from pathlib import Path
 st.set_page_config(
     page_title="Mode Optimization Dashboard", 
     page_icon="🚀",
-    layout="wide"
+    layout="centered"
 )
 
 # Custom CSS
