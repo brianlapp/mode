@@ -97,7 +97,12 @@ if page == "🏠 Overview Dashboard":
     st.info("🔗 **Direct Links:** [Code Repository](https://modedash.streamlit.app/?page=code) | [Global Scripts Guide](https://modedash.streamlit.app/?page=global) | [Property Analysis](https://modedash.streamlit.app/?page=properties) | [Analytics](https://modedash.streamlit.app/?page=analytics)")
     
     # Today's Major Update
-    st.success("🚀 **TODAY'S BREAKTHROUGH:** Complete MFF $0.45 CPL system analyzed! Landing Page + Thank You Page code cleaned up and ready for Global Scripts implementation. 13 sections prepared for LeadPages.")
+    st.markdown("""
+    <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+        <h3 style="color: white; margin: 0;">🚀 TODAY'S BREAKTHROUGH</h3>
+        <p style="color: white; margin: 0.5rem 0 0 0;">Complete MFF $0.45 CPL system analyzed! Landing Page + Thank You Page code cleaned up and ready for Global Scripts implementation. 13 sections prepared for LeadPages.</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     # Property Status Cards
     st.header("Property Status Overview")
@@ -240,7 +245,11 @@ elif page == "🔧 Global Scripts Implementation":
     with tab1:
         st.subheader("🎯 LeadPages Global Scripts - Official Guide")
         
-        st.success("**GREAT NEWS:** Global Scripts are exactly what we need for Mike's system!")
+        st.markdown("""
+        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+            <h4 style="color: white; margin: 0;">🎯 GREAT NEWS: Global Scripts are exactly what we need for Mike's system!</h4>
+        </div>
+        """, unsafe_allow_html=True)
         
         st.write("**Step 1: Access Global Scripts**")
         st.info("✅ **CONFIRMED LOCATION:** Click 'Scripts' in your LeadPages account navigation menu")
@@ -268,7 +277,11 @@ elif page == "🔧 Global Scripts Implementation":
             st.info("**Custom Script:** Perfect for our Meta Pixel, Tune SDK, etc.")
         
         st.write("**Step 4: Implementation Strategy**")
-        st.success("**UNIVERSAL FIRST:** Start with scripts that work for all properties")
+        st.markdown("""
+        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+            <h4 style="color: white; margin: 0;">🎯 UNIVERSAL FIRST: Start with scripts that work for all properties</h4>
+        </div>
+        """, unsafe_allow_html=True)
         st.write("1. Add Tune SDK as Custom Script (universal)")
         st.write("2. Add Facebook SDK as Custom Script (universal)")
         st.write("3. Add Smart Recognition as Custom Script (universal)")
@@ -282,7 +295,11 @@ console.log('✅ Test completed at:', new Date().toISOString());
             """, language="javascript")
             
         st.markdown("---")
-        st.success("🎯 **READY TO IMPLEMENT:** Our sections are perfectly designed for this system!")
+        st.markdown("""
+        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+            <h4 style="color: white; margin: 0;">🎯 READY TO IMPLEMENT: Our sections are perfectly designed for this system!</h4>
+        </div>
+        """, unsafe_allow_html=True)
 
     with tab2:
         st.subheader("Landing Page Global Scripts")
@@ -314,7 +331,11 @@ console.log('✅ Test completed at:', new Date().toISOString());
         st.subheader("Thank You Page Global Scripts")
         st.write("**7 sections ready for implementation - Complete revenue system**")
         
-        st.success("🔥 **THE MONEY MAKER:** URL Injection section works universally - perfect for Global Scripts!")
+        st.markdown("""
+        <div style="background-color: #8a0ea3; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
+            <h4 style="color: white; margin: 0;">🔥 THE MONEY MAKER: URL Injection section works universally - perfect for Global Scripts!</h4>
+        </div>
+        """, unsafe_allow_html=True)
         
         thankyou_sections = [
             ("Tune Conversion", "LOWEST", "Revenue attribution"),
