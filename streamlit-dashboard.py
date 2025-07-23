@@ -43,13 +43,25 @@ st.markdown("""
 st.sidebar.title("🚀 Mode Optimization")
 st.sidebar.markdown("---")
 
-page = st.sidebar.selectbox("Navigate to:", [
-    "🏠 Overview Dashboard",
-    "🔧 Global Scripts Implementation", 
-    "💻 Code Repository",
-    "📊 Property Deep Dive",
-    "📈 Analytics & Reports"
-])
+# Always visible navigation buttons instead of dropdown
+st.sidebar.markdown("### 📋 Navigation")
+
+if st.sidebar.button("🏠 Overview Dashboard", use_container_width=True):
+    st.session_state.page = "🏠 Overview Dashboard"
+if st.sidebar.button("🔧 Global Scripts Implementation", use_container_width=True):
+    st.session_state.page = "🔧 Global Scripts Implementation"
+if st.sidebar.button("💻 Code Repository", use_container_width=True):
+    st.session_state.page = "💻 Code Repository"
+if st.sidebar.button("📊 Property Deep Dive", use_container_width=True):
+    st.session_state.page = "📊 Property Deep Dive"
+if st.sidebar.button("📈 Analytics & Reports", use_container_width=True):
+    st.session_state.page = "📈 Analytics & Reports"
+
+# Set default page if not already set
+if 'page' not in st.session_state:
+    st.session_state.page = "🏠 Overview Dashboard"
+
+page = st.session_state.page
 
 # Load project data
 try:
@@ -86,7 +98,8 @@ if page == "🏠 Overview Dashboard":
         st.text("List: 1.5M subscribers")
         
         if st.button("View MFF Details", key="mff_details"):
-            st.sidebar.selectbox("Navigate to:", ["📊 Property Deep Dive"], key="nav_mff")
+            st.session_state.page = "📊 Property Deep Dive"
+            st.rerun()
     
     with col2:
         st.image("https://lh3.googleusercontent.com/lt64vW20ku4h6VAEOduskIyi9yv8tg5WHZX8vU9znMdwQAaLpNOQWbJqLA1F_cP4NA8WC4GqD3GoyoLPqXqpvK6FC81KHiuO3Yc=w1064", width=150)
@@ -102,7 +115,8 @@ if page == "🏠 Overview Dashboard":
             st.metric("CPL", "$5-10", "-$3.00 loss")
             
         if st.button("View MM Optimization Plan", key="mm_details"):
-            st.sidebar.selectbox("Navigate to:", ["🔧 Global Scripts Implementation"], key="nav_mm")
+            st.session_state.page = "🔧 Global Scripts Implementation"
+            st.rerun()
 
     # Row 2: MCAD and MMD
     st.markdown("<br>", unsafe_allow_html=True)
@@ -115,7 +129,8 @@ if page == "🏠 Overview Dashboard":
         st.text("Email List: 1M subscribers")
         
         if st.button("Start MCAD Setup", key="mcad_setup"):
-            st.sidebar.selectbox("Navigate to:", ["🔧 Global Scripts Implementation"], key="nav_mcad")
+            st.session_state.page = "🔧 Global Scripts Implementation"
+            st.rerun()
     
     with col4:
         st.image("https://lh3.googleusercontent.com/XzqC7HgTD_cnRWr8kfEJ0x1cVtmJAW8h9IkJ7NTsT_tDH3vZxVbQzd8p5rXs9eNkAhGsF5cWjU=w1064", width=150)
@@ -124,7 +139,8 @@ if page == "🏠 Overview Dashboard":
         st.text("Daily Active: 50k users")
         
         if st.button("Start MMD Setup", key="mmd_setup"):
-            st.sidebar.selectbox("Navigate to:", ["🔧 Global Scripts Implementation"], key="nav_mmd")
+            st.session_state.page = "🔧 Global Scripts Implementation"
+            st.rerun()
 
     # Quick Stats Overview
     st.markdown("---")
@@ -147,13 +163,16 @@ if page == "🏠 Overview Dashboard":
     action_col1, action_col2, action_col3 = st.columns(3)
     with action_col1:
         if st.button("🔧 Start Global Scripts", use_container_width=True):
-            st.sidebar.selectbox("Navigate to:", ["🔧 Global Scripts Implementation"], key="nav_global")
+            st.session_state.page = "🔧 Global Scripts Implementation"
+            st.rerun()
     with action_col2:
         if st.button("💻 View Clean Code", use_container_width=True):
-            st.sidebar.selectbox("Navigate to:", ["💻 Code Repository"], key="nav_code")
+            st.session_state.page = "💻 Code Repository"
+            st.rerun()
     with action_col3:
         if st.button("📈 View Analytics", use_container_width=True):
-            st.sidebar.selectbox("Navigate to:", ["📈 Analytics & Reports"], key="nav_analytics")
+            st.session_state.page = "📈 Analytics & Reports"
+            st.rerun()
 
 # ============================================================================
 # PAGE 2: GLOBAL SCRIPTS IMPLEMENTATION
