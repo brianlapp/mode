@@ -1353,29 +1353,7 @@ elif page == "🏢 Properties Portfolio":
     with property_tabs[4]:
         st.subheader("🎁 Thanks.co Popup Analysis - Custom Replacement Insights")
         
-        st.markdown("**Current Thanks.co Offer Rotation (Captured via Mobile Audit):**")
-        
-        popup_col1, popup_col2 = st.columns(2)
-        
-        with popup_col1:
-            st.markdown("""
-            **Sam's Club Membership Offer:**
-            - 36% off Sam's Club Plus membership
-            - Save $40 (normally $110)
-            - Benefits: Free shipping, early hours, 2% cash back
-            - Family-focused imagery with Sam's Club products
-            """)
-        
-        with popup_col2:
-            st.markdown("""
-            **Who Gives A Crap Eco Offer:**
-            - 20% off bamboo toilet paper (code: ecosave20)
-            - Eco-friendly positioning
-            - Benefits: Better for earth, 50% profits to build toilets
-            - Clean, environmental packaging imagery
-            """)
-        
-        st.info("💡 **Custom Replacement Strategy:** These popup examples show the variety of offers Thanks.co rotates. Our custom Tune integration can replicate this diversity while keeping 100% revenue.")
+
         
         # Interactive Demo Section  
         st.subheader("🎬 Thanks.co Popup Visual Demo")
