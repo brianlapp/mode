@@ -58,6 +58,10 @@ if st.sidebar.button("💻 Code Repository", use_container_width=True):
     st.session_state.page = "💻 Code Repository"
     st.query_params.clear()  # Clear URL parameters
     st.rerun()
+if st.sidebar.button("🏢 Properties Portfolio", use_container_width=True):
+    st.session_state.page = "🏢 Properties Portfolio"
+    st.query_params.clear()  # Clear URL parameters
+    st.rerun()
 if st.sidebar.button("📊 Property Deep Dive", use_container_width=True):
     st.session_state.page = "📊 Property Deep Dive"
     st.query_params.clear()  # Clear URL parameters
@@ -79,6 +83,8 @@ if "page" in query_params:
         st.session_state.page = "📈 Analytics & Reports"
     elif page_param == "properties":
         st.session_state.page = "📊 Property Deep Dive"
+    elif page_param == "portfolio":
+        st.session_state.page = "🏢 Properties Portfolio"
 
 # Set default page if not already set
 if 'page' not in st.session_state:
@@ -97,135 +103,152 @@ except:
 properties = data.get('properties', {})
 
 # ============================================================================
-# PAGE 1: OVERVIEW DASHBOARD
+# PAGE 1: OVERVIEW DASHBOARD - CLEAN LANDING PAGE
 # ============================================================================
 if page == "🏠 Overview Dashboard":
     st.title("🎯 Mode Properties Optimization Dashboard")
-    st.markdown("**Real-time tracking and optimization for 4 Mode properties**")
+    st.markdown("**Complete portfolio analysis, mobile optimization, and revenue tracking for Mike's 4 Mode properties**")
     
-    # Quick Direct Links
-    st.info("🔗 **Direct Links:** [Code Repository](https://modedash.streamlit.app/?page=code) | [Global Scripts Guide](https://modedash.streamlit.app/?page=global) | [Property Analysis](https://modedash.streamlit.app/?page=properties) | [Analytics](https://modedash.streamlit.app/?page=analytics)")
+    # Quick Navigation Cards
+    st.header("🗂️ Dashboard Sections")
     
-    # Today's Major Update
-    st.markdown("""
-    <div style="background-color: #F7007C; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;">
-        <h3 style="color: white; margin: 0;">🚀 TODAY'S BREAKTHROUGH</h3>
-        <p style="color: white; margin: 0.5rem 0 0 0;">Complete MFF $0.45 CPL system analyzed! Landing Page + Thank You Page code cleaned up and ready for Global Scripts implementation. 13 sections prepared for LeadPages.</p>
-    </div>
-    """, unsafe_allow_html=True)
+    nav_col1, nav_col2, nav_col3 = st.columns(3)
     
-    # Property Status Cards
-    st.header("Property Status Overview")
-    
-    # Row 1: MFF and MM
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.image("https://lh3.googleusercontent.com/hOi8rYWOfLYZQ0YjqAJlRLw-NRsDd3_s1YAp6XkUTwV4d2C5W1opPn4E1gSFlrlAXZaF3bTUl8vKuXkgNgf1kfFXrQmDzZRlS4I=w383", width=150)
+    with nav_col1:
+        st.markdown("""
+        <div style="background-color: #2c3e50; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #28a745;">
+            <h4 style="margin-top: 0; color: white;">🏢 Properties Portfolio</h4>
+            <p style="color: #ecf0f1;">Complete visual audit with mobile screenshots, logos, and optimization strategies for all 4 Mode properties.</p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        mff = properties.get('mode_free_finds', {})
-        st.metric("ModeFreeFinds (MFF)", "$0.45 CPL", "⚠️ Breaking Even")
-        st.text("Revenue: $40k/month")
-        st.text("List: 1.5M subscribers")
-        
-        if st.button("View MFF Details", key="mff_details"):
-            st.session_state.page = "📊 Property Deep Dive"
+        if st.button("📱 View Properties Portfolio", use_container_width=True, key="nav_properties"):
+            st.session_state.page = "🏢 Properties Portfolio"
             st.rerun()
     
-    with col2:
-        st.image("https://lh3.googleusercontent.com/lt64vW20ku4h6VAEOduskIyi9yv8tg5WHZX8vU9znMdwQAaLpNOQWbJqLA1F_cP4NA8WC4GqD3GoyoLPqXqpvK6FC81KHiuO3Yc=w1064", width=150)
+    with nav_col2:
+        st.markdown("""
+        <div style="background-color: #2c3e50; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #007bff;">
+            <h4 style="margin-top: 0; color: white;">🔧 Global Scripts</h4>
+            <p style="color: #ecf0f1;">LeadPages implementation guide with Mike's optimized tracking code ready for deployment.</p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        st.metric("ModeMarketMunchies (MM)", "TRAFFIC SPLIT", "See analysis →")
-        
-        traffic_col1, traffic_col2 = st.columns(2)
-        with traffic_col1:
-            st.success("🔥 **AFFILIATE**")
-            st.metric("CPL", "$1.50", "+$3.00 profit")
-        with traffic_col2:
-            st.error("💸 **META**")
-            st.metric("CPL", "$5-10", "-$3.00 loss")
-            
-        if st.button("View MM Optimization Plan", key="mm_details"):
+        if st.button("⚙️ Global Scripts Setup", use_container_width=True, key="nav_global"):
             st.session_state.page = "🔧 Global Scripts Implementation"
+            st.rerun()
+    
+    with nav_col3:
+        st.markdown("""
+        <div style="background-color: #2c3e50; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #ffc107;">
+            <h4 style="margin-top: 0; color: white;">💻 Code Repository</h4>
+            <p style="color: #ecf0f1;">All optimization code, scripts, and technical implementations organized by property and function.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("📋 Access Code Repository", use_container_width=True, key="nav_code"):
+            st.session_state.page = "💻 Code Repository"
             st.rerun()
 
-    # Row 2: MCAD and MMD
-    st.markdown("<br>", unsafe_allow_html=True)
-    col3, col4 = st.columns(2)
-    
-    with col3:
-        st.image("https://lh3.googleusercontent.com/rQ-Q5aDwP1Kdu2DInxW7Tos-_xGcz6cMkYKAhdfJQhCJGqVBKBF7gzGrfzHUcGJ7J_m9QbzqK-wnxP1lRB4gQE4zyPQ7Hb5i7w=w1064", width=150)
-        
-        st.metric("ModeClassActionsDaily", "SETUP NEEDED", "No flows built yet")
-        st.text("Email List: 1M subscribers")
-        
-        if st.button("Start MCAD Setup", key="mcad_setup"):
-            st.session_state.page = "🔧 Global Scripts Implementation"
-            st.rerun()
-    
-    with col4:
-        st.image("https://lh3.googleusercontent.com/XzqC7HgTD_cnRWr8kfEJ0x1cVtmJAW8h9IkJ7NTsT_tDH3vZxVbQzd8p5rXs9eNkAhGsF5cWjU=w1064", width=150)
-        
-        st.metric("ModeMobileDaily", "SETUP NEEDED", "No flows built yet")
-        st.text("Daily Active: 50k users")
-        
-        if st.button("Start MMD Setup", key="mmd_setup"):
-            st.session_state.page = "🔧 Global Scripts Implementation"
-            st.rerun()
-
-    # Quick Stats Overview
+    # Quick Stats
     st.markdown("---")
-    st.header("Quick Stats")
+    st.header("📊 Portfolio Snapshot")
     
-    stat_col1, stat_col2, stat_col3, stat_col4 = st.columns(4)
-    with stat_col1:
-        st.metric("Total Email Subscribers", "3.45M", "Across all properties")
-    with stat_col2:
-        st.metric("Revenue Generating", "2/4", "MFF + MM affiliate traffic")
-    with stat_col3:
-        st.metric("Global Scripts Ready", "13 Sections", "Landing + Thank You pages")
-    with stat_col4:
-        st.metric("Optimization Target", "$1M+/month", "Meta scaling potential")
+    snapshot_col1, snapshot_col2, snapshot_col3, snapshot_col4 = st.columns(4)
+    
+    with snapshot_col1:
+        st.metric(
+            label="🟢 Active Revenue",
+            value="$25k-$35k",
+            delta="ModeFreeFinds monthly"
+        )
+    
+    with snapshot_col2:
+        st.metric(
+            label="📱 Properties Audited",
+            value="4/4",
+            delta="Mobile screenshots captured"
+        )
+    
+    with snapshot_col3:
+        st.metric(
+            label="🎯 Optimization Target",
+            value="$80k-$130k",
+            delta="Full portfolio potential"
+        )
+    
+    with snapshot_col4:
+        st.metric(
+            label="⚡ Revenue Boost",
+            value="+$6k-$13k",
+            delta="Prebid.js opportunity"
+        )
 
-    # Quick Links
+    # Key Insights
     st.markdown("---")
-    st.header("🔗 Quick Links")
+    st.header("🔍 Key Insights")
+    
+    insight_col1, insight_col2 = st.columns(2)
+    
+    with insight_col1:
+        st.markdown("**🎁 Thanks.co Analysis Complete**")
+        st.info("5-slide popup carousel analyzed with custom replacement strategy developed. Potential for 100% revenue retention vs current commission model.")
+        
+        st.markdown("**📱 Mobile Optimization Ready**")
+        st.success("All properties captured via mobile screenshots. Visual insights documented for conversion optimization.")
+    
+    with insight_col2:
+        st.markdown("**💰 Revenue Opportunities Identified**")
+        st.warning("Prebid.js implementation could boost ModeFreeFinds RPM from $12 to $18-$25, adding $6k-$13k monthly.")
+        
+        st.markdown("**🚀 Portfolio Scaling Path**")
+        st.info("ModeMarketMunchies ready for monetization. MMD and MCAD have content frameworks prepared for launch.")
+
+    # External Links
+    st.markdown("---")
+    st.header("🔗 External Resources")
     
     link_col1, link_col2, link_col3 = st.columns(3)
     
     with link_col1:
-        st.subheader("🔗 LeadPages")
-        st.markdown("[MFF Signup Flow](https://join.modefreefinds.com/mff-signup-affiliate/)")
-        st.markdown("[MM Signup Flow](https://signups.modemobile.com/mm-signup-affv1/)")
-        
-        st.subheader("🌐 Properties") 
-        st.markdown("[ModeFreeFinds.com](https://modefreefinds.com/)")
-        st.markdown("[ModeMarketMunchies.com](https://modemarketmunchies.com/)")
-        st.markdown("[ModeClassActionsDaily.com](https://modeclassactionsdaily.com/)")
-        st.markdown("[ModeMobileDaily.com](https://modemobiledaily.com/)")
+        st.markdown("**🌐 Live Properties**")
+        st.markdown("- [ModeFreeFinds.com](https://modefreefinds.com/)")
+        st.markdown("- [ModeMarketMunchies.com](https://modemarketmunchies.com/)")
+        st.markdown("- [ModeMobileDaily.com](https://modemobiledaily.com/)")
+        st.markdown("- [ModeClassActionsDaily.com](https://modeclassactionsdaily.com/)")
 
     with link_col2:
-        st.subheader("💻 Code & Scripts")
-        st.markdown("[📋 **Dashboard Code Repository**](https://modedash.streamlit.app/?page=code)")
-        st.markdown("[🔧 **Global Scripts Guide**](https://modedash.streamlit.app/?page=global)")
-        st.markdown("[Landing Page Scripts (GitHub)](https://github.com/brianlapp/mode/blob/main/global-scripts-ready-code.js)")
-        st.markdown("[Thank You Page Scripts (GitHub)](https://github.com/brianlapp/mode/blob/main/thankyou-global-scripts-ready.js)")
-        
-        st.subheader("🤖 AI & Optimization")
-        st.markdown("[Revmatics.ai](https://revmatics.ai/)")
-        st.markdown("[Revmatics Demo](https://revmatics.ai/funnels)")
-        
+        st.markdown("**📊 Tracking & Analytics**")
+        st.markdown("- [Tune (HasOffers)](https://modemobile.go2cloud.org/)")
+        st.markdown("- [Meta Business Manager](https://business.facebook.com/)")
+        st.markdown("- [Revmatics.ai](https://revmatics.ai/)")
+
     with link_col3:
-        st.subheader("📊 Tracking & Revenue")
-        st.markdown("[Tune (HasOffers)](https://modemobile.go2cloud.org/)")
-        st.markdown("[Meta Business Manager](https://business.facebook.com/)")
-        
-        st.subheader("🚀 Navigation Shortcuts")
-        if st.button("🔧 Global Scripts Implementation", use_container_width=True):
-            st.session_state.page = "🔧 Global Scripts Implementation"
+        st.markdown("**💻 Development Resources**")
+        st.markdown("- [GitHub Repository](https://github.com/brianlapp/mode)")
+        st.markdown("- [Direct Dashboard Links](https://modedash.streamlit.app/)")
+        st.markdown("- [Support Documentation](https://helpdesk.modemobile.com/)")
+
+    # Quick Actions
+    st.markdown("---")
+    st.header("⚡ Quick Actions")
+    
+    action_col1, action_col2, action_col3 = st.columns(3)
+    
+    with action_col1:
+        if st.button("🎬 View Thanks.co Demo", use_container_width=True):
+            st.session_state.page = "🏢 Properties Portfolio"
+            # You could add URL params here to jump directly to Thanks.co tab
             st.rerun()
-        if st.button("💻 Code Repository", use_container_width=True):
-            st.session_state.page = "💻 Code Repository"
+    
+    with action_col2:
+        if st.button("📈 Check Property Analytics", use_container_width=True):
+            st.session_state.page = "📈 Analytics & Reports"
+            st.rerun()
+    
+    with action_col3:
+        if st.button("🔧 Start Property Setup", use_container_width=True):
+            st.session_state.page = "📊 Property Deep Dive"
             st.rerun()
 
 # ============================================================================
@@ -1105,6 +1128,535 @@ elif page == "📈 Analytics & Reports":
         
         st.subheader("Replication Strategy")
         st.info("This exact system can be applied to MM, MCAD, and MMD using Global Scripts!")
+
+# ============================================================================
+# PAGE 6: PROPERTIES PORTFOLIO
+# ============================================================================
+elif page == "🏢 Properties Portfolio":
+    st.header("🏢 Mode Properties Portfolio")
+    st.markdown("Complete overview of all Mode properties with revenue models, optimization opportunities, and development status")
+    st.markdown("---")
+    
+    # Portfolio Overview
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric(
+            label="📊 Total Properties",
+            value="4",
+            delta="Live: 1, Launched: 1, Development: 2"
+        )
+    
+    with col2:
+        st.metric(
+            label="💰 Monthly Revenue",
+            value="$25k-$35k",
+            delta="ModeFreeFinds only"
+        )
+    
+    with col3:
+        st.metric(
+            label="👀 Monthly Pageviews",
+            value="1M+",
+            delta="ModeFreeFinds traffic"
+        )
+    
+    with col4:
+        st.metric(
+            label="🎯 RPM Potential",
+            value="$18-$25",
+            delta="vs current $12 (Prebid.js)"
+        )
+    
+    st.markdown("---")
+    
+    # Property Tabs Organization
+    property_tabs = st.tabs(["🟢 ModeFreeFinds", "🟡 ModeMarketMunchies", "🔴 ModeMobileDaily", "🔴 ModeClassActionsDaily", "�� Thanks.co Analysis", "🚀 Portfolio Overview"])
+    
+    # Tab 1: ModeFreeFinds - Flagship Revenue Property
+    with property_tabs[0]:
+        st.subheader("🟢 ModeFreeFinds.com - Active Revenue Generator")
+        
+        # Mobile screenshot
+        st.image("https://service.firecrawl.dev/storage/v1/object/public/media/screenshot-0a7816aa-1b1a-4781-ac06-385c92c7d392.png", 
+                 caption="📱 ModeFreeFinds Mobile Landing Page", width=300)
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.markdown("""
+            **🎯 Business Model:** Free Stuff Content Site  
+            **📊 Traffic:** 1M pageviews per month  
+            **💰 Revenue:** $25k-$35k monthly  
+            **🔗 URL:** [ModeFreeFinds.com](https://modefreefinds.com)
+            
+            **📱 Mobile Visual Insights:**
+            - Daily content posts with professional graphics
+            - Engaging headlines ("Cool Off with a Free Root Beer Float")
+            - Facebook social proof integration
+            - Clean mobile-optimized content feed
+            """)
+            
+            st.markdown("**Revenue Streams:**")
+            revenue_col1, revenue_col2 = st.columns(2)
+            
+            with revenue_col1:
+                st.markdown("""
+                **💻 Programmatic Ads (Ezoic)**
+                - RPM: ~$12 (weak performance)
+                - Opportunity: Prebid.js integration
+                - Target: $18-$25 RPM
+                """)
+            
+            with revenue_col2:
+                st.markdown("""
+                **🎁 Thanks.co Popup**
+                - RPM: ~$75 (excellent)
+                - Placement: Content/blog posts
+                - Opportunity: Custom Tune integration
+                """)
+        
+        with col2:
+            st.success("**Status: LIVE & PROFITABLE**")
+            st.markdown("**Priority Optimizations:**")
+            st.markdown("- ⚡ Prebid.js for programmatic")
+            st.markdown("- 🔧 Custom Tune popup")
+            st.markdown("- 📈 Revenue potential: +$6k-$13k")
+            
+            if st.button("Analyze ModeFreeFinds", key="mff_analyze"):
+                st.info("🔍 Full optimization analysis available in Property Deep Dive section")
+    
+    # Tab 2: ModeMarketMunchies - Recently Launched
+    with property_tabs[1]:
+        st.subheader("🟡 ModeMarketMunchies.com - Recently Launched")
+        
+        # Mobile screenshot and logo
+        col_img1, col_img2 = st.columns(2)
+        with col_img1:
+            st.image("https://service.firecrawl.dev/storage/v1/object/public/media/screenshot-7c9f0495-1873-43d5-b051-e6b193b2254e.png", 
+                     caption="📱 ModeMarketMunchies Mobile", width=250)
+        with col_img2:
+            st.image("https://modemarketmunchies.com/wp-content/uploads/2025/04/market-munchies-logo-1.webp", 
+                     caption="🏷️ MMM Logo", width=200)
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.markdown("""
+            **🎯 Business Model:** Finance Content Site  
+            **📊 Traffic:** Building audience  
+            **💰 Revenue:** No ads set up yet  
+            **🔗 URL:** [ModeMarketMunchies.com](https://modemarketmunchies.com)
+            
+            **📱 Mobile Visual Insights:**
+            - Professional financial content with real-time ticker
+            - Crypto analysis and market news focus
+            - Clean blue/red financial theme
+            - Newsletter signup ready in footer
+            """)
+            
+            st.markdown("**Implementation Strategy:**")
+            st.markdown("""
+            - 📋 Apply MFF revenue model template
+            - 🎯 Target: Finance-focused affiliate offers
+            - 💻 Programmatic + Custom popup strategy
+            - 📈 Expected timeline: 2-3 months to revenue
+            """)
+        
+        with col2:
+            st.warning("**Status: LAUNCHED, NO MONETIZATION**")
+            st.markdown("**Next Actions:**")
+            st.markdown("- 🔧 Global Scripts implementation")
+            st.markdown("- 📊 Traffic analysis & growth")
+            st.markdown("- 💰 Revenue stream activation")
+            
+            if st.button("Plan MMM Setup", key="mmm_plan"):
+                st.info("📋 MMM follows MFF proven playbook - Global Scripts ready for deployment")
+    
+    # Tab 3: ModeMobileDaily - Development Stage
+    with property_tabs[2]:
+        st.subheader("🔴 ModeMobileDaily.com - Development Stage")
+        
+        # Mobile screenshot and logo
+        col_img1, col_img2 = st.columns(2)
+        with col_img1:
+            st.image("https://service.firecrawl.dev/storage/v1/object/public/media/screenshot-84e981c0-206b-4370-83a1-f2b2e5540d90.png", 
+                     caption="📱 ModeMobileDaily Mobile", width=250)
+        with col_img2:
+            st.image("https://modemobiledaily.com/wp-content/uploads/2025/06/cropped-Daily-2a.png", 
+                     caption="🏷️ MMD Logo", width=200)
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.markdown("""
+            **🎯 Business Model:** Viral News/Breaking News Site  
+            **📊 Traffic:** Limited content (June 2025)  
+            **💰 Revenue:** Development phase  
+            **🔗 URL:** [ModeMobileDaily.com](https://modemobiledaily.com)
+            
+            **📱 Mobile Visual Insights:**
+            - Viral content format perfect for mobile sharing
+            - Quizzes, entertainment, trending topics
+            - Engaging headlines ("22 Weird Animal Facts")
+            - Modern blue/white theme optimized for viral content
+            """)
+            
+            st.markdown("**Development Plan:**")
+            st.markdown("""
+            - 📝 Content strategy & automation
+            - 📱 Mobile-first viral news format
+            - ⚡ High-velocity content publishing
+            - 🎯 Target: News affiliate offers + programmatic
+            """)
+        
+        with col2:
+            st.error("**Status: DEVELOPMENT STAGE**")
+            st.markdown("**Timeline:**")
+            st.markdown("- 📅 Content: 2-4 weeks")
+            st.markdown("- 🚀 Launch: 1-2 months")
+            st.markdown("- 💰 Revenue: 3-4 months")
+            
+            if st.button("MMD Development Plan", key="mmd_plan"):
+                st.info("📱 Viral news strategy requires content automation + rapid publishing system")
+    
+    # Tab 4: ModeClassActionsDaily - Development Stage
+    with property_tabs[3]:
+        st.subheader("🔴 ModeClassActionsDaily.com - Development Stage")
+        
+        # Mobile screenshot and logo
+        col_img1, col_img2 = st.columns(2)
+        with col_img1:
+            st.image("https://service.firecrawl.dev/storage/v1/object/public/media/screenshot-f7d2b138-0af0-4778-ab6e-b208a2cd45f1.png", 
+                     caption="📱 ModeClassActionsDaily Mobile", width=250)
+        with col_img2:
+            st.image("https://modeclassactionsdaily.com/wp-content/uploads/2025/04/class-actions-logo.png", 
+                     caption="🏷️ MCAD Logo", width=200)
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.markdown("""
+            **🎯 Business Model:** Consumer Class Action Awareness Content Site  
+            **📊 Traffic:** No content yet  
+            **💰 Revenue:** Development phase  
+            **🔗 URL:** [ModeClassActionsDaily.com](https://modeclassactionsdaily.com)
+            
+            **📱 Mobile Visual Insights:**
+            - Professional legal authority positioning
+            - Clean, authoritative design theme
+            - Framework ready for class action content
+            - Navigation structured for legal content organization
+            """)
+            
+            st.markdown("**Development Plan:**")
+            st.markdown("""
+            - ⚖️ Legal content & class action notifications
+            - 🎯 Consumer awareness & participation
+            - 💰 Legal affiliate offers + programmatic
+            - 📈 High-value niche with engaged audience
+            """)
+        
+        with col2:
+            st.error("**Status: DEVELOPMENT STAGE**")
+            st.markdown("**Timeline:**")
+            st.markdown("- 📅 Content: 2-4 weeks")
+            st.markdown("- 🚀 Launch: 1-2 months")
+            st.markdown("- 💰 Revenue: 3-4 months")
+            
+            if st.button("MCAD Development Plan", key="mcad_plan"):
+                st.info("⚖️ Class action niche has high engagement + legal affiliate opportunities")
+    
+    # Tab 5: Thanks.co Analysis
+    with property_tabs[4]:
+        st.subheader("🎁 Thanks.co Popup Analysis - Custom Replacement Insights")
+        
+        st.markdown("**Current Thanks.co Offer Rotation (Captured via Mobile Audit):**")
+        
+        popup_col1, popup_col2 = st.columns(2)
+        
+        with popup_col1:
+            st.markdown("""
+            **Sam's Club Membership Offer:**
+            - 36% off Sam's Club Plus membership
+            - Save $40 (normally $110)
+            - Benefits: Free shipping, early hours, 2% cash back
+            - Family-focused imagery with Sam's Club products
+            """)
+        
+        with popup_col2:
+            st.markdown("""
+            **Who Gives A Crap Eco Offer:**
+            - 20% off bamboo toilet paper (code: ecosave20)
+            - Eco-friendly positioning
+            - Benefits: Better for earth, 50% profits to build toilets
+            - Clean, environmental packaging imagery
+            """)
+        
+        st.info("💡 **Custom Replacement Strategy:** These popup examples show the variety of offers Thanks.co rotates. Our custom Tune integration can replicate this diversity while keeping 100% revenue.")
+        
+        # Interactive Demo Section
+        st.subheader("🎬 Interactive Popup Demo Concept")
+        
+        demo_tabs = st.tabs(["📱 Thanks.co Current", "🔧 Custom Concept", "📊 Comparison"])
+        
+        with demo_tabs[0]:
+            st.markdown("**Current Thanks.co 5-Slide Carousel System:**")
+            
+            # Thanks.co carousel simulation
+            slide_option = st.selectbox(
+                "View Popup Slides:",
+                ["Slide 1: Sam's Club (36% off)", "Slide 2: TopCashback ($20)", "Slide 3: Capital One Shopping ($30)", "Slide 4: Kraken Crypto ($25)", "Slide 5: FreeShipping.com ($10)"]
+            )
+            
+            if "Sam's Club" in slide_option:
+                st.markdown("""
+                **Sam's Club Plus Membership**
+                - 🎯 36% off membership (Save $40)
+                - ✅ Free shipping, early shopping hours
+                - 💰 Earn 2% Sam's Cash back
+                - 👨‍👩‍👧‍👦 Family-focused imagery with products
+                """)
+            elif "TopCashback" in slide_option:
+                st.markdown("""
+                **TopCashback Platform**
+                - 🎯 $20 cashback on today's purchase
+                - ✅ 7000+ stores, highest rates
+                - 💰 Unbeatable cashback program
+                - 🏪 Major retailer logos (Walmart, Best Buy, Nike)
+                """)
+            elif "Capital One" in slide_option:
+                st.markdown("""
+                **Capital One Shopping Extension**
+                - 🎯 $30 bonus redemption
+                - ✅ Auto-apply coupons instantly
+                - 💰 Free browser extension
+                - 💻 Shopping comparison interface
+                """)
+            elif "Kraken" in slide_option:
+                st.markdown("""
+                **Kraken Crypto Platform**
+                - 🎯 $25 crypto bonus
+                - ✅ 325+ cryptocurrencies
+                - 💰 Deposit $100, get $25 bonus
+                - 🚀 15M+ users globally
+                """)
+            elif "FreeShipping" in slide_option:
+                st.markdown("""
+                **FreeShipping.com Platform**
+                - 🎯 $10 cash back today
+                - ✅ 10% cashback at 1000+ stores
+                - 💰 Free to join, instant claim
+                - 🛍️ Major retailer network
+                """)
+        
+        with demo_tabs[1]:
+            st.markdown("**Custom Mode Popup with Tune CPL Inventory:**")
+            
+            custom_slide = st.selectbox(
+                "Mode Custom Offers (Concept):",
+                ["Finance Offer: Trading Platform", "Cashback Offer: Shopping App", "Membership: Warehouse Club", "Crypto: Trading Bonus", "Legal: Consultation Service"]
+            )
+            
+            if "Trading Platform" in custom_slide:
+                st.markdown("""
+                **Premium Trading Platform (Tune CPL)**
+                - 🎯 $50 bonus for new accounts
+                - ✅ Commission-free stock trading
+                - 💰 Professional research tools included
+                - 📈 Perfect for ModeMarketMunchies audience
+                **Revenue**: 100% vs Thanks.co commission
+                """)
+            elif "Shopping App" in custom_slide:
+                st.markdown("""
+                **Cashback Shopping App (Tune CPL)**
+                - 🎯 $25 signup bonus
+                - ✅ 5% cashback at major retailers
+                - 💰 Real-time coupon application
+                - 🛍️ Perfect for ModeFreeFinds audience
+                **Revenue**: 100% vs Thanks.co commission
+                """)
+            elif "Warehouse Club" in custom_slide:
+                st.markdown("""
+                **Warehouse Club Membership (Tune CPL)**
+                - 🎯 40% off annual membership
+                - ✅ Bulk savings + gas discounts
+                - 💰 $60 value for families
+                - 👨‍👩‍👧‍👦 Family-focused positioning
+                **Revenue**: 100% vs Thanks.co commission
+                """)
+        
+        with demo_tabs[2]:
+            st.markdown("**Revenue & Control Comparison:**")
+            
+            comp_col1, comp_col2 = st.columns(2)
+            
+            with comp_col1:
+                st.markdown("""
+                **🔴 Thanks.co Current:**
+                - RPM: ~$75
+                - Revenue Share: Commission to Thanks.co
+                - Control: Limited offer selection
+                - Attribution: Partial visibility
+                - Branding: Third-party
+                """)
+            
+            with comp_col2:
+                st.markdown("""
+                **🟢 Custom Mode System:**
+                - RPM: $75+ target
+                - Revenue Share: 100% retention
+                - Control: Full Tune inventory access
+                - Attribution: Complete visibility
+                - Branding: Mode-branded experience
+                """)
+            
+            st.success("**Bottom Line:** Custom system maintains performance while eliminating commission fees and providing full control!")
+
+    # Tab 6: Portfolio Overview
+    with property_tabs[5]:
+        st.subheader("🚀 Portfolio-Wide Optimization Opportunities")
+        
+        opt_col1, opt_col2 = st.columns(2)
+        
+        with opt_col1:
+            st.markdown("**🎯 Immediate Opportunities (ModeFreeFinds)**")
+            
+            st.markdown("""
+            **1. Prebid.js Implementation**
+            - Current: $12 RPM via Ezoic
+            - Target: $18-$25 RPM
+            - Impact: +$6k-$13k monthly
+            - Timeline: 2-4 weeks
+            """)
+            
+            st.markdown("""
+            **2. Custom Thanks.co Replacement**
+            - Current: ~$75 RPM (paying commission)
+            - Target: $75+ RPM (100% revenue)
+            - Impact: Commission savings + control
+            - Timeline: 4-6 weeks
+            """)
+        
+        with opt_col2:
+            st.markdown("**📈 Scaling Opportunities (All Properties)**")
+            
+            st.markdown("""
+            **1. Global Scripts Template**
+            - Apply MFF success to MMM, MMD, MCAD
+            - Standardized tracking & attribution
+            - Consistent revenue optimization
+            - Timeline: 1-2 weeks per property
+            """)
+            
+            st.markdown("""
+            **2. Portfolio Revenue Target**
+            - MFF: $35k-$50k (optimized)
+            - MMM: $15k-$25k (year 1)
+            - MMD: $20k-$35k (viral potential)
+            - MCAD: $10k-$20k (niche premium)
+            - **Total Portfolio: $80k-$130k monthly**
+            """)
+        
+        st.markdown("---")
+        
+        # Implementation Roadmap
+        st.subheader("📋 Implementation Roadmap")
+        
+        roadmap_tabs = st.tabs(["🎯 Immediate (1-2 weeks)", "📈 Short-term (1-2 months)", "🚀 Long-term (3-6 months)"])
+        
+        with roadmap_tabs[0]:
+            st.markdown("**Immediate Actions (1-2 weeks)**")
+            
+            immediate_col1, immediate_col2 = st.columns(2)
+            
+            with immediate_col1:
+                st.markdown("""
+                **ModeFreeFinds Optimization:**
+                - [ ] Prebid.js demand partner applications
+                - [ ] Thanks.co performance audit
+                - [ ] Custom popup prototype
+                - [ ] A/B testing framework setup
+                """)
+            
+            with immediate_col2:
+                st.markdown("""
+                **Portfolio Infrastructure:**
+                - [ ] Global Scripts template finalization
+                - [ ] Universal tracking system setup
+                - [ ] MMM monetization planning
+                - [ ] Performance monitoring dashboard
+                """)
+        
+        with roadmap_tabs[1]:
+            st.markdown("**Short-term Goals (1-2 months)**")
+            
+            short_col1, short_col2 = st.columns(2)
+            
+            with short_col1:
+                st.markdown("""
+                **Revenue Optimization:**
+                - [ ] Prebid.js full implementation
+                - [ ] Custom popup A/B testing
+                - [ ] MMM ad setup & optimization
+                - [ ] MFF revenue target: $40k+ monthly
+                """)
+            
+            with short_col2:
+                st.markdown("""
+                **Property Development:**
+                - [ ] MMD content strategy & launch
+                - [ ] MCAD content strategy & launch
+                - [ ] Cross-property traffic optimization
+                - [ ] Brand consistency & trust building
+                """)
+        
+        with roadmap_tabs[2]:
+            st.markdown("**Long-term Vision (3-6 months)**")
+            
+            long_col1, long_col2 = st.columns(2)
+            
+            with long_col1:
+                st.markdown("""
+                **Portfolio Scale:**
+                - [ ] All 4 properties fully monetized
+                - [ ] Portfolio revenue: $80k-$130k monthly
+                - [ ] Advanced attribution & optimization
+                - [ ] Acquisition & expansion opportunities
+                """)
+            
+            with long_col2:
+                st.markdown("""
+                **Strategic Development:**
+                - [ ] Content automation systems
+                - [ ] Advanced AI optimization
+                - [ ] New vertical exploration
+                - [ ] Exit strategy or scaling decisions
+                """)
+        
+        st.markdown("---")
+        
+        # Quick Actions
+        st.subheader("⚡ Quick Actions")
+        
+        action_col1, action_col2, action_col3 = st.columns(3)
+        
+        with action_col1:
+            if st.button("📊 View Full Analytics", key="portfolio_analytics"):
+                st.session_state.page = "📈 Analytics & Reports"
+                st.rerun()
+        
+        with action_col2:
+            if st.button("🔧 Global Scripts Setup", key="portfolio_global"):
+                st.session_state.page = "🔧 Global Scripts Implementation"
+                st.rerun()
+        
+        with action_col3:
+            if st.button("💻 Access Code Repository", key="portfolio_code"):
+                st.session_state.page = "💻 Code Repository"
+                st.rerun()
+
+    st.markdown("---")
 
 # Footer
 st.sidebar.markdown("---")
