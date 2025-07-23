@@ -53,6 +53,9 @@ except:
     with open("memory-bank/project-memories.json") as f:
         data = json.load(f)
 
+# Today's Major Update
+st.success("🚀 **TODAY'S BREAKTHROUGH:** Complete MFF $0.45 CPL system analyzed! Landing Page + Thank You Page code cleaned up and ready for Global Scripts implementation. 13 sections prepared for easy copy/paste into LeadPages.")
+
 # Property Status Cards - UPDATED LAYOUT
 # 📊 DATA OVERVIEW SECTION
 st.header("Property Status")
@@ -245,6 +248,67 @@ st.checkbox("Incorporate AI-based optimizations for flow performance", value=Fal
 
 st.text_input("Add new task:", placeholder="Future: Mike can add via @mode-optimizer")
 
+# Global Scripts Section
+st.markdown("---")
+st.header("🔧 **LeadPages Global Scripts Implementation**")
+
+global_col1, global_col2 = st.columns(2)
+
+with global_col1:
+    st.subheader("**Landing Page Scripts**")
+    st.success("✅ Code cleaned up and ready")
+    
+    landing_sections = [
+        "1. Tune SDK (READY) - Lowest Risk",
+        "2. Facebook SDK (READY) - Low Risk", 
+        "3. Smart Recognition (READY) - Low Risk",
+        "4. Mobile Navigation (READY) - Medium Risk",
+        "5. Form Enhancement (READY) - High Risk",
+        "6. Meta Pixel (READY) - Highest Risk"
+    ]
+    
+    for section in landing_sections:
+        st.text(section)
+    
+    st.info("💡 Start with Section 1 (Tune SDK) for testing")
+
+with global_col2:
+    st.subheader("**Thank You Page Scripts**")
+    st.success("✅ Revenue system documented & ready")
+    
+    thankyou_sections = [
+        "1. Tune Conversion (READY) - Revenue Attribution",
+        "2. URL Injection (READY) - Link Monetization", 
+        "3. Error Monitoring (READY) - System Protection",
+        "4. Facebook SDK (READY) - Social Integration",
+        "5. Impression Pixel (READY) - Affiliate Tracking",
+        "6. Mode UA API (READY) - CRM Integration",
+        "7. Meta Conversion (READY) - Ad Optimization"
+    ]
+    
+    for section in thankyou_sections:
+        st.text(section)
+    
+    st.info("💰 Complete revenue attribution system")
+
+st.markdown("**🎯 Implementation Status:**")
+implementation_col1, implementation_col2, implementation_col3 = st.columns(3)
+
+with implementation_col1:
+    st.metric("Code Sections Ready", "13", delta="All cleaned & labeled")
+
+with implementation_col2:
+    st.metric("Implementation Order", "Risk-Based", delta="Safest → Riskiest")
+
+with implementation_col3:
+    st.metric("Expected Benefit", "75% Faster", delta="New property setup")
+
+st.markdown("**🚀 Next Steps:**")
+st.write("1. Test LeadPages Global Scripts feature with simple script")
+st.write("2. Implement Section 1 (Tune SDK) on both Landing & Thank You pages")
+st.write("3. Gradually migrate all sections following risk-based order")
+st.write("4. Use for MMM, MCAD, and MMD rapid deployment")
+
 # Meta Optimization Strategy Section
 st.markdown("---")
 st.header("**Meta Traffic Optimization Strategy**")
@@ -322,7 +386,11 @@ with links_col1:
     st.markdown("- [MM Signup Flow](https://signups.modemobile.com/mm-signup-affv1/)")
 
 with links_col2:
-    st.subheader("**AI & Optimization**")
+    st.subheader("**Global Scripts & Code**")
+    st.markdown("**[Landing Page Global Scripts](https://github.com/brianlapp/mode/blob/main/global-scripts-ready-code.js)**")
+    st.markdown("*13 clean sections ready for implementation*")
+    st.markdown("**[Thank You Page Scripts](https://github.com/brianlapp/mode/blob/main/thankyou-global-scripts-ready.js)**")
+    st.markdown("*Complete revenue attribution system*")
     st.markdown("**[Revmatics.ai](https://revmatics.ai/)**")
     st.markdown("*AI-powered landing page optimization*")
 
