@@ -947,17 +947,294 @@ elif page == "🏢 Mode Properties Hub":
     
     # 7-tab unified structure
     property_tabs = st.tabs([
+        "🎬 DEMO",
         "📊 Portfolio Overview",
         "🟢 ModeFreeFinds", 
         "🟡 ModeMarketMunchies",
         "🔴 ModeMobileDaily", 
         "🔴 ModeClassActionsDaily",
-        "🎁 Thanks.co Analysis",
         "🚀 Implementation Roadmap"
     ])
     
-    # Tab 1: Portfolio Overview
+    # Tab 1: DEMO (Thanks.co Analysis)  
     with property_tabs[0]:
+        st.header("🎁 Thanks.co Analysis - Custom Replacement Strategy")
+        
+        st.info("💡 **Live Thanks.co Popup Screenshots:** These are the actual popup offers captured from Mike's Thank You page showing the system generating ~$75 RPM.")
+        
+        # Enhanced demo section from existing Properties Portfolio
+        st.subheader("🎬 Thanks.co Popup Visual Demo")
+        
+        # DEMO is now the first tab (default tab)
+        demo_tabs = st.tabs(["🎬 DEMO", "📱 Live Screenshots", "📊 Comparison"])
+        
+        with demo_tabs[0]:
+            st.markdown("**🚀 Interactive Custom Popup Demo (Our Custom Implementation)**")
+            st.info("💡 **OUR CUSTOM DEMO:** Click 'Next >' in the popup to cycle through different CPL offers!")
+            
+            # Always show popup demo
+            if st.button("🎬 Launch Interactive Demo", key="custom_popup_demo", type="primary") or st.session_state.get("show_popup", False):
+                st.session_state.show_popup = True
+                
+                # Working Next button demo - JavaScript handles cycling
+                popup_demo_html = """
+                <div id="mode-popup-demo" style="margin: 20px 0;">
+                    <!-- Thanks.co Exact Replica Design -->
+                    <div id="modePopupOverlay" style="
+                        display: block;
+                        position: fixed;
+                        top: 0; left: 0;
+                        width: 100%; height: 100%;
+                        background: rgba(0,0,0,0.5);
+                        z-index: 10000;
+                    ">
+                        <div style="
+                            position: absolute;
+                            top: 50%; left: 50%;
+                            transform: translate(-50%, -50%);
+                            background: white;
+                            border-radius: 24px;
+                            padding: 0;
+                            max-width: 320px;
+                            width: 90%;
+                            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            overflow: hidden;
+                        ">
+                            <!-- Close Button -->
+                            <button onclick="hideModePopup()" style="
+                                position: absolute;
+                                top: 12px; right: 12px;
+                                background: #E5E7EB;
+                                border: none;
+                                color: #6B7280;
+                                font-size: 18px;
+                                cursor: pointer;
+                                width: 28px;
+                                height: 28px;
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                z-index: 10001;
+                            ">×</button>
+                            
+                            <!-- Dynamic Logo Circle -->
+                            <div id="logoCircle" style="
+                                position: absolute;
+                                top: 24px; left: 24px;
+                                width: 56px; height: 56px;
+                                background: #2563EB;
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-weight: 700;
+                                color: white;
+                                font-size: 10px;
+                                text-align: center;
+                                line-height: 1.1;
+                                z-index: 10001;
+                            ">WHO GIVES A CRAP</div>
+                            
+                            <!-- Main Content Area -->
+                            <div style="padding: 24px; padding-top: 100px; text-align: center;">
+                                
+                                <!-- Dynamic Tagline -->
+                                <div id="tagline" style="
+                                    background: #F3F4F6;
+                                    color: #6B7280;
+                                    padding: 6px 12px;
+                                    border-radius: 16px;
+                                    font-size: 12px;
+                                    margin-bottom: 24px;
+                                    display: inline-block;
+                                    font-weight: 500;
+                                ">Care for your bottom & the planet</div>
+                                
+                                <!-- Dynamic Title -->
+                                <h2 id="offerTitle" style="
+                                    margin: 0 0 8px 0;
+                                    font-size: 24px;
+                                    font-weight: 800;
+                                    line-height: 1.2;
+                                    color: #111827;
+                                ">20% off Who Gives A Crap toilet paper</h2>
+                                
+                                <!-- Dynamic Icon -->
+                                <div id="offerIcon" style="font-size: 32px; margin: 16px 0;">🧻</div>
+                                
+                                <!-- Dynamic Description -->
+                                <p id="offerDescription" style="
+                                    color: #6B7280;
+                                    font-size: 14px;
+                                    line-height: 1.4;
+                                    margin: 16px 0 24px 0;
+                                    text-align: center;
+                                ">Wipe right with bamboo TP that's better for the earth (& your cheeks) + 50% of profits go towards building toilets. Use code ecosave20</p>
+                                
+                                <!-- Dynamic CTA Button -->
+                                <button id="ctaButton" style="
+                                    width: 100%;
+                                    background: #7C3AED;
+                                    color: white;
+                                    border: none;
+                                    padding: 16px;
+                                    border-radius: 16px;
+                                    font-size: 16px;
+                                    font-weight: 600;
+                                    cursor: pointer;
+                                    margin-bottom: 12px;
+                                ">Unlock offer</button>
+                                
+                                <!-- WORKING Next Button -->
+                                <button onclick="nextOffer()" style="
+                                    width: 100%;
+                                    background: white;
+                                    color: #6B7280;
+                                    border: 2px solid #E5E7EB;
+                                    padding: 14px;
+                                    border-radius: 16px;
+                                    font-size: 14px;
+                                    font-weight: 500;
+                                    cursor: pointer;
+                                    margin-bottom: 16px;
+                                ">Next ></button>
+                                
+                                <!-- Dynamic Pagination Dots -->
+                                <div id="paginationDots" style="text-align: center; margin-bottom: 16px;">
+                                    <span class="dot" style="width: 8px; height: 8px; background: #374151; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    <span class="dot" style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    <span class="dot" style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    <span class="dot" style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                </div>
+                                
+                                <!-- Footer Text -->
+                                <div style="
+                                    color: #9CA3AF;
+                                    font-size: 11px;
+                                    text-align: center;
+                                    line-height: 1.3;
+                                ">T&Cs Apply | Powered by <strong>Thanks</strong> • Privacy Policy</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                let currentOfferIndex = 0;
+                
+                const offers = [
+                    {
+                        logo_bg: "#2563EB",
+                        logo_text: "WHO GIVES A CRAP",
+                        tagline: "Care for your bottom & the planet",
+                        title: "20% off Who Gives A Crap toilet paper",
+                        icon: "🧻",
+                        description: "Wipe right with bamboo TP that's better for the earth (& your cheeks) + 50% of profits go towards building toilets. Use code ecosave20",
+                        btn_color: "#7C3AED"
+                    },
+                    {
+                        logo_bg: "#4F46E5",
+                        logo_text: "TRADE PLATFORM",
+                        tagline: "Build your wealth & the future",
+                        title: "50% off Premium Trading Platform",
+                        icon: "📈",
+                        description: "Start trading commission-free stocks with professional research tools. Perfect for building your investment portfolio. Use code tradepro50",
+                        btn_color: "#4F46E5"
+                    },
+                    {
+                        logo_bg: "#059669",
+                        logo_text: "CASH BACK",
+                        tagline: "Earn on every purchase you make",
+                        title: "$20 Cashback Bonus",
+                        icon: "💳",
+                        description: "Join 15M+ users earning cashback at 7000+ stores. Get your $20 bonus after first qualifying purchase. Free to join! Use code cashback20",
+                        btn_color: "#059669"
+                    },
+                    {
+                        logo_bg: "#DC2626",
+                        logo_text: "SAM'S CLUB",
+                        tagline: "Care for your shopping & savings",
+                        title: "36% off Sam's Club Plus",
+                        icon: "🛍️",
+                        description: "Free shipping, early shopping hours, 2% Sam's Cash rewards. Plus exclusive member prices on groceries and gas. Use code samsclub36",
+                        btn_color: "#DC2626"
+                    }
+                ];
+                
+                function nextOffer() {
+                    currentOfferIndex = (currentOfferIndex + 1) % offers.length;
+                    updateOffer();
+                }
+                
+                function updateOffer() {
+                    const offer = offers[currentOfferIndex];
+                    
+                    // Update all dynamic content instantly
+                    document.getElementById('logoCircle').style.background = offer.logo_bg;
+                    document.getElementById('logoCircle').textContent = offer.logo_text;
+                    document.getElementById('tagline').textContent = offer.tagline;
+                    document.getElementById('offerTitle').textContent = offer.title;
+                    document.getElementById('offerIcon').textContent = offer.icon;
+                    document.getElementById('offerDescription').textContent = offer.description;
+                    document.getElementById('ctaButton').style.background = offer.btn_color;
+                    
+                    // Update pagination dots
+                    const dots = document.querySelectorAll('.dot');
+                    dots.forEach((dot, index) => {
+                        dot.style.background = index === currentOfferIndex ? '#374151' : '#D1D5DB';
+                    });
+                }
+                
+                function hideModePopup() {
+                    const overlay = document.getElementById('modePopupOverlay');
+                    if (overlay) {
+                        overlay.style.display = 'none';
+                    }
+                }
+                
+                // Close on ESC key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        hideModePopup();
+                    }
+                });
+                
+                // Close on overlay click
+                document.getElementById('modePopupOverlay')?.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        hideModePopup();
+                    }
+                });
+                </script>
+                """
+                
+                st.components.v1.html(popup_demo_html, height=600)
+                
+                st.success("✅ **Demo Active:** Click 'Next >' in the popup to cycle through 4 different CPL offers! Each click instantly updates the content.")
+                
+                # Simple reset button
+                if st.button("🔄 Reset Demo", key="reset_popup"):
+                    st.session_state.show_popup = False
+                    st.rerun()
+        
+        # Keep the other demo tabs as they were
+        with demo_tabs[1]:
+            st.markdown("**📱 Thanks.co Original Reference**")
+            st.image("https://service.firecrawl.dev/storage/v1/object/public/media/screenshot-bf2ee1ba-8bed-4078-96d4-b4c1c43992ba.png", 
+                     caption="📱 Thanks.co Popup on ModeFreeFinds Thank You Page", width=400)
+        
+        with demo_tabs[2]:
+            st.markdown("**📊 Revenue Comparison**")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("**🔴 Current Thanks.co:** ~$56-$64 RPM (after commission)")
+            with col2:
+                st.markdown("**🟢 Custom Implementation:** ~$75+ RPM (100% retention)")
+    
+    # Tab 2: Portfolio Overview
+    with property_tabs[1]:
         st.header("📊 Portfolio Overview")
         
         # Portfolio Metrics
@@ -1735,9 +2012,9 @@ elif page == "🏢 Mode Properties Hub":
             st.success("Ready to build MCAD with MFF foundation + legal vertical optimization!")
             st.rerun()
     
-    # Tab 6: Thanks.co Analysis (Enhanced)
-    with property_tabs[5]:
-        st.header("🎁 Thanks.co Analysis - Custom Replacement Strategy")
+    # Tab 6: Implementation Roadmap  
+    with property_tabs[6]:
+        st.header("🚀 Implementation Roadmap")
         
         st.info("💡 **Live Thanks.co Popup Screenshots:** These are the actual popup offers captured from Mike's Thank You page showing the system generating ~$75 RPM.")
         
