@@ -7,35 +7,119 @@ from pathlib import Path
 st.set_page_config(
     page_title="Mode Optimization Dashboard", 
     page_icon="🚀",
-    layout="centered"
+    layout="wide"
 )
 
-# Custom CSS
+# Custom CSS with Mode Brand Colors
 st.markdown("""
 <style>
+    /* Mode Brand Color Variables */
+    :root {
+        --mode-pink: #F7007C;
+        --mode-blue: #07C8F7;
+        --mode-white: #FFFFFF;
+    }
+    
+    /* Main container styling */
     .main > div {
-        background-color: black;
         padding: 1rem 0;
         margin-bottom: 2rem;
     }
+    
+    /* Enhanced selectbox with Mode blue accent */
     .stSelectbox > div > div {
-        background-color: #f0f2f6;
+        background-color: #f8fafe;
+        border: 1px solid #07C8F7;
     }
+    
+    /* Mode-branded metric cards */
     .metric-card {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border-left: 4px solid #007bff;
+        background: linear-gradient(135deg, #f8fafe 0%, #fff0f8 100%);
+        padding: 1.2rem;
+        border-radius: 0.8rem;
+        border-left: 4px solid var(--mode-blue);
+        box-shadow: 0 2px 4px rgba(7, 200, 247, 0.1);
     }
+    
+    /* Mode-branded code sections */
     .code-section {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 0.5rem;
+        background: linear-gradient(135deg, #f8fafe 0%, #fff0f8 100%);
+        padding: 1.2rem;
+        border-radius: 0.8rem;
         margin: 1rem 0;
+        border: 1px solid rgba(7, 200, 247, 0.2);
     }
-    .risk-low { border-left: 4px solid #28a745; }
-    .risk-medium { border-left: 4px solid #ffc107; }
-    .risk-high { border-left: 4px solid #dc3545; }
+    
+    /* Enhanced risk indicators with Mode colors */
+    .risk-low { 
+        border-left: 4px solid #28a745;
+        background: linear-gradient(135deg, #f8fff8 0%, #f0fff0 100%);
+    }
+    .risk-medium { 
+        border-left: 4px solid #ffc107;
+        background: linear-gradient(135deg, #fffef8 0%, #fffff0 100%);
+    }
+    .risk-high { 
+        border-left: 4px solid var(--mode-pink);
+        background: linear-gradient(135deg, #fff8fc 0%, #fff0f6 100%);
+    }
+    
+    /* Mode-branded sidebar */
+    .css-1d391kg {
+        background: linear-gradient(180deg, #f8fafe 0%, #fff0f8 100%);
+    }
+    
+    /* Enhanced buttons with Mode branding - Solid colors for readability */
+    .stButton > button {
+        background: var(--mode-blue);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 700;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(7, 200, 247, 0.2);
+    }
+    
+    .stButton > button:hover {
+        background: var(--mode-pink);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(247, 0, 124, 0.3);
+        font-weight: 700;
+    }
+    
+    /* Special styling for primary buttons */
+    .stButton > button[kind="primary"] {
+        background: var(--mode-pink);
+        font-weight: 800;
+        box-shadow: 0 3px 6px rgba(247, 0, 124, 0.3);
+    }
+    
+    .stButton > button[kind="primary"]:hover {
+        background: var(--mode-blue);
+        box-shadow: 0 5px 15px rgba(7, 200, 247, 0.4);
+    }
+    
+    /* Mode-branded success/info/warning/error boxes */
+    .stSuccess {
+        background: linear-gradient(135deg, #f0fff8 0%, #e8f8f0 100%);
+        border-left: 4px solid #28a745;
+    }
+    
+    .stInfo {
+        background: linear-gradient(135deg, #f8fafe 0%, #e8f6fe 100%);
+        border-left: 4px solid var(--mode-blue);
+    }
+    
+    .stWarning {
+        background: linear-gradient(135deg, #fffef8 0%, #fef8e8 100%);
+        border-left: 4px solid #ffc107;
+    }
+    
+    .stError {
+        background: linear-gradient(135deg, #fff8fc 0%, #fee8f0 100%);
+        border-left: 4px solid var(--mode-pink);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -79,6 +163,9 @@ if "page" in query_params:
         st.session_state.page = "📈 Analytics & Reports"
     elif page_param == "properties" or page_param == "portfolio":
         st.session_state.page = "🏢 Mode Properties Hub"
+    elif page_param == "demo":
+        st.session_state.page = "🏢 Mode Properties Hub"
+        st.session_state.show_popup = True  # Auto-show the demo popup
 
 # Set default page if not already set
 if 'page' not in st.session_state:
@@ -103,30 +190,40 @@ if page == "🏠 Overview Dashboard":
     st.title("🎯 Mode Properties Optimization Dashboard")
     st.markdown("**Complete portfolio analysis, mobile optimization, and revenue tracking for Mike's 4 Mode properties**")
     
-    # Quick Navigation Cards
-    st.header("🗂️ Dashboard Sections")
+    # Most Recent Updates
+    st.markdown("---")
+    st.header("📈 Most Recent Updates")
     
-    nav_col1, nav_col2, nav_col3 = st.columns(3)
+    update_col1, update_col2 = st.columns(2)
     
-    with nav_col1:
-        if st.button("🏢 Mode Properties Hub\n\nComplete portfolio management with visual insights, optimization strategies, and implementation roadmaps for all 4 Mode properties.", 
-                     use_container_width=True, key="nav_properties", type="primary"):
+    with update_col1:
+        st.info("**🎁 Thanks.co Analysis Updated**")
+        st.markdown("- Live popup demo working")
+        st.markdown("- Custom implementation strategy")
+        st.markdown("- $75 RPM revenue analysis")
+        if st.button("🔗 View Thanks.co Demo", key="link_thankco_demo"):
             st.session_state.page = "🏢 Mode Properties Hub"
+            st.session_state.show_popup = True  # Auto-show the popup when navigating
             st.rerun()
-    
-    with nav_col2:
-        if st.button("🔧 Global Scripts\n\nLeadPages implementation guide with Mike's optimized tracking code ready for deployment.", 
-                     use_container_width=True, key="nav_global", type="primary"):
+        
+        st.error("**🔧 Global Scripts Ready**")
+        st.markdown("- LeadPages implementation guide")
+        st.markdown("- 13 sections prepared")
+        st.markdown("- Universal tracking system")
+        if st.button("🔗 View Global Scripts", key="link_global_scripts"):
             st.session_state.page = "🔧 Global Scripts Implementation"
             st.rerun()
     
-    with nav_col3:
-        if st.button("💻 Code Repository\n\nAll optimization code, scripts, and technical implementations organized by property and function.", 
-                     use_container_width=True, key="nav_code", type="primary"):
-            st.session_state.page = "💻 Code Repository"
-            st.rerun()
+    with update_col2:
+        st.warning("**💡 Git Repo Initialized**")
+        st.markdown("- Complete project structure")
+        st.markdown("- All optimization code tracked")
+        st.markdown("- Version control active")
+        if st.button("🔗 View GitHub Repository", key="link_git_repo"):
+            st.markdown("🔗 **Opening:** [GitHub Repository](https://github.com/brianlapp/mode)")
+            st.balloons()
 
-    # Quick Stats
+    # Portfolio Snapshot - moved to bottom
     st.markdown("---")
     st.header("📊 Portfolio Snapshot")
     
@@ -141,91 +238,24 @@ if page == "🏠 Overview Dashboard":
     
     with snapshot_col2:
         st.metric(
-            label="📱 Properties Audited",
-            value="4/4",
-            delta="Mobile screenshots captured"
+            label="📊 Total Properties", 
+            value="4",
+            delta="1 Live, 1 Launched, 2 Development"
         )
     
     with snapshot_col3:
         st.metric(
             label="🎯 Optimization Target",
-            value="$80k-$130k",
-            delta="Full portfolio potential"
+            value="$50k-$75k",
+            delta="Portfolio potential"
         )
     
     with snapshot_col4:
         st.metric(
-            label="⚡ Revenue Boost",
-            value="+$6k-$13k",
-            delta="Prebid.js opportunity"
+            label="📧 Email Subscribers",
+            value="3.45M",
+            delta="Across all properties"
         )
-
-    # Key Insights
-    st.markdown("---")
-    st.header("🔍 Key Insights")
-    
-    insight_col1, insight_col2 = st.columns(2)
-    
-    with insight_col1:
-        st.markdown("**🎁 Thanks.co Analysis Complete**")
-        st.info("5-slide popup carousel analyzed with custom replacement strategy developed. Potential for 100% revenue retention vs current commission model.")
-        
-        st.markdown("**📱 Mobile Optimization Ready**")
-        st.success("All properties captured via mobile screenshots. Visual insights documented for conversion optimization.")
-    
-    with insight_col2:
-        st.markdown("**💰 Revenue Opportunities Identified**")
-        st.warning("Prebid.js implementation could boost ModeFreeFinds RPM from $12 to $18-$25, adding $6k-$13k monthly.")
-        
-        st.markdown("**🚀 Portfolio Scaling Path**")
-        st.info("ModeMarketMunchies ready for monetization. MMD and MCAD have content frameworks prepared for launch.")
-
-    # External Links
-    st.markdown("---")
-    st.header("🔗 External Resources")
-    
-    link_col1, link_col2, link_col3 = st.columns(3)
-    
-    with link_col1:
-        st.markdown("**🌐 Live Properties**")
-        st.markdown("- [ModeFreeFinds.com](https://modefreefinds.com/)")
-        st.markdown("- [ModeMarketMunchies.com](https://modemarketmunchies.com/)")
-        st.markdown("- [ModeMobileDaily.com](https://modemobiledaily.com/)")
-        st.markdown("- [ModeClassActionsDaily.com](https://modeclassactionsdaily.com/)")
-
-    with link_col2:
-        st.markdown("**📊 Tracking & Analytics**")
-        st.markdown("- [Tune (HasOffers)](https://modemobile.go2cloud.org/)")
-        st.markdown("- [Meta Business Manager](https://business.facebook.com/)")
-        st.markdown("- [Revmatics.ai](https://revmatics.ai/)")
-
-    with link_col3:
-        st.markdown("**💻 Development Resources**")
-        st.markdown("- [GitHub Repository](https://github.com/brianlapp/mode)")
-        st.markdown("- [Direct Dashboard Links](https://modedash.streamlit.app/)")
-        st.markdown("- [Support Documentation](https://helpdesk.modemobile.com/)")
-
-    # Quick Actions
-    st.markdown("---")
-    st.header("⚡ Quick Actions")
-    
-    action_col1, action_col2, action_col3 = st.columns(3)
-    
-    with action_col1:
-        if st.button("🎬 View Thanks.co Demo", use_container_width=True):
-            st.session_state.page = "🏢 Mode Properties Hub"
-            # You could add URL params here to jump directly to Thanks.co tab
-            st.rerun()
-    
-    with action_col2:
-        if st.button("📈 Check Property Analytics", use_container_width=True):
-            st.session_state.page = "📈 Analytics & Reports"
-            st.rerun()
-    
-    with action_col3:
-        if st.button("🔧 Start Property Setup", use_container_width=True):
-            st.session_state.page = "🏢 Mode Properties Hub"
-            st.rerun()
 
 # ============================================================================
 # PAGE 2: GLOBAL SCRIPTS IMPLEMENTATION
@@ -1714,9 +1744,291 @@ elif page == "🏢 Mode Properties Hub":
         # Enhanced demo section from existing Properties Portfolio
         st.subheader("🎬 Thanks.co Popup Visual Demo")
         
-        demo_tabs = st.tabs(["📱 Live Screenshots", "🔧 Custom Concept", "📊 Comparison"])
+        # DEMO is now the first tab (default tab)
+        demo_tabs = st.tabs(["🎬 DEMO", "📱 Live Screenshots", "📊 Comparison"])
         
         with demo_tabs[0]:
+            st.markdown("**🚀 Interactive Custom Popup Demo (Our Custom Implementation)**")
+            st.info("💡 **OUR CUSTOM DEMO:** Click 'Next >' in the popup to cycle through different CPL offers!")
+            
+            # Initialize offer index in session state if not exists
+            if "offer_index" not in st.session_state:
+                st.session_state.offer_index = 0
+            
+            # Define offer list
+            offer_list = ["💰 Trading Platform ($50 off)", "🛒 Cashback App ($20 bonus)", "🏪 Sam's Club (36% off)", "🌿 Eco Products (20% off)"]
+            offer_choice = offer_list[st.session_state.offer_index]
+            
+            # Always show popup demo
+            if st.button("🎬 Launch Interactive Demo", key="custom_popup_demo", type="primary") or st.session_state.get("show_popup", False):
+                st.session_state.show_popup = True
+                
+                # Get offer data based on selection - designed to match Thanks.co exactly
+                offers = {
+                    "💰 Trading Platform ($50 off)": {
+                        "logo_bg": "#4F46E5",
+                        "logo_text": "TRADE",
+                        "tagline": "Build your wealth & the future",
+                        "title": "50% off Premium Trading Platform",
+                        "icon": "📈",
+                        "description": "Wipe right with commission-free stocks that's better for the earth (& your cheeks) + 50% of profits go towards building portfolios. Use code tradepro50",
+                        "btn_color": "#7C3AED"
+                    },
+                    "🛒 Cashback App ($20 bonus)": {
+                        "logo_bg": "#059669", 
+                        "logo_text": "CASH BACK",
+                        "tagline": "Earn on every purchase you make",
+                        "title": "$20 Cashback Bonus",
+                        "icon": "🧻",
+                        "description": "Wipe right with cashback that's better for the earth (& your wallet) + Get $20 bonus after first purchase. Use code cashback20",
+                        "btn_color": "#059669"
+                    },
+                    "🏪 Sam's Club (36% off)": {
+                        "logo_bg": "#DC2626",
+                        "logo_text": "SAM'S CLUB", 
+                        "tagline": "Care for your shopping & savings",
+                        "title": "36% off Sam's Club Plus",
+                        "icon": "🧻",
+                        "description": "Wipe right with membership savings that's better for the earth (& your budget) + Free shipping & gas rewards. Use code samsclub36",
+                        "btn_color": "#DC2626"
+                    },
+                    "🌿 Eco Products (20% off)": {
+                        "logo_bg": "#2563EB",
+                        "logo_text": "WHO GIVES A CRAP",
+                        "tagline": "Care for your bottom & the planet", 
+                        "title": "20% off Who Gives A Crap toilet paper",
+                        "icon": "🧻",
+                        "description": "Wipe right with bamboo TP that's better for the earth (& your cheeks) + 50% of profits go towards building toilets. Use code ecosave20",
+                        "btn_color": "#7C3AED"
+                    }
+                }
+                
+                current_offer = offers[offer_choice]
+                
+                # Extract variables for f-string compatibility  
+                logo_bg = current_offer['logo_bg']
+                logo_text = current_offer['logo_text']
+                tagline = current_offer['tagline']
+                title = current_offer['title']
+                icon = current_offer['icon']
+                description = current_offer['description']
+                btn_color = current_offer['btn_color']
+                
+                popup_demo_html = f"""
+                <div id="mode-popup-demo" style="margin: 20px 0;">
+                    <!-- Thanks.co Exact Replica Design -->
+                    <div id="modePopupOverlay" style="
+                        display: block;
+                        position: fixed;
+                        top: 0; left: 0;
+                        width: 100%; height: 100%;
+                        background: rgba(0,0,0,0.5);
+                        z-index: 10000;
+                    ">
+                        <div style="
+                            position: absolute;
+                            top: 50%; left: 50%;
+                            transform: translate(-50%, -50%);
+                            background: white;
+                            border-radius: 24px;
+                            padding: 0;
+                            max-width: 320px;
+                            width: 90%;
+                            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            overflow: hidden;
+                        ">
+                            <!-- Close Button -->
+                            <button onclick="hideModePopup()" style="
+                                position: absolute;
+                                top: 12px; right: 12px;
+                                background: #E5E7EB;
+                                border: none;
+                                color: #6B7280;
+                                font-size: 18px;
+                                cursor: pointer;
+                                width: 28px;
+                                height: 28px;
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                z-index: 10001;
+                            ">×</button>
+                            
+                            <!-- Blue Logo Circle -->
+                            <div style="
+                                position: absolute;
+                                top: 24px; left: 24px;
+                                width: 56px; height: 56px;
+                                background: {logo_bg};
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-weight: 700;
+                                color: white;
+                                font-size: 10px;
+                                text-align: center;
+                                line-height: 1.1;
+                                z-index: 10001;
+                            ">{logo_text}</div>
+                            
+                            <!-- Main Content Area -->
+                            <div style="padding: 24px; padding-top: 100px; text-align: center;">
+                                
+                                <!-- Gray Tagline -->
+                                <div style="
+                                    background: #F3F4F6;
+                                    color: #6B7280;
+                                    padding: 6px 12px;
+                                    border-radius: 16px;
+                                    font-size: 12px;
+                                    margin-bottom: 24px;
+                                    display: inline-block;
+                                    font-weight: 500;
+                                ">{tagline}</div>
+                                
+                                <!-- Large Title -->
+                                <h2 style="
+                                    margin: 0 0 8px 0;
+                                    font-size: 24px;
+                                    font-weight: 800;
+                                    line-height: 1.2;
+                                    color: #111827;
+                                ">{title}</h2>
+                                
+                                <!-- Toilet Paper Icon -->
+                                <div style="font-size: 32px; margin: 16px 0;">{icon}</div>
+                                
+                                <!-- Description Text -->
+                                <p style="
+                                    color: #6B7280;
+                                    font-size: 14px;
+                                    line-height: 1.4;
+                                    margin: 16px 0 24px 0;
+                                    text-align: center;
+                                ">{description}</p>
+                                
+                                <!-- Purple CTA Button -->
+                                <button style="
+                                    width: 100%;
+                                    background: {btn_color};
+                                    color: white;
+                                    border: none;
+                                    padding: 16px;
+                                    border-radius: 16px;
+                                    font-size: 16px;
+                                    font-weight: 600;
+                                    cursor: pointer;
+                                    margin-bottom: 12px;
+                                ">Unlock offer</button>
+                                
+                                <!-- White Next Button -->
+                                <button id="nextOfferBtn" style="
+                                    width: 100%;
+                                    background: white;
+                                    color: #6B7280;
+                                    border: 2px solid #E5E7EB;
+                                    padding: 14px;
+                                    border-radius: 16px;
+                                    font-size: 14px;
+                                    font-weight: 500;
+                                    cursor: pointer;
+                                    margin-bottom: 16px;
+                                ">Next ></button>
+                                
+                                <!-- Pagination Dots -->
+                                <div style="text-align: center; margin-bottom: 16px;">
+                                    <span style="width: 8px; height: 8px; background: #374151; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                </div>
+                                
+                                <!-- Footer Text -->
+                                <div style="
+                                    color: #9CA3AF;
+                                    font-size: 11px;
+                                    text-align: center;
+                                    line-height: 1.3;
+                                ">T&Cs Apply | Powered by <strong>Thanks</strong> • Privacy Policy</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                                 <script>
+                 function hideModePopup() {{
+                     const overlay = document.getElementById('modePopupOverlay');
+                     if (overlay) {{
+                         overlay.style.display = 'none';
+                     }}
+                 }}
+                 
+                 // Handle next offer button click
+                 document.addEventListener('DOMContentLoaded', function() {{
+                     const nextBtn = document.getElementById('nextOfferBtn');
+                     if (nextBtn) {{
+                         nextBtn.addEventListener('click', function() {{
+                             // Close popup first
+                             hideModePopup();
+                             // Set a short delay then trigger the Streamlit next button
+                             setTimeout(function() {{
+                                 // Try to trigger the external next offer button
+                                 const streamlitNextBtn = window.parent.document.querySelector('[data-testid="baseButton-primary"]');
+                                 if (streamlitNextBtn && streamlitNextBtn.textContent.includes('Next Offer')) {{
+                                     streamlitNextBtn.click();
+                                 }}
+                             }}, 100);
+                         }});
+                     }}
+                 }});
+                 
+                 // Close on ESC key
+                 document.addEventListener('keydown', function(e) {{
+                     if (e.key === 'Escape') {{
+                         hideModePopup();
+                     }}
+                 }});
+                 
+                 // Close on overlay click
+                 document.getElementById('modePopupOverlay')?.addEventListener('click', function(e) {{
+                     if (e.target === this) {{
+                         hideModePopup();
+                     }}
+                 }});
+                 </script>
+                """
+                
+                st.components.v1.html(popup_demo_html, height=600)
+                
+                st.success(f"✅ **Demo Active:** Showing offer {st.session_state.offer_index + 1} of {len(offer_list)} - Click 'Next >' in popup to cycle offers!")
+                
+                # Add control buttons
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    if st.button("🔄 Reset Demo", key="reset_popup"):
+                        st.session_state.show_popup = False
+                        st.rerun()
+                
+                with col2:
+                    if st.button("⏭️ Next Offer", key="next_offer_btn", type="primary"):
+                        # Cycle to next offer
+                        st.session_state.offer_index = (st.session_state.offer_index + 1) % len(offer_list)
+                        st.session_state.show_popup = True  # Keep popup open
+                        st.rerun()
+                
+                with col3:
+                    if st.button("⏮️ Previous Offer", key="prev_offer_btn"):
+                        # Cycle to previous offer  
+                        st.session_state.offer_index = (st.session_state.offer_index - 1) % len(offer_list)
+                        st.session_state.show_popup = True  # Keep popup open
+                        st.rerun()
+        
+        with demo_tabs[1]:
             st.markdown("**🎯 Actual Thanks.co Popup Screenshots Captured:**")
             
             # Show actual captured popup screenshot
@@ -1758,175 +2070,6 @@ elif page == "🏢 Mode Properties Hub":
 </script>
 <script src="https://s.thanks.is/v1/widget.js" defer></script>
                 """, language="html")
-        
-        with demo_tabs[1]:
-            st.markdown("**🚀 Interactive Custom Popup Demo (Tune CPL)**")
-            
-            # Use the working popup demo from existing code
-            if st.button("🎬 Launch Custom Popup Demo", key="custom_popup_demo", type="primary"):
-                popup_demo_html = """
-                <div id="mode-popup-demo" style="margin: 20px 0;">
-                    <!-- Custom Popup Modal - Exact Thanks.co Design -->
-                    <div id="modePopupOverlay" style="
-                        display: block;
-                        position: fixed;
-                        top: 0; left: 0;
-                        width: 100%; height: 100%;
-                        background: rgba(0,0,0,0.5);
-                        z-index: 10000;
-                    ">
-                        <div style="
-                            position: absolute;
-                            top: 50%; left: 50%;
-                            transform: translate(-50%, -50%);
-                            background: white;
-                            border-radius: 20px;
-                            padding: 0;
-                            max-width: 380px;
-                            width: 90%;
-                            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        ">
-                            <!-- Header Section -->
-                            <div style="
-                                background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-                                height: 180px;
-                                border-radius: 20px 20px 0 0;
-                                position: relative;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                color: white;
-                            ">
-                                <!-- Close Button -->
-                                <button onclick="hideModePopup()" style="
-                                    position: absolute;
-                                    top: 16px; right: 16px;
-                                    background: rgba(255,255,255,0.2);
-                                    border: none;
-                                    color: white;
-                                    font-size: 20px;
-                                    cursor: pointer;
-                                    width: 32px;
-                                    height: 32px;
-                                    border-radius: 50%;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                ">×</button>
-                                
-                                <!-- Logo Circle -->
-                                <div style="
-                                    position: absolute;
-                                    top: 20px; left: 20px;
-                                    width: 40px; height: 40px;
-                                    background: rgba(255,255,255,0.9);
-                                    border-radius: 50%;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    font-weight: bold;
-                                    color: #6366f1;
-                                    font-size: 18px;
-                                ">$$</div>
-                                
-                                <!-- Main Content -->
-                                <div style="text-align: center; margin-top: 20px;">
-                                    <div style="
-                                        background: rgba(255,255,255,0.2);
-                                        padding: 6px 16px;
-                                        border-radius: 20px;
-                                        font-size: 12px;
-                                        margin-bottom: 16px;
-                                        display: inline-block;
-                                    ">Build your wealth & the future</div>
-                                    
-                                    <div style="font-size: 48px; margin-bottom: 8px;">📈</div>
-                                    
-                                    <h3 style="
-                                        margin: 0;
-                                        font-size: 24px;
-                                        font-weight: 700;
-                                        line-height: 1.2;
-                                    ">$50 off Premium Trading Platform</h3>
-                                </div>
-                            </div>
-                            
-                            <!-- Content Section -->
-                            <div style="padding: 32px 24px 24px;">
-                                <p style="
-                                    color: #666;
-                                    font-size: 16px;
-                                    line-height: 1.5;
-                                    margin: 0 0 24px 0;
-                                    text-align: center;
-                                ">Start trading with commission-free stocks and get professional research tools included. Perfect for building your investment portfolio.</p>
-                                
-                                <!-- CTA Buttons -->
-                                <button style="
-                                    width: 100%;
-                                    background: #8b5cf6;
-                                    color: white;
-                                    border: none;
-                                    padding: 14px;
-                                    border-radius: 12px;
-                                    font-size: 16px;
-                                    font-weight: 600;
-                                    cursor: pointer;
-                                    margin-bottom: 12px;
-                                ">Unlock offer</button>
-                                
-                                <button onclick="hideModePopup()" style="
-                                    width: 100%;
-                                    background: white;
-                                    color: #666;
-                                    border: 2px solid #e5e7eb;
-                                    padding: 12px;
-                                    border-radius: 12px;
-                                    font-size: 14px;
-                                    cursor: pointer;
-                                ">Next ></button>
-                                
-                                <!-- Footer Dots -->
-                                <div style="text-align: center; margin-top: 16px;">
-                                    <span style="width: 8px; height: 8px; background: #333; border-radius: 50%; margin: 0 4px; display: inline-block;"></span>
-                                    <span style="width: 8px; height: 8px; background: #ddd; border-radius: 50%; margin: 0 4px; display: inline-block;"></span>
-                                    <span style="width: 8px; height: 8px; background: #ddd; border-radius: 50%; margin: 0 4px; display: inline-block;"></span>
-                                    <span style="width: 8px; height: 8px; background: #ddd; border-radius: 50%; margin: 0 4px; display: inline-block;"></span>
-                                    <span style="width: 8px; height: 8px; background: #ddd; border-radius: 50%; margin: 0 4px; display: inline-block;"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <script>
-                function hideModePopup() {
-                    const overlay = document.getElementById('modePopupOverlay');
-                    if (overlay) {
-                        overlay.style.display = 'none';
-                    }
-                }
-                
-                // Close on ESC key
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') {
-                        hideModePopup();
-                    }
-                });
-                
-                // Close on overlay click
-                document.getElementById('modePopupOverlay')?.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        hideModePopup();
-                    }
-                });
-                </script>
-                """
-                
-                st.components.v1.html(popup_demo_html, height=600)
-                
-                st.success("✅ **Demo Active:** The popup above replicates Thanks.co design with Tune CPL offers. Use ESC key or click outside to close!")
         
         with demo_tabs[2]:
             st.markdown("**📊 Thanks.co vs Custom Replacement Comparison**")
