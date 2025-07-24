@@ -2037,7 +2037,7 @@ elif page == "🏢 Mode Properties Hub":
             offer_choice = offer_list[st.session_state.offer_index]
             
             # Always show popup demo
-            if st.button("🎬 Launch Interactive Demo", key="old_section_popup", type="primary") or st.session_state.get("show_popup", False):
+            if st.button("🎭 Launch Old Demo Section", key="legacy_popup_demo", type="secondary") or st.session_state.get("show_popup", False):
                 st.session_state.show_popup = True
                 
                 # Get offer data based on selection - designed to match Thanks.co exactly
