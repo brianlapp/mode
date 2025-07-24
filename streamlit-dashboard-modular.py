@@ -163,6 +163,9 @@ if "page" in query_params:
         st.session_state.page = "📈 Analytics & Reports"
     elif page_param == "properties" or page_param == "portfolio":
         st.session_state.page = "🏢 Mode Properties Hub"
+    elif page_param == "demo":
+        st.session_state.page = "🏢 Mode Properties Hub"
+        st.session_state.show_popup = True  # Auto-show the demo popup
 
 # Set default page if not already set
 if 'page' not in st.session_state:
@@ -1741,7 +1744,7 @@ elif page == "🏢 Mode Properties Hub":
         # Enhanced demo section from existing Properties Portfolio
         st.subheader("🎬 Thanks.co Popup Visual Demo")
         
-        # Reorder tabs to put DEMO first and handle auto-navigation
+        # DEMO is now the first tab (default tab)
         demo_tabs = st.tabs(["🎬 DEMO", "📱 Live Screenshots", "📊 Comparison"])
         
         with demo_tabs[0]:
