@@ -1406,39 +1406,139 @@ elif page == "🏢 Properties Portfolio":
                 """, language="html")
         
         with demo_tabs[1]:
-            st.markdown("**Custom Mode Popup with Tune CPL Inventory:**")
+            st.markdown("**🚀 Interactive Custom Popup Demo (Tune CPL)**")
             
-            custom_slide = st.selectbox(
-                "Mode Custom Offers (Concept):",
-                ["Finance Offer: Trading Platform", "Cashback Offer: Shopping App", "Membership: Warehouse Club", "Crypto: Trading Bonus", "Legal: Consultation Service"]
-            )
+            # Create a working popup demo using HTML/CSS/JS
+            popup_demo_html = """
+            <div id="mode-popup-demo" style="margin: 20px 0;">
+                <button onclick="showModePopup()" style="
+                    background: #e91e63; 
+                    color: white; 
+                    border: none; 
+                    padding: 12px 24px; 
+                    border-radius: 6px; 
+                    cursor: pointer; 
+                    font-size: 16px;
+                    font-weight: bold;
+                ">🎬 Launch Custom Popup Demo</button>
+                
+                <!-- Custom Popup Modal -->
+                <div id="modePopupOverlay" style="
+                    display: none;
+                    position: fixed;
+                    top: 0; left: 0;
+                    width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.7);
+                    z-index: 10000;
+                ">
+                    <div style="
+                        position: absolute;
+                        top: 50%; left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: white;
+                        border-radius: 12px;
+                        padding: 0;
+                        max-width: 400px;
+                        width: 90%;
+                        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                    ">
+                        <!-- Header -->
+                        <div style="
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                            padding: 20px;
+                            border-radius: 12px 12px 0 0;
+                            text-align: center;
+                            position: relative;
+                        ">
+                            <button onclick="hideModePopup()" style="
+                                position: absolute;
+                                top: 10px; right: 15px;
+                                background: none;
+                                border: none;
+                                color: white;
+                                font-size: 24px;
+                                cursor: pointer;
+                            ">&times;</button>
+                            <h3 style="margin: 0; font-size: 18px;">Exclusive Offer</h3>
+                            <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Limited Time Only</p>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div style="padding: 24px;">
+                            <!-- Sample Financial Offer -->
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <div style="
+                                    background: #f8f9fa;
+                                    border-radius: 8px;
+                                    padding: 16px;
+                                    margin-bottom: 16px;
+                                ">
+                                    <h4 style="margin: 0 0 8px 0; color: #1e40af; font-size: 20px;">💰 Premium Trading Platform</h4>
+                                    <p style="margin: 0; color: #059669; font-size: 16px; font-weight: bold;">Get $50 Trading Bonus</p>
+                                </div>
+                                
+                                <div style="text-align: left; margin: 16px 0;">
+                                    <p style="margin: 8px 0; color: #374151;">✅ Commission-free stock trading</p>
+                                    <p style="margin: 8px 0; color: #374151;">✅ Professional research tools included</p>
+                                    <p style="margin: 8px 0; color: #374151;">✅ $50 bonus when you fund account</p>
+                                    <p style="margin: 8px 0; color: #374151;">✅ Perfect for building wealth</p>
+                                </div>
+                                
+                                <!-- CTA Button -->
+                                <button style="
+                                    background: white;
+                                    color: #1e40af;
+                                    border: 2px solid #1e40af;
+                                    padding: 12px 32px;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-size: 16px;
+                                    font-weight: bold;
+                                    width: 100%;
+                                    margin-top: 16px;
+                                " onclick="alert('Demo: This would redirect to Tune CPL offer with source tracking!')">
+                                    Claim Your $50 Bonus
+                                </button>
+                                
+                                <p style="margin: 12px 0 0 0; font-size: 12px; color: #6b7280;">
+                                    <strong>Mode Revenue:</strong> 100% vs Thanks.co commission
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            if "Trading Platform" in custom_slide:
-                st.markdown("""
-                **Premium Trading Platform (Tune CPL)**
-                - 🎯 $50 bonus for new accounts
-                - ✅ Commission-free stock trading
-                - 💰 Professional research tools included
-                - 📈 Perfect for ModeMarketMunchies audience
-                **Revenue**: 100% vs Thanks.co commission
-                """)
-            elif "Shopping App" in custom_slide:
-                st.markdown("""
-                **Cashback Shopping App (Tune CPL)**
-                - 🎯 $25 signup bonus
-                - ✅ 5% cashback at major retailers
-                - 💰 Real-time coupon application
-                - 🛍️ Perfect for ModeFreeFinds audience
-                **Revenue**: 100% vs Thanks.co commission
-                """)
-            elif "Warehouse Club" in custom_slide:
-                st.markdown("""
-                **Warehouse Club Membership (Tune CPL)**
-                - 🎯 40% off annual membership
-                - ✅ Bulk savings + gas discounts
-                - 💰 $60 value for families
-                - 👨‍👩‍👧‍👦 Family-focused positioning
-                **Revenue**: 100% vs Thanks.co commission
+            <script>
+                function showModePopup() {
+                    document.getElementById('modePopupOverlay').style.display = 'block';
+                }
+                
+                function hideModePopup() {
+                    document.getElementById('modePopupOverlay').style.display = 'none';
+                }
+                
+                // Close on overlay click
+                document.getElementById('modePopupOverlay')?.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        hideModePopup();
+                    }
+                });
+            </script>
+            """
+            
+            st.components.v1.html(popup_demo_html, height=100)
+            
+            st.success("✅ **Demo Features:** Click the button above to see a working popup that replicates Thanks.co design with Tune CPL offers!")
+            
+            st.markdown("""
+            **🎯 Custom Popup Benefits:**
+            - **100% Revenue Retention** - No Thanks.co commission
+            - **Tune CPL Integration** - Existing partner relationships  
+            - **Source Attribution** - Full tracking with Mike's traceId system
+            - **Brand Control** - Mode-branded experience
+            - **A/B Testing** - Easy optimization vs Thanks.co baseline
                 """)
         
         with demo_tabs[2]:
