@@ -1215,7 +1215,7 @@ elif page == "🏢 Mode Properties Hub":
                 st.success("✅ **Demo Active:** Click 'Next >' in the popup to cycle through 4 different CPL offers! Each click instantly updates the content.")
                 
                 # Simple reset button
-                if st.button("🔄 Reset Demo", key="reset_popup"):
+                if st.button("🔄 Reset Demo", key="reset_demo_section"):
                     st.session_state.show_popup = False
                     st.rerun()
         
@@ -2287,7 +2287,7 @@ elif page == "🏢 Mode Properties Hub":
                 col1, col2, col3 = st.columns(3)
                 
                 with col1:
-                    if st.button("🔄 Reset Demo", key="reset_popup"):
+                    if st.button("🔄 Reset Legacy Demo", key="reset_legacy_popup"):
                         st.session_state.show_popup = False
                         st.rerun()
                 
