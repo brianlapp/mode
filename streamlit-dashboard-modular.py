@@ -1918,7 +1918,7 @@ elif page == "🏢 Mode Properties Hub":
                                     margin-bottom: 12px;
                                 ">Unlock offer</button>
                                 
-                                                                 <button onclick="nextOffer()" style="
+                                                                 <button id="nextOfferBtn" style="
                                      width: 100%;
                                      background: white;
                                      color: #666;
@@ -1927,7 +1927,7 @@ elif page == "🏢 Mode Properties Hub":
                                      border-radius: 12px;
                                      font-size: 14px;
                                      cursor: pointer;
-                                 ">Next ></button>
+                                 ">Next > ({st.session_state.offer_index + 1}/{len(offer_list)})</button>
                                 
                                 <!-- Footer Dots -->
                                 <div style="text-align: center; margin-top: 16px;">
@@ -1942,38 +1942,74 @@ elif page == "🏢 Mode Properties Hub":
                     </div>
                 </div>
                 
-                <script>
-                function hideModePopup() {{
-                    const overlay = document.getElementById('modePopupOverlay');
-                    if (overlay) {{
-                        overlay.style.display = 'none';
-                    }}
-                }}
-                
-                // Close on ESC key
-                document.addEventListener('keydown', function(e) {{
-                    if (e.key === 'Escape') {{
-                        hideModePopup();
-                    }}
-                }});
-                
-                // Close on overlay click
-                document.getElementById('modePopupOverlay')?.addEventListener('click', function(e) {{
-                    if (e.target === this) {{
-                        hideModePopup();
-                    }}
-                }});
-                </script>
+                                 <script>
+                 function hideModePopup() {{
+                     const overlay = document.getElementById('modePopupOverlay');
+                     if (overlay) {{
+                         overlay.style.display = 'none';
+                     }}
+                 }}
+                 
+                 // Handle next offer button click
+                 document.addEventListener('DOMContentLoaded', function() {{
+                     const nextBtn = document.getElementById('nextOfferBtn');
+                     if (nextBtn) {{
+                         nextBtn.addEventListener('click', function() {{
+                             // Close popup first
+                             hideModePopup();
+                             // Set a short delay then trigger the Streamlit next button
+                             setTimeout(function() {{
+                                 // Try to trigger the external next offer button
+                                 const streamlitNextBtn = window.parent.document.querySelector('[data-testid="baseButton-primary"]');
+                                 if (streamlitNextBtn && streamlitNextBtn.textContent.includes('Next Offer')) {{
+                                     streamlitNextBtn.click();
+                                 }}
+                             }}, 100);
+                         }});
+                     }}
+                 }});
+                 
+                 // Close on ESC key
+                 document.addEventListener('keydown', function(e) {{
+                     if (e.key === 'Escape') {{
+                         hideModePopup();
+                     }}
+                 }});
+                 
+                 // Close on overlay click
+                 document.getElementById('modePopupOverlay')?.addEventListener('click', function(e) {{
+                     if (e.target === this) {{
+                         hideModePopup();
+                     }}
+                 }});
+                 </script>
                 """
                 
                 st.components.v1.html(popup_demo_html, height=600)
                 
-                st.success("✅ **Demo Active:** The popup above replicates Thanks.co design with Tune CPL offers. Use ESC key or click outside to close!")
+                st.success(f"✅ **Demo Active:** Showing offer {st.session_state.offer_index + 1} of {len(offer_list)} - Click 'Next >' in popup to cycle offers!")
                 
-                # Add a reset button to close and reset the popup
-                if st.button("🔄 Reset Demo", key="reset_popup"):
-                    st.session_state.show_popup = False
-                    st.rerun()
+                # Add control buttons
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    if st.button("🔄 Reset Demo", key="reset_popup"):
+                        st.session_state.show_popup = False
+                        st.rerun()
+                
+                with col2:
+                    if st.button("⏭️ Next Offer", key="next_offer_btn", type="primary"):
+                        # Cycle to next offer
+                        st.session_state.offer_index = (st.session_state.offer_index + 1) % len(offer_list)
+                        st.session_state.show_popup = True  # Keep popup open
+                        st.rerun()
+                
+                with col3:
+                    if st.button("⏮️ Previous Offer", key="prev_offer_btn"):
+                        # Cycle to previous offer  
+                        st.session_state.offer_index = (st.session_state.offer_index - 1) % len(offer_list)
+                        st.session_state.show_popup = True  # Keep popup open
+                        st.rerun()
         
         with demo_tabs[1]:
             st.markdown("**🎯 Actual Thanks.co Popup Screenshots Captured:**")
