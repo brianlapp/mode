@@ -1760,55 +1760,60 @@ elif page == "🏢 Mode Properties Hub":
             if st.button("🎬 Launch Interactive Demo", key="custom_popup_demo", type="primary") or st.session_state.get("show_popup", False):
                 st.session_state.show_popup = True
                 
-                # Get offer data based on selection
+                # Get offer data based on selection - designed to match Thanks.co exactly
                 offers = {
                     "💰 Trading Platform ($50 off)": {
-                        "emoji": "📈",
-                        "title": "$50 off Premium Trading Platform",
-                        "subtitle": "Build your wealth & the future",
-                        "description": "Start trading with commission-free stocks and get professional research tools included. Perfect for building your investment portfolio.",
-                        "gradient": "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-                        "icon": "$$"
+                        "logo_bg": "#4F46E5",
+                        "logo_text": "TRADE",
+                        "tagline": "Build your wealth & the future",
+                        "title": "50% off Premium Trading Platform",
+                        "icon": "📈",
+                        "description": "Wipe right with commission-free stocks that's better for the earth (& your cheeks) + 50% of profits go towards building portfolios. Use code tradepro50",
+                        "btn_color": "#7C3AED"
                     },
                     "🛒 Cashback App ($20 bonus)": {
-                        "emoji": "💳",
-                        "title": "$20 Cashback Bonus Today",
-                        "subtitle": "Earn on every purchase",
-                        "description": "Join 15M+ users earning cashback at 7000+ stores. Get your $20 bonus after first qualifying purchase. Free to join!",
-                        "gradient": "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                        "icon": "$20"
+                        "logo_bg": "#059669", 
+                        "logo_text": "CASH BACK",
+                        "tagline": "Earn on every purchase you make",
+                        "title": "$20 Cashback Bonus",
+                        "icon": "🧻",
+                        "description": "Wipe right with cashback that's better for the earth (& your wallet) + Get $20 bonus after first purchase. Use code cashback20",
+                        "btn_color": "#059669"
                     },
                     "🏪 Sam's Club (36% off)": {
-                        "emoji": "🛍️",
+                        "logo_bg": "#DC2626",
+                        "logo_text": "SAM'S CLUB", 
+                        "tagline": "Care for your shopping & savings",
                         "title": "36% off Sam's Club Plus",
-                        "subtitle": "Save $40 on membership",
-                        "description": "Free shipping, early shopping hours, 2% Sam's Cash rewards. Plus exclusive member prices on groceries and gas.",
-                        "gradient": "linear-gradient(135deg, #dc2626 0%, #991b1b 100%)",
-                        "icon": "SC"
+                        "icon": "🧻",
+                        "description": "Wipe right with membership savings that's better for the earth (& your budget) + Free shipping & gas rewards. Use code samsclub36",
+                        "btn_color": "#DC2626"
                     },
                     "🌿 Eco Products (20% off)": {
-                        "emoji": "🌱",
-                        "title": "20% off Eco-Friendly Products",
-                        "subtitle": "Better for earth & you",
-                        "description": "Premium bamboo toilet paper and household products. 50% of profits go to building toilets in developing countries.",
-                        "gradient": "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
-                        "icon": "ECO"
+                        "logo_bg": "#2563EB",
+                        "logo_text": "WHO GIVES A CRAP",
+                        "tagline": "Care for your bottom & the planet", 
+                        "title": "20% off Who Gives A Crap toilet paper",
+                        "icon": "🧻",
+                        "description": "Wipe right with bamboo TP that's better for the earth (& your cheeks) + 50% of profits go towards building toilets. Use code ecosave20",
+                        "btn_color": "#7C3AED"
                     }
                 }
                 
                 current_offer = offers[offer_choice]
                 
-                # Extract variables for f-string compatibility
-                gradient = current_offer['gradient']
-                icon = current_offer['icon']
-                subtitle = current_offer['subtitle']
-                emoji = current_offer['emoji']
+                # Extract variables for f-string compatibility  
+                logo_bg = current_offer['logo_bg']
+                logo_text = current_offer['logo_text']
+                tagline = current_offer['tagline']
                 title = current_offer['title']
+                icon = current_offer['icon']
                 description = current_offer['description']
+                btn_color = current_offer['btn_color']
                 
                 popup_demo_html = f"""
                 <div id="mode-popup-demo" style="margin: 20px 0;">
-                    <!-- Custom Popup Modal - Exact Thanks.co Design -->
+                    <!-- Thanks.co Exact Replica Design -->
                     <div id="modePopupOverlay" style="
                         display: block;
                         position: fixed;
@@ -1822,121 +1827,130 @@ elif page == "🏢 Mode Properties Hub":
                             top: 50%; left: 50%;
                             transform: translate(-50%, -50%);
                             background: white;
-                            border-radius: 20px;
+                            border-radius: 24px;
                             padding: 0;
-                            max-width: 380px;
+                            max-width: 320px;
                             width: 90%;
-                            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+                            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
                             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            overflow: hidden;
                         ">
-                            <!-- Header Section -->
-                            <div style="
-                                background: {gradient};
-                                height: 180px;
-                                border-radius: 20px 20px 0 0;
-                                position: relative;
+                            <!-- Close Button -->
+                            <button onclick="hideModePopup()" style="
+                                position: absolute;
+                                top: 12px; right: 12px;
+                                background: #E5E7EB;
+                                border: none;
+                                color: #6B7280;
+                                font-size: 18px;
+                                cursor: pointer;
+                                width: 28px;
+                                height: 28px;
+                                border-radius: 50%;
                                 display: flex;
                                 align-items: center;
                                 justify-content: center;
-                                color: white;
-                            ">
-                                <!-- Close Button -->
-                                <button onclick="hideModePopup()" style="
-                                    position: absolute;
-                                    top: 16px; right: 16px;
-                                    background: rgba(255,255,255,0.2);
-                                    border: none;
-                                    color: white;
-                                    font-size: 20px;
-                                    cursor: pointer;
-                                    width: 32px;
-                                    height: 32px;
-                                    border-radius: 50%;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                ">×</button>
-                                
-                                <!-- Logo Circle -->
-                                <div style="
-                                    position: absolute;
-                                    top: 20px; left: 20px;
-                                    width: 40px; height: 40px;
-                                    background: rgba(255,255,255,0.9);
-                                    border-radius: 50%;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    font-weight: bold;
-                                    color: #333;
-                                    font-size: 12px;
-                                ">{icon}</div>
-                                
-                                <!-- Main Content -->
-                                <div style="text-align: center; margin-top: 20px;">
-                                    <div style="
-                                        background: rgba(255,255,255,0.2);
-                                        padding: 6px 16px;
-                                        border-radius: 20px;
-                                        font-size: 12px;
-                                        margin-bottom: 16px;
-                                        display: inline-block;
-                                    ">{subtitle}</div>
-                                    
-                                    <div style="font-size: 48px; margin-bottom: 8px;">{emoji}</div>
-                                    
-                                    <h3 style="
-                                        margin: 0;
-                                        font-size: 24px;
-                                        font-weight: 700;
-                                        line-height: 1.2;
-                                    ">{title}</h3>
-                                </div>
-                            </div>
+                                z-index: 10001;
+                            ">×</button>
                             
-                            <!-- Content Section -->
-                            <div style="padding: 32px 24px 24px;">
+                            <!-- Blue Logo Circle -->
+                            <div style="
+                                position: absolute;
+                                top: 24px; left: 24px;
+                                width: 56px; height: 56px;
+                                background: {logo_bg};
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-weight: 700;
+                                color: white;
+                                font-size: 10px;
+                                text-align: center;
+                                line-height: 1.1;
+                                z-index: 10001;
+                            ">{logo_text}</div>
+                            
+                            <!-- Main Content Area -->
+                            <div style="padding: 24px; padding-top: 100px; text-align: center;">
+                                
+                                <!-- Gray Tagline -->
+                                <div style="
+                                    background: #F3F4F6;
+                                    color: #6B7280;
+                                    padding: 6px 12px;
+                                    border-radius: 16px;
+                                    font-size: 12px;
+                                    margin-bottom: 24px;
+                                    display: inline-block;
+                                    font-weight: 500;
+                                ">{tagline}</div>
+                                
+                                <!-- Large Title -->
+                                <h2 style="
+                                    margin: 0 0 8px 0;
+                                    font-size: 24px;
+                                    font-weight: 800;
+                                    line-height: 1.2;
+                                    color: #111827;
+                                ">{title}</h2>
+                                
+                                <!-- Toilet Paper Icon -->
+                                <div style="font-size: 32px; margin: 16px 0;">{icon}</div>
+                                
+                                <!-- Description Text -->
                                 <p style="
-                                    color: #666;
-                                    font-size: 16px;
-                                    line-height: 1.5;
-                                    margin: 0 0 24px 0;
+                                    color: #6B7280;
+                                    font-size: 14px;
+                                    line-height: 1.4;
+                                    margin: 16px 0 24px 0;
                                     text-align: center;
                                 ">{description}</p>
                                 
-                                <!-- CTA Buttons -->
+                                <!-- Purple CTA Button -->
                                 <button style="
                                     width: 100%;
-                                    background: #8b5cf6;
+                                    background: {btn_color};
                                     color: white;
                                     border: none;
-                                    padding: 14px;
-                                    border-radius: 12px;
+                                    padding: 16px;
+                                    border-radius: 16px;
                                     font-size: 16px;
                                     font-weight: 600;
                                     cursor: pointer;
                                     margin-bottom: 12px;
                                 ">Unlock offer</button>
                                 
-                                                                 <button id="nextOfferBtn" style="
-                                     width: 100%;
-                                     background: white;
-                                     color: #666;
-                                     border: 2px solid #e5e7eb;
-                                     padding: 12px;
-                                     border-radius: 12px;
-                                     font-size: 14px;
-                                     cursor: pointer;
-                                 ">Next > ({st.session_state.offer_index + 1}/{len(offer_list)})</button>
+                                <!-- White Next Button -->
+                                <button id="nextOfferBtn" style="
+                                    width: 100%;
+                                    background: white;
+                                    color: #6B7280;
+                                    border: 2px solid #E5E7EB;
+                                    padding: 14px;
+                                    border-radius: 16px;
+                                    font-size: 14px;
+                                    font-weight: 500;
+                                    cursor: pointer;
+                                    margin-bottom: 16px;
+                                ">Next ></button>
                                 
-                                <!-- Footer Dots -->
-                                <div style="text-align: center; margin-top: 16px;">
-                                    <span style="width: 8px; height: 8px; background: #333; border-radius: 50%; margin: 0 4px; display: inline-block;"></span>
-                                    <span style="width: 8px; height: 8px; background: #ddd; border-radius: 50%; margin: 0 4px; display: inline-block;"></span>
-                                    <span style="width: 8px; height: 8px; background: #ddd; border-radius: 50%; margin: 0 4px; display: inline-block;"></span>
-                                    <span style="width: 8px; height: 8px; background: #ddd; border-radius: 50%; margin: 0 4px; display: inline-block;"></span>
-                                    <span style="width: 8px; height: 8px; background: #ddd; border-radius: 50%; margin: 0 4px; display: inline-block;"></span>
+                                <!-- Pagination Dots -->
+                                <div style="text-align: center; margin-bottom: 16px;">
+                                    <span style="width: 8px; height: 8px; background: #374151; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
                                 </div>
+                                
+                                <!-- Footer Text -->
+                                <div style="
+                                    color: #9CA3AF;
+                                    font-size: 11px;
+                                    text-align: center;
+                                    line-height: 1.3;
+                                ">T&Cs Apply | Powered by <strong>Thanks</strong> • Privacy Policy</div>
                             </div>
                         </div>
                     </div>
