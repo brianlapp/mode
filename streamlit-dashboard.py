@@ -5,7 +5,7 @@ from pathlib import Path
 
 # Page config
 st.set_page_config(
-    page_title="Mode Optimization Dashboard", 
+    page_title="Mode Optimization Dashboard v2.0", 
     page_icon="🚀",
     layout="wide"
 )
