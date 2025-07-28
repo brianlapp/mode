@@ -110,6 +110,12 @@ function setupButtons() {
             showAddCampaignModal();
         });
     }
+    
+    // Form submission
+    const form = document.getElementById('addCampaignForm');
+    if (form) {
+        form.addEventListener('submit', handleFormSubmit);
+    }
 }
 
 // Show add campaign modal
@@ -146,6 +152,43 @@ function deleteCampaign(id) {
     console.log('Delete campaign:', id);
     if (confirm('Are you sure you want to delete this campaign?')) {
         alert('Delete functionality coming soon');
+    }
+}
+
+// Handle form submission
+async function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const campaignData = {
+        name: formData.get('name'),
+        tune_url: formData.get('tune_url'),
+        logo_url: formData.get('logo_url'),
+        main_image_url: formData.get('main_image_url'),
+        description: formData.get('description')
+    };
+    
+    try {
+        const response = await fetch('/api/campaigns', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(campaignData)
+        });
+        
+        if (response.ok) {
+            console.log('Campaign created successfully!');
+            hideAddCampaignModal();
+            e.target.reset();
+            await loadCampaigns(); // Reload campaigns
+        } else {
+            console.error('Failed to create campaign');
+            alert('Failed to create campaign. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error creating campaign:', error);
+        alert('Error creating campaign: ' + error.message);
     }
 }
 
