@@ -12,9 +12,9 @@ import os
 from pathlib import Path
 
 # Import our route modules (will create these next)
-from api.routes.campaigns import router as campaigns_router
-from api.routes.properties import router as properties_router
-from api.database import init_db
+from routes.campaigns import router as campaigns_router
+from routes.properties import router as properties_router
+from database import init_db
 
 # Create FastAPI app
 app = FastAPI(
