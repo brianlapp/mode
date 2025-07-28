@@ -7,10 +7,8 @@ import sqlite3
 import os
 from pathlib import Path
 
-# Database file path - use persistent volume in production
-DB_DIR = os.path.join(os.getcwd(), 'data')
-os.makedirs(DB_DIR, exist_ok=True)
-DB_PATH = os.path.join(DB_DIR, "popup_campaigns.db")
+# Database file path
+DB_PATH = "popup_campaigns.db"
 
 def get_db_connection():
     """Get database connection"""
