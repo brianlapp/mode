@@ -46,7 +46,7 @@ class CampaignManager {
 
     renderCampaigns() {
         console.log(`🎨 Rendering ${this.campaigns.length} campaigns`);
-        const tableBody = document.getElementById('campaignsTableBody');
+        const tableBody = document.getElementById('campaigns-table');
         
         if (!tableBody) {
             console.error('❌ Table body element not found!');
