@@ -6,7 +6,7 @@ CRUD operations for Mike's Tune campaign management
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, HttpUrl
 from typing import List, Optional
-from database import (
+from api.database import (
     get_db_connection, 
     insert_campaign, 
     get_active_campaigns_for_property,

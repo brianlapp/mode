@@ -6,7 +6,7 @@ Manage campaign visibility and settings per property (MFF, MMM, MCAD, MMD)
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict
-from database import get_db_connection
+from api.database import get_db_connection
 import sqlite3
 
 router = APIRouter()
