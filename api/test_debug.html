@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Campaign Loading</title>
+</head>
+<body>
+    <h1>Debug Campaign Loading</h1>
+    <div id="debug-output"></div>
+    <div id="campaigns-table">
+        <p>Campaigns will load here...</p>
+    </div>
+
+    <script>
+        const debugOutput = document.getElementById('debug-output');
+        
+        function log(message) {
+            console.log(message);
+            debugOutput.innerHTML += '<p>' + message + '</p>';
+        }
+
+        log('🚀 Starting campaign load test...');
+        
+        // Test the API directly
+        fetch('/api/campaigns')
+            .then(response => {
+                log('📡 Response status: ' + response.status);
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(campaigns => {
+                log('✅ Loaded ' + campaigns.length + ' campaigns');
+                log('📋 Campaign data: ' + JSON.stringify(campaigns, null, 2));
+                
+                // Test table element access
+                const tableBody = document.getElementById('campaigns-table');
+                if (tableBody) {
+                    log('✅ Found table element');
+                    tableBody.innerHTML = '<p>Found ' + campaigns.length + ' campaigns!</p>';
+                } else {
+                    log('❌ Table element not found');
+                }
+            })
+            .catch(error => {
+                log('❌ Error: ' + error.message);
+                log('❌ Full error: ' + JSON.stringify(error));
+            });
+    </script>
+</body>
+</html> 
