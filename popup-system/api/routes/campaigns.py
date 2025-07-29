@@ -161,6 +161,28 @@ async def delete_campaign(campaign_id: int):
     finally:
         conn.close()
 
+@router.delete("/campaigns/{campaign_id}/hard-delete", response_model=dict)
+async def hard_delete_campaign(campaign_id: int):
+    """Permanently delete campaign from database"""
+    conn = get_db_connection()
+    try:
+        # Delete from campaign_properties first (foreign key constraint)
+        conn.execute("DELETE FROM campaign_properties WHERE campaign_id = ?", (campaign_id,))
+        
+        # Delete the campaign
+        cursor = conn.execute("DELETE FROM campaigns WHERE id = ?", (campaign_id,))
+        
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        conn.commit()
+        return {"message": "Campaign permanently deleted"}
+        
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
+
 @router.post("/impression", response_model=dict)
 async def track_popup_impression(campaign_id: int, property_code: str):
     """Track when popup is shown to user"""

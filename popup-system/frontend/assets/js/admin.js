@@ -286,9 +286,16 @@ class CampaignManager {
     }
 
     async editCampaign(campaignId) {
+        console.log(`🔧 Edit button clicked for campaign ID: ${campaignId}`);
         const campaign = this.campaigns.find(c => c.id === campaignId);
-        if (!campaign) return;
+        
+        if (!campaign) {
+            console.error(`❌ Campaign with ID ${campaignId} not found in campaigns array:`, this.campaigns);
+            this.showAlert(`Campaign not found! ID: ${campaignId}`, 'error');
+            return;
+        }
 
+        console.log(`✅ Found campaign:`, campaign);
         // Show campaign preview/details modal
         this.showCampaignPreview(campaign);
     }
