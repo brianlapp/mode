@@ -26,22 +26,35 @@ class CampaignManager {
 
     async loadCampaigns() {
         try {
+            console.log(`🔄 Fetching campaigns from: ${this.baseURL}/campaigns`);
             const response = await fetch(`${this.baseURL}/campaigns`);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            console.log(`📡 Response status: ${response.status}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             this.campaigns = await response.json();
-            console.log(`✅ Loaded ${this.campaigns.length} campaigns`);
+            console.log(`✅ Loaded ${this.campaigns.length} campaigns:`, this.campaigns);
             this.renderCampaigns();
         } catch (error) {
             console.error('❌ Failed to load campaigns:', error);
-            this.showAlert('Failed to load campaigns. Please refresh the page.', 'error');
+            console.error('❌ Error details:', error.message);
+            this.showAlert(`Failed to load campaigns: ${error.message}`, 'error');
         }
     }
 
     renderCampaigns() {
-        const tableBody = document.getElementById('campaignsTableBody');
-        if (!tableBody) return;
+        console.log(`🎨 Rendering ${this.campaigns.length} campaigns`);
+        const tableBody = document.getElementById('campaigns-table');
+        
+        if (!tableBody) {
+            console.error('❌ Table body element not found!');
+            return;
+        }
 
         if (this.campaigns.length === 0) {
+            console.log('⚠️ No campaigns to display');
             tableBody.innerHTML = `
                 <tr>
                     <td colspan="5" class="px-6 py-4 text-center text-gray-500">
@@ -52,6 +65,8 @@ class CampaignManager {
             `;
             return;
         }
+
+        console.log(`✅ Rendering ${this.campaigns.length} campaigns in table`);
 
         tableBody.innerHTML = this.campaigns.map(campaign => `
             <tr class="hover:bg-gray-50 transition-colors">
