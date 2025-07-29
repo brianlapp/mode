@@ -23,6 +23,7 @@ class CampaignCreate(BaseModel):
     logo_url: str          # For top-left circle
     main_image_url: str    # For main offer display
     description: Optional[str] = ""
+    cta_text: str = 'View Offer'
 
 class CampaignUpdate(BaseModel):
     name: Optional[str] = None
@@ -39,6 +40,7 @@ class Campaign(BaseModel):
     logo_url: str
     main_image_url: str
     description: str
+    cta_text: str
     active: bool
     created_at: str
     updated_at: str
@@ -84,7 +86,8 @@ async def create_campaign(campaign: CampaignCreate):
             tune_url=campaign.tune_url,
             logo_url=campaign.logo_url,
             main_image_url=campaign.main_image_url,
-            description=campaign.description
+            description=campaign.description,
+            cta_text=campaign.cta_text
         )
         return {"id": campaign_id, "message": "Campaign created successfully"}
     except sqlite3.Error as e:

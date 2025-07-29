@@ -239,7 +239,8 @@ class CampaignManager {
             tune_url: formData.get('tune_url'),
             logo_url: formData.get('logo_url'),
             main_image_url: formData.get('main_image_url'),
-            description: formData.get('description')
+            description: formData.get('description'),
+            cta_text: formData.get('cta_text') || 'View Offer'
         };
 
         // Validate required fields

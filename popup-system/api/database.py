@@ -30,6 +30,7 @@ def init_db():
                 logo_url TEXT NOT NULL,           -- For top-left circle
                 main_image_url TEXT NOT NULL,     -- For main offer display
                 description TEXT,                 -- Optional campaign description
+                cta_text TEXT DEFAULT 'View Offer', -- Customizable button text
                 active BOOLEAN DEFAULT true,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -87,6 +88,7 @@ def get_active_campaigns_for_property(property_code: str):
                 c.logo_url,
                 c.main_image_url,
                 c.description,
+                c.cta_text,
                 cp.visibility_percentage
             FROM campaigns c
             JOIN campaign_properties cp ON c.id = cp.campaign_id
@@ -101,14 +103,14 @@ def get_active_campaigns_for_property(property_code: str):
     finally:
         conn.close()
 
-def insert_campaign(name: str, tune_url: str, logo_url: str, main_image_url: str, description: str = ""):
+def insert_campaign(name: str, tune_url: str, logo_url: str, main_image_url: str, description: str = "", cta_text: str = "View Offer"):
     """Insert new campaign"""
     conn = get_db_connection()
     try:
         cursor = conn.execute("""
-            INSERT INTO campaigns (name, tune_url, logo_url, main_image_url, description)
-            VALUES (?, ?, ?, ?, ?)
-        """, (name, tune_url, logo_url, main_image_url, description))
+            INSERT INTO campaigns (name, tune_url, logo_url, main_image_url, description, cta_text)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (name, tune_url, logo_url, main_image_url, description, cta_text))
         
         campaign_id = cursor.lastrowid
         conn.commit()
