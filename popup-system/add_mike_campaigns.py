@@ -71,7 +71,9 @@ def add_campaign(campaign_data):
         "logo_url": "https://via.placeholder.com/56/F7007C/FFFFFF?text=" + campaign_data["name"][:2],
         "main_image_url": "https://via.placeholder.com/280x220/F7007C/FFFFFF?text=" + campaign_data["name"].replace(" ", "+"),
         "description": campaign_data["description"],
-        "cta_text": campaign_data["cta_text"]
+        "cta_text": campaign_data["cta_text"],
+        "offer_id": campaign_data["offer_id"],
+        "aff_id": campaign_data["aff_id"]
     }
     
     try:
