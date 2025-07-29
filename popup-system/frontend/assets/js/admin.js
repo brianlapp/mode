@@ -286,7 +286,7 @@ class CampaignManager {
     }
 
     async editCampaign(campaignId) {
-        console.log(`🔧 Edit button clicked for campaign ID: ${campaignId}`);
+        console.log(`🔧 EDIT MODAL - Clicked for campaign ID: ${campaignId}`);
         const campaign = this.campaigns.find(c => c.id === campaignId);
         
         if (!campaign) {
@@ -295,9 +295,10 @@ class CampaignManager {
             return;
         }
 
-        console.log(`✅ Found campaign:`, campaign);
-        // Show editable campaign form modal
+        console.log(`✅ Found campaign for EDITING:`, campaign);
+        // Force show editable campaign form modal (not preview!)
         this.showEditCampaignModal(campaign);
+        console.log(`🎯 Called showEditCampaignModal() - should show EDITABLE form!`);
     }
 
     showEditCampaignModal(campaign) {
