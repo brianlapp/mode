@@ -11,7 +11,7 @@ restartPolicyMaxRetries = 10
 [variables]
 PYTHONPATH = "/app"
 
-# Volume will be added later - causes deployment issues for now
-# [[deploy.volumes]]
-# mountPath = "/app/api/data"
-# name = "popup-database" 
+# Database persistence with proper volume mounting
+[[deploy.volumes]]
+mountPath = "/app/api/data"
+name = "popup-database" 

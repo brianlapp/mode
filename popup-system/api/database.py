@@ -7,8 +7,19 @@ import sqlite3
 import os
 from pathlib import Path
 
-# Database file path
-DB_PATH = "popup_campaigns.db"
+# Database file path - use persistent volume in production
+def get_db_path():
+    """Get database path with persistent volume support"""
+    # Try persistent volume first (Railway production)
+    volume_path = "/app/api/data"
+    if os.path.exists(volume_path):
+        os.makedirs(volume_path, exist_ok=True)
+        return os.path.join(volume_path, "popup_campaigns.db")
+    
+    # Fallback to local path (development)
+    return "popup_campaigns.db"
+
+DB_PATH = get_db_path()
 
 def get_db_connection():
     """Get database connection"""

@@ -430,13 +430,13 @@ class CampaignManager {
                                         color: #111827;
                                     ">${campaign.name}</h2>
                                     
-                                    <!-- Campaign Image -->
-                                    <div style="margin: 16px 0; display: flex; align-items: center; justify-content: center;">
-                                        <img id="edit-preview-main-image" 
-                                             src="${campaign.main_image_url || 'https://via.placeholder.com/280x220/F7007C/FFFFFF?text=No+Image'}" 
-                                             alt="Campaign" 
-                                             style="width: 280px; height: 220px; object-fit: cover; border-radius: 12px;">
-                                    </div>
+                                                                         <!-- Campaign Image -->
+                                     <div style="margin: 16px 0; display: flex; align-items: center; justify-content: center;">
+                                         <img id="edit-preview-main-image" 
+                                              src="${campaign.main_image_url || 'https://via.placeholder.com/280x220/F7007C/FFFFFF?text=No+Image'}" 
+                                              alt="Campaign" 
+                                              style="width: 280px; height: 220px; object-fit: contain; object-position: center; border-radius: 12px; background-color: #f8f9fa;">
+                                     </div>
                                     
                                     <!-- Description -->
                                     <p id="edit-preview-description" style="
