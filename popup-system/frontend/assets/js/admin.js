@@ -1,6 +1,7 @@
 /**
  * Mode Popup Campaign Manager - Admin Interface
  * JavaScript functionality for Mike's campaign management dashboard
+ * CACHE BUSTER: 2025-01-27-EDIT-MODAL-FIX
  */
 
 class CampaignManager {
