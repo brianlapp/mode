@@ -44,6 +44,15 @@ def init_db():
         except Exception as e:
             # Column already exists or other error - this is okay
             pass
+            
+        # Add impression pixel fields for Tune tracking
+        try:
+            conn.execute("ALTER TABLE campaigns ADD COLUMN offer_id TEXT")
+            conn.execute("ALTER TABLE campaigns ADD COLUMN aff_id TEXT") 
+            print("✅ Added Tune tracking fields (offer_id, aff_id) to campaigns table")
+        except Exception as e:
+            # Columns already exist or other error - this is okay
+            pass
         
         # Create campaign_properties table for property-specific settings
         conn.execute("""
@@ -97,6 +106,8 @@ def get_active_campaigns_for_property(property_code: str):
                 c.main_image_url,
                 c.description,
                 c.cta_text,
+                c.offer_id,
+                c.aff_id,
                 cp.visibility_percentage
             FROM campaigns c
             JOIN campaign_properties cp ON c.id = cp.campaign_id
@@ -111,14 +122,14 @@ def get_active_campaigns_for_property(property_code: str):
     finally:
         conn.close()
 
-def insert_campaign(name: str, tune_url: str, logo_url: str, main_image_url: str, description: str = "", cta_text: str = "View Offer"):
-    """Insert new campaign"""
+def insert_campaign(name: str, tune_url: str, logo_url: str, main_image_url: str, description: str = "", cta_text: str = "View Offer", offer_id: str = "", aff_id: str = ""):
+    """Insert new campaign with Tune tracking support"""
     conn = get_db_connection()
     try:
         cursor = conn.execute("""
-            INSERT INTO campaigns (name, tune_url, logo_url, main_image_url, description, cta_text)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (name, tune_url, logo_url, main_image_url, description, cta_text))
+            INSERT INTO campaigns (name, tune_url, logo_url, main_image_url, description, cta_text, offer_id, aff_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (name, tune_url, logo_url, main_image_url, description, cta_text, offer_id, aff_id))
         
         campaign_id = cursor.lastrowid
         conn.commit()

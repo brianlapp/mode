@@ -24,6 +24,8 @@ class CampaignCreate(BaseModel):
     main_image_url: str    # For main offer display
     description: Optional[str] = ""
     cta_text: str = 'View Offer'
+    offer_id: Optional[str] = ""  # Tune offer ID for impression pixels
+    aff_id: Optional[str] = ""    # Tune affiliate ID for impression pixels
 
 class CampaignUpdate(BaseModel):
     name: Optional[str] = None
@@ -41,6 +43,8 @@ class Campaign(BaseModel):
     main_image_url: str
     description: str
     cta_text: str
+    offer_id: Optional[str] = ""
+    aff_id: Optional[str] = ""
     active: bool
     created_at: str
     updated_at: str
@@ -87,7 +91,9 @@ async def create_campaign(campaign: CampaignCreate):
             logo_url=campaign.logo_url,
             main_image_url=campaign.main_image_url,
             description=campaign.description,
-            cta_text=campaign.cta_text
+            cta_text=campaign.cta_text,
+            offer_id=campaign.offer_id,
+            aff_id=campaign.aff_id
         )
         return {"id": campaign_id, "message": "Campaign created successfully"}
     except sqlite3.Error as e:
@@ -182,4 +188,37 @@ async def get_campaign_by_id(campaign_id: int):
         
         return dict(campaign)
     finally:
-        conn.close() 
+        conn.close()
+
+@router.get("/campaigns/{campaign_id}/impression-pixel")
+async def get_impression_pixel(campaign_id: int):
+    """Generate Tune impression pixel for a campaign"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.execute("""
+            SELECT offer_id, aff_id FROM campaigns WHERE id = ?
+        """, (campaign_id,))
+        
+        result = cursor.fetchone()
+        conn.close()
+        
+        if not result:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        offer_id, aff_id = result
+        
+        if not offer_id or not aff_id:
+            return {"pixel_url": None, "message": "Campaign missing offer_id or aff_id"}
+        
+        pixel_url = f"https://track.modemobile.com/aff_i?offer_id={offer_id}&aff_id={aff_id}"
+        pixel_html = f'<img src="{pixel_url}" width="0" height="0" style="position:absolute;visibility:hidden;" border="0" />'
+        
+        return {
+            "pixel_url": pixel_url,
+            "pixel_html": pixel_html,
+            "offer_id": offer_id,
+            "aff_id": aff_id
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate impression pixel: {str(e)}") 
