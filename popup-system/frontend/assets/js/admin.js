@@ -46,7 +46,7 @@ class CampaignManager {
 
     renderCampaigns() {
         console.log(`🎨 Rendering ${this.campaigns.length} campaigns`);
-        const tableBody = document.getElementById('campaigns-table');
+        const tableBody = document.getElementById('campaignsTableBody');
         
         if (!tableBody) {
             console.error('❌ Table body element not found!');
@@ -215,11 +215,11 @@ class CampaignManager {
     }
 
     closeModals() {
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
+        const modal = document.getElementById('addCampaignModal');
+        if (modal) {
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-        });
+        }
         
         // Reset forms
         const forms = document.querySelectorAll('form');
