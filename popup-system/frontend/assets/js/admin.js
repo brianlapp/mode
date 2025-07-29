@@ -296,8 +296,360 @@ class CampaignManager {
         }
 
         console.log(`✅ Found campaign:`, campaign);
-        // Show campaign preview/details modal
-        this.showCampaignPreview(campaign);
+        // Show editable campaign form modal
+        this.showEditCampaignModal(campaign);
+    }
+
+    showEditCampaignModal(campaign) {
+        // Create editable campaign modal
+        const modalHTML = `
+            <div id="editCampaignModal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+                <div class="modal-content bg-white p-8 rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900">Edit Campaign: ${campaign.name}</h3>
+                        <button class="modal-close text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                    </div>
+                    
+                    <form id="editCampaignForm" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Left Column: Editable Form -->
+                        <div class="space-y-4">
+                            <h4 class="text-lg font-semibold text-gray-800">Campaign Details</h4>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Campaign Name</label>
+                                <input type="text" id="edit_name" value="${campaign.name}" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                <textarea id="edit_description" rows="3" 
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink">${campaign.description || ''}</textarea>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">CTA Button Text</label>
+                                <input type="text" id="edit_cta_text" value="${campaign.cta_text}" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Logo URL (Circle Image)</label>
+                                <input type="url" id="edit_logo_url" value="${campaign.logo_url}" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink"
+                                       placeholder="https://example.com/logo.png">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Main Image URL (Campaign Image)</label>
+                                <input type="url" id="edit_main_image_url" value="${campaign.main_image_url}" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink"
+                                       placeholder="https://example.com/campaign-image.jpg">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tune URL (Read-only)</label>
+                                <input type="text" value="${campaign.tune_url}" readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Offer ID</label>
+                                    <input type="text" value="${campaign.offer_id || ''}" readonly
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Aff ID</label>
+                                    <input type="text" value="${campaign.aff_id || ''}" readonly
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column: Live Preview -->
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800 mb-4">Live Preview</h4>
+                            
+                            <!-- Mode Popup Preview -->
+                            <div id="edit-popup-preview" style="
+                                max-width: 340px;
+                                width: 100%;
+                                margin: 0 auto;
+                                background: white;
+                                border-radius: 24px;
+                                box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+                                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                                overflow: hidden;
+                                position: relative;
+                                border: 2px solid #e5e7eb;
+                            ">
+                                <!-- Logo Circle -->
+                                <div style="
+                                    position: absolute;
+                                    top: 24px; 
+                                    left: 24px;
+                                    width: 56px; 
+                                    height: 56px;
+                                    background: transparent;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    z-index: 10;
+                                    overflow: hidden;
+                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                                ">
+                                    <img id="edit-preview-logo" 
+                                         src="${campaign.logo_url || 'https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO'}" 
+                                         alt="Logo"
+                                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                </div>
+                                
+                                <!-- Main Content -->
+                                <div style="padding: 24px; padding-top: 100px; text-align: center;">
+                                    <!-- Tagline Pill -->
+                                    <div style="
+                                        background: #F3F4F6;
+                                        color: #6B7280;
+                                        padding: 6px 12px;
+                                        border-radius: 16px;
+                                        font-size: 12px;
+                                        margin-bottom: 24px;
+                                        display: inline-block;
+                                        font-weight: 500;
+                                    ">Mode Campaign Preview</div>
+                                    
+                                    <!-- Title -->
+                                    <h2 id="edit-preview-title" style="
+                                        margin: 0 0 8px 0;
+                                        font-size: 24px;
+                                        font-weight: 800;
+                                        line-height: 1.2;
+                                        color: #111827;
+                                    ">${campaign.name}</h2>
+                                    
+                                    <!-- Campaign Image -->
+                                    <div style="margin: 16px 0; display: flex; align-items: center; justify-content: center;">
+                                        <img id="edit-preview-main-image" 
+                                             src="${campaign.main_image_url || 'https://via.placeholder.com/280x220/F7007C/FFFFFF?text=No+Image'}" 
+                                             alt="Campaign" 
+                                             style="width: 280px; height: 220px; object-fit: cover; border-radius: 12px;">
+                                    </div>
+                                    
+                                    <!-- Description -->
+                                    <p id="edit-preview-description" style="
+                                        color: #6B7280;
+                                        font-size: 14px;
+                                        line-height: 1.4;
+                                        margin: 16px 0 24px 0;
+                                        text-align: center;
+                                    ">${campaign.description || 'Campaign description will appear here...'}</p>
+                                    
+                                    <!-- CTA Button -->
+                                    <button id="edit-preview-cta" style="
+                                        width: 100%;
+                                        background: #7C3AED;
+                                        color: white;
+                                        border: none;
+                                        padding: 16px;
+                                        border-radius: 16px;
+                                        font-size: 16px;
+                                        font-weight: 600;
+                                        cursor: pointer;
+                                        margin-bottom: 12px;
+                                    ">${campaign.cta_text}</button>
+                                    
+                                    <!-- Next Button -->
+                                    <button style="
+                                        width: 100%;
+                                        background: white;
+                                        color: #6B7280;
+                                        border: 2px solid #E5E7EB;
+                                        padding: 14px;
+                                        border-radius: 16px;
+                                        font-size: 14px;
+                                        font-weight: 500;
+                                        cursor: pointer;
+                                        margin-bottom: 16px;
+                                    ">Next ></button>
+                                    
+                                    <!-- Pagination Dots -->
+                                    <div style="text-align: center; margin-bottom: 16px;">
+                                        <span style="width: 8px; height: 8px; background: #374151; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                        <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                        <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                    </div>
+                                    
+                                    <!-- Footer -->
+                                    <div style="
+                                        color: #9CA3AF;
+                                        font-size: 11px;
+                                        text-align: center;
+                                        line-height: 1.3;
+                                    ">T&Cs Apply | Powered by <strong>Mode</strong> • Privacy Policy</div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="flex justify-end space-x-3 mt-8">
+                        <button class="modal-close px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="campaignManager.saveEditedCampaign(${campaign.id})" 
+                                class="px-4 py-2 bg-mode-pink text-white rounded-md hover:bg-mode-pink/80">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove existing modal if any
+        const existingModal = document.getElementById('editCampaignModal');
+        if (existingModal) existingModal.remove();
+
+        // Add new modal
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Show modal
+        const modal = document.getElementById('editCampaignModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        // Add event listeners for closing
+        const closeButtons = modal.querySelectorAll('.modal-close');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modal.remove();
+            });
+        });
+        
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+        
+        // Set up real-time preview updates
+        this.setupEditLivePreview();
+    }
+
+    setupEditLivePreview() {
+        // Get all the form inputs that affect the preview
+        const nameInput = document.getElementById('edit_name');
+        const descriptionInput = document.getElementById('edit_description');
+        const ctaInput = document.getElementById('edit_cta_text');
+        const logoInput = document.getElementById('edit_logo_url');
+        const imageInput = document.getElementById('edit_main_image_url');
+
+        // Get all the preview elements
+        const previewTitle = document.getElementById('edit-preview-title');
+        const previewDescription = document.getElementById('edit-preview-description');
+        const previewCta = document.getElementById('edit-preview-cta');
+        const previewLogo = document.getElementById('edit-preview-logo');
+        const previewImage = document.getElementById('edit-preview-main-image');
+
+        // Real-time update function
+        const updatePreview = () => {
+            if (previewTitle && nameInput) {
+                previewTitle.textContent = nameInput.value || 'Campaign Name';
+            }
+            
+            if (previewDescription && descriptionInput) {
+                previewDescription.textContent = descriptionInput.value || 'Campaign description will appear here...';
+            }
+            
+            if (previewCta && ctaInput) {
+                previewCta.textContent = ctaInput.value || 'View Offer';
+            }
+            
+            if (previewLogo && logoInput && logoInput.value) {
+                previewLogo.src = logoInput.value;
+                previewLogo.onerror = () => {
+                    previewLogo.src = 'https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO';
+                };
+            }
+            
+            if (previewImage && imageInput && imageInput.value) {
+                previewImage.src = imageInput.value;
+                previewImage.onerror = () => {
+                    previewImage.src = 'https://via.placeholder.com/280x220/F7007C/FFFFFF?text=No+Image';
+                };
+            }
+        };
+
+        // Add event listeners for real-time updates
+        if (nameInput) nameInput.addEventListener('input', updatePreview);
+        if (descriptionInput) descriptionInput.addEventListener('input', updatePreview);
+        if (ctaInput) ctaInput.addEventListener('input', updatePreview);
+        if (logoInput) logoInput.addEventListener('input', updatePreview);
+        if (imageInput) imageInput.addEventListener('input', updatePreview);
+
+        console.log('✨ Edit modal live preview functionality activated!');
+    }
+
+    async saveEditedCampaign(campaignId) {
+        console.log(`💾 Saving changes for campaign ID: ${campaignId}`);
+        
+        // Get form values
+        const name = document.getElementById('edit_name').value;
+        const description = document.getElementById('edit_description').value;
+        const cta_text = document.getElementById('edit_cta_text').value;
+        const logo_url = document.getElementById('edit_logo_url').value;
+        const main_image_url = document.getElementById('edit_main_image_url').value;
+        
+        // Validate required fields
+        if (!name.trim()) {
+            this.showAlert('Campaign name is required!', 'error');
+            return;
+        }
+        
+        if (!cta_text.trim()) {
+            this.showAlert('CTA button text is required!', 'error');
+            return;
+        }
+        
+        const updateData = {
+            name: name.trim(),
+            description: description.trim(),
+            cta_text: cta_text.trim(),
+            logo_url: logo_url.trim(),
+            main_image_url: main_image_url.trim()
+        };
+        
+        try {
+            console.log('📡 Sending update request:', updateData);
+            const response = await fetch(`${this.baseURL}/campaigns/${campaignId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            console.log('✅ Campaign updated successfully:', result);
+            
+            // Close modal
+            const modal = document.getElementById('editCampaignModal');
+            if (modal) modal.remove();
+            
+            // Reload campaigns to show updated data
+            await this.loadCampaigns();
+            
+            this.showAlert('Campaign updated successfully!', 'success');
+            
+        } catch (error) {
+            console.error('❌ Failed to update campaign:', error);
+            this.showAlert(`Failed to update campaign: ${error.message}`, 'error');
+        }
     }
 
     showCampaignPreview(campaign) {
