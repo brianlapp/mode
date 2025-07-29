@@ -397,10 +397,11 @@ class CampaignManager {
                                     align-items: center;
                                     justify-content: center;
                                     z-index: 10;
-                                    overflow: hidden;
-                                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                                ">
-                                    <img id="edit-preview-logo" 
+                                                                         overflow: hidden;
+                                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                                     border: none;
+                                 ">
+                                     <img id="edit-preview-logo" 
                                          src="${campaign.logo_url || 'https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO'}" 
                                          alt="Logo"
                                          style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
