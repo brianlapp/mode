@@ -37,6 +37,14 @@ def init_db():
             )
         """)
         
+        # Add cta_text column if it doesn't exist (for existing databases)
+        try:
+            conn.execute("ALTER TABLE campaigns ADD COLUMN cta_text TEXT DEFAULT 'View Offer'")
+            print("✅ Added cta_text column to existing campaigns table")
+        except Exception as e:
+            # Column already exists or other error - this is okay
+            pass
+        
         # Create campaign_properties table for property-specific settings
         conn.execute("""
             CREATE TABLE IF NOT EXISTS campaign_properties (
