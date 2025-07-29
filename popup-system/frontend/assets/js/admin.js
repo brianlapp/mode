@@ -195,12 +195,10 @@ class CampaignManager {
             
             if (previewLogo && logoInput && logoInput.value) {
                 previewLogo.src = logoInput.value;
-                // Update logo circle background when logo is loaded
+                // Keep background transparent - no gray ring!
                 const logoCircle = document.getElementById('preview-logo-circle');
-                if (logoCircle && logoInput.value) {
+                if (logoCircle) {
                     logoCircle.style.background = 'transparent';
-                } else {
-                    logoCircle.style.background = '#2563EB';
                 }
             }
             

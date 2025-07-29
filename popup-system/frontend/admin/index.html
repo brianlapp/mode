@@ -288,7 +288,7 @@
                             <div class="bg-gray-50 p-6 rounded-lg">
                                 <!-- Thanks.co Exact Replica Design Preview -->
                                 <div id="popup-preview" style="
-                                    max-width: 320px;
+                                    max-width: 340px;
                                     width: 100%;
                                     margin: 0 auto;
                                     background: white;
@@ -298,25 +298,26 @@
                                     overflow: hidden;
                                     position: relative;
                                 ">
-                                    <!-- Logo Circle (Exact Match) -->
+                                    <!-- Logo Circle (No Border - Full Logo) -->
                                     <div id="preview-logo-circle" style="
                                         position: absolute;
                                         top: 24px; 
                                         left: 24px;
                                         width: 56px; 
                                         height: 56px;
-                                        background: #2563EB;
+                                        background: transparent;
                                         border-radius: 50%;
                                         display: flex;
                                         align-items: center;
                                         justify-content: center;
                                         z-index: 10;
                                         overflow: hidden;
+                                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                                     ">
                                         <img id="preview-logo" 
                                              src="https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO" 
                                              alt="Logo"
-                                             style="width: 100%; height: 100%; object-fit: cover;">
+                                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                                     </div>
                                     
                                     <!-- Main Content (Exact Match) -->
@@ -343,12 +344,12 @@
                                             color: #111827;
                                         ">Campaign Name</h2>
                                         
-                                        <!-- Campaign Image -->
-                                        <div style="margin: 16px 0; min-height: 100px; display: flex; align-items: center; justify-content: center;">
+                                        <!-- Campaign Image (Full Size) -->
+                                        <div style="margin: 16px 0; display: flex; align-items: center; justify-content: center;">
                                             <img id="preview-main-image" 
-                                                 src="https://via.placeholder.com/200x100/F7007C/FFFFFF?text=Upload+Image" 
+                                                 src="https://via.placeholder.com/280x220/F7007C/FFFFFF?text=Upload+Image" 
                                                  alt="Campaign" 
-                                                 style="max-width: 200px; max-height: 100px; border-radius: 8px;">
+                                                 style="width: 280px; height: 220px; object-fit: cover; border-radius: 12px;">
                                         </div>
                                         
                                         <!-- Description (Exact Match) -->
