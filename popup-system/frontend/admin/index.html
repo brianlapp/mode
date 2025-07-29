@@ -286,35 +286,122 @@
                             <h3 class="text-lg font-semibold text-mode-dark border-b pb-2">✨ Live Preview</h3>
                             
                             <div class="bg-gray-50 p-6 rounded-lg">
-                                <div id="popup-preview" class="w-80 mx-auto relative bg-white rounded-lg shadow-lg overflow-hidden">
-                                    <!-- Logo Circle -->
-                                    <div class="absolute top-4 left-4 w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg">
+                                <!-- Thanks.co Exact Replica Design Preview -->
+                                <div id="popup-preview" style="
+                                    max-width: 320px;
+                                    width: 100%;
+                                    margin: 0 auto;
+                                    background: white;
+                                    border-radius: 24px;
+                                    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+                                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                                    overflow: hidden;
+                                    position: relative;
+                                ">
+                                    <!-- Logo Circle (Exact Match) -->
+                                    <div id="preview-logo-circle" style="
+                                        position: absolute;
+                                        top: 24px; 
+                                        left: 24px;
+                                        width: 56px; 
+                                        height: 56px;
+                                        background: #2563EB;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        z-index: 10;
+                                        overflow: hidden;
+                                    ">
                                         <img id="preview-logo" 
-                                             src="https://via.placeholder.com/48/F7007C/FFFFFF?text=LOGO" 
+                                             src="https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO" 
                                              alt="Logo"
-                                             class="w-full h-full object-cover">
+                                             style="width: 100%; height: 100%; object-fit: cover;">
                                     </div>
                                     
-                                    <!-- Main Content -->
-                                    <div class="pt-8 p-6">
-                                        <div class="mb-4">
+                                    <!-- Main Content (Exact Match) -->
+                                    <div style="padding: 24px; padding-top: 100px; text-align: center;">
+                                        
+                                        <!-- Tagline Pill -->
+                                        <div id="preview-tagline" style="
+                                            background: #F3F4F6;
+                                            color: #6B7280;
+                                            padding: 6px 12px;
+                                            border-radius: 16px;
+                                            font-size: 12px;
+                                            margin-bottom: 24px;
+                                            display: inline-block;
+                                            font-weight: 500;
+                                        ">Mode Campaign Preview</div>
+                                        
+                                        <!-- Title (Exact Match) -->
+                                        <h2 id="preview-title" style="
+                                            margin: 0 0 8px 0;
+                                            font-size: 24px;
+                                            font-weight: 800;
+                                            line-height: 1.2;
+                                            color: #111827;
+                                        ">Campaign Name</h2>
+                                        
+                                        <!-- Campaign Image -->
+                                        <div style="margin: 16px 0; min-height: 100px; display: flex; align-items: center; justify-content: center;">
                                             <img id="preview-main-image" 
-                                                 src="https://via.placeholder.com/300x160/F7007C/FFFFFF?text=Upload+Main+Image" 
+                                                 src="https://via.placeholder.com/200x100/F7007C/FFFFFF?text=Upload+Image" 
                                                  alt="Campaign" 
-                                                 class="w-full h-32 object-cover rounded-lg">
+                                                 style="max-width: 200px; max-height: 100px; border-radius: 8px;">
                                         </div>
                                         
-                                        <div class="text-center">
-                                            <h3 class="font-bold text-lg text-gray-800 mb-2" id="preview-title">
-                                                Campaign Name
-                                            </h3>
-                                            <p class="text-gray-600 text-sm mb-4" id="preview-description">
-                                                Campaign description will appear here...
-                                            </p>
-                                            <button class="bg-gradient-to-r from-mode-pink to-mode-blue text-white px-6 py-2 rounded-lg font-semibold w-full hover:shadow-lg transition-all" id="preview-cta">
-                                                View Offer
-                                            </button>
+                                        <!-- Description (Exact Match) -->
+                                        <p id="preview-description" style="
+                                            color: #6B7280;
+                                            font-size: 14px;
+                                            line-height: 1.4;
+                                            margin: 16px 0 24px 0;
+                                            text-align: center;
+                                        ">Campaign description will appear here...</p>
+                                        
+                                        <!-- CTA Button (Exact Match) -->
+                                        <button id="preview-cta" style="
+                                            width: 100%;
+                                            background: #7C3AED;
+                                            color: white;
+                                            border: none;
+                                            padding: 16px;
+                                            border-radius: 16px;
+                                            font-size: 16px;
+                                            font-weight: 600;
+                                            cursor: pointer;
+                                            margin-bottom: 12px;
+                                        ">View Offer</button>
+                                        
+                                        <!-- Next Button (From Approved Demo) -->
+                                        <button style="
+                                            width: 100%;
+                                            background: white;
+                                            color: #6B7280;
+                                            border: 2px solid #E5E7EB;
+                                            padding: 14px;
+                                            border-radius: 16px;
+                                            font-size: 14px;
+                                            font-weight: 500;
+                                            cursor: pointer;
+                                            margin-bottom: 16px;
+                                        ">Next ></button>
+                                        
+                                        <!-- Pagination Dots -->
+                                        <div style="text-align: center; margin-bottom: 16px;">
+                                            <span style="width: 8px; height: 8px; background: #374151; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                            <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
+                                            <span style="width: 8px; height: 8px; background: #D1D5DB; border-radius: 50%; margin: 0 3px; display: inline-block;"></span>
                                         </div>
+                                        
+                                        <!-- Footer (Exact Match) -->
+                                        <div style="
+                                            color: #9CA3AF;
+                                            font-size: 11px;
+                                            text-align: center;
+                                            line-height: 1.3;
+                                        ">T&Cs Apply | Powered by <strong>Mode</strong> • Privacy Policy</div>
                                     </div>
                                 </div>
                                 <p class="text-center text-xs text-gray-500 mt-4">

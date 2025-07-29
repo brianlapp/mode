@@ -185,10 +185,23 @@ class CampaignManager {
             
             if (previewCta && ctaInput) {
                 previewCta.textContent = ctaInput.value || 'View Offer';
+                // Update button color based on Mode branding
+                if (ctaInput.value) {
+                    previewCta.style.background = '#7C3AED'; // Purple like approved design
+                } else {
+                    previewCta.style.background = '#7C3AED';
+                }
             }
             
             if (previewLogo && logoInput && logoInput.value) {
                 previewLogo.src = logoInput.value;
+                // Update logo circle background when logo is loaded
+                const logoCircle = document.getElementById('preview-logo-circle');
+                if (logoCircle && logoInput.value) {
+                    logoCircle.style.background = 'transparent';
+                } else {
+                    logoCircle.style.background = '#2563EB';
+                }
             }
             
             if (previewImage && imageInput && imageInput.value) {
