@@ -130,7 +130,10 @@ class CampaignManager {
             addForm.addEventListener('submit', (e) => this.handleAddCampaign(e));
         }
 
-        // Image preview for URL inputs
+        // Live Preview Functionality
+        this.setupLivePreview();
+
+        // Image preview for URL inputs (small previews)
         const logoInput = document.getElementById('logo_url');
         const imageInput = document.getElementById('main_image_url');
         
@@ -153,6 +156,54 @@ class CampaignManager {
                 }
             });
         }
+    }
+
+    setupLivePreview() {
+        // Get all the form inputs that affect the preview
+        const nameInput = document.getElementById('name');
+        const descriptionInput = document.getElementById('description');
+        const ctaInput = document.getElementById('cta_text');
+        const logoInput = document.getElementById('logo_url');
+        const imageInput = document.getElementById('main_image_url');
+
+        // Get all the preview elements
+        const previewTitle = document.getElementById('preview-title');
+        const previewDescription = document.getElementById('preview-description');
+        const previewCta = document.getElementById('preview-cta');
+        const previewLogo = document.getElementById('preview-logo');
+        const previewImage = document.getElementById('preview-main-image');
+
+        // Real-time update function
+        const updatePreview = () => {
+            if (previewTitle && nameInput) {
+                previewTitle.textContent = nameInput.value || 'Campaign Name';
+            }
+            
+            if (previewDescription && descriptionInput) {
+                previewDescription.textContent = descriptionInput.value || 'Campaign description will appear here...';
+            }
+            
+            if (previewCta && ctaInput) {
+                previewCta.textContent = ctaInput.value || 'View Offer';
+            }
+            
+            if (previewLogo && logoInput && logoInput.value) {
+                previewLogo.src = logoInput.value;
+            }
+            
+            if (previewImage && imageInput && imageInput.value) {
+                previewImage.src = imageInput.value;
+            }
+        };
+
+        // Add event listeners for real-time updates
+        if (nameInput) nameInput.addEventListener('input', updatePreview);
+        if (descriptionInput) descriptionInput.addEventListener('input', updatePreview);
+        if (ctaInput) ctaInput.addEventListener('input', updatePreview);
+        if (logoInput) logoInput.addEventListener('input', updatePreview);
+        if (imageInput) imageInput.addEventListener('input', updatePreview);
+
+        console.log('✨ Live preview functionality activated!');
     }
 
     showAddCampaignModal() {

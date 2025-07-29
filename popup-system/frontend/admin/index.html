@@ -164,69 +164,179 @@
         </div>
     </main>
 
-    <!-- Add Campaign Modal -->
-    <div id="addCampaignModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-900">Add New Campaign</h2>
-                <button onclick="hideAddCampaignModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+    <!-- Advanced Add Campaign Modal with Live Preview -->
+    <div id="addCampaignModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[95vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-mode-pink to-mode-blue text-white p-6 rounded-t-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold">Add New Campaign</h2>
+                        <p class="text-white/80">Create a new Tune CPL campaign with live preview</p>
+                    </div>
+                    <button onclick="hideAddCampaignModal()" 
+                            class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
-            
-            <form id="addCampaignForm" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Campaign Name *</label>
-                        <input type="text" id="name" name="name" required 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink"
-                               placeholder="e.g. Trading Tips">
+
+            <!-- Modal Body -->
+            <div class="p-6">
+                <form id="addCampaignForm" class="space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Left Column: Campaign Details -->
+                        <div class="space-y-6">
+                            <h3 class="text-lg font-semibold text-mode-dark border-b pb-2">Campaign Details</h3>
+                            
+                            <!-- Campaign Name -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Campaign Name <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" 
+                                       id="name" 
+                                       name="name"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink" 
+                                       placeholder="e.g., Tesla Stock Alert Q1 2025"
+                                       required>
+                                <p class="text-sm text-gray-500 mt-1">Internal name for your reference</p>
+                            </div>
+
+                            <!-- Tune Campaign URL -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Tune Campaign URL <span class="text-red-500">*</span>
+                                </label>
+                                <input type="url" 
+                                       id="tune_url" 
+                                       name="tune_url"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink" 
+                                       placeholder="https://track.modemobile.com/aff_c?offer_id=..."
+                                       required>
+                                <p class="text-sm text-gray-500 mt-1">Tracking URL from Tune platform</p>
+                            </div>
+
+                            <!-- Campaign Description -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Campaign Description <span class="text-red-500">*</span>
+                                </label>
+                                <textarea id="description" 
+                                          name="description"
+                                          rows="3"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink" 
+                                          placeholder="Brief description of your campaign offer..."
+                                          required></textarea>
+                                <p class="text-sm text-gray-500 mt-1">What's this campaign about?</p>
+                            </div>
+
+                            <!-- CTA Button Text -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Call-to-Action Text
+                                </label>
+                                <input type="text" 
+                                       id="cta_text" 
+                                       name="cta_text"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink" 
+                                       placeholder="Get Started Now"
+                                       value="View Offer">
+                                <p class="text-sm text-gray-500 mt-1">Text on the action button</p>
+                            </div>
+
+                            <!-- Image URLs -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Logo Image -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Logo URL <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="url" 
+                                           id="logo_url" 
+                                           name="logo_url"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink" 
+                                           placeholder="https://example.com/logo.png"
+                                           required>
+                                    <p class="text-sm text-gray-500 mt-1">Small circular logo for top-left corner</p>
+                                    <img id="logoPreview" class="hidden mt-2 h-16 w-16 rounded-full object-cover border-2 border-mode-pink" src="" alt="Logo Preview">
+                                </div>
+
+                                <!-- Main Image -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Main Image URL <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="url" 
+                                           id="main_image_url" 
+                                           name="main_image_url"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink" 
+                                           placeholder="https://example.com/offer.jpg"
+                                           required>
+                                    <p class="text-sm text-gray-500 mt-1">Main offer image</p>
+                                    <img id="imagePreview" class="hidden mt-2 h-24 w-auto rounded-lg object-cover border-2 border-mode-pink" src="" alt="Main Image Preview">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Live Preview -->
+                        <div class="space-y-6">
+                            <h3 class="text-lg font-semibold text-mode-dark border-b pb-2">✨ Live Preview</h3>
+                            
+                            <div class="bg-gray-50 p-6 rounded-lg">
+                                <div id="popup-preview" class="w-80 mx-auto relative bg-white rounded-lg shadow-lg overflow-hidden">
+                                    <!-- Logo Circle -->
+                                    <div class="absolute top-4 left-4 w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-lg">
+                                        <img id="preview-logo" 
+                                             src="https://via.placeholder.com/48/F7007C/FFFFFF?text=LOGO" 
+                                             alt="Logo"
+                                             class="w-full h-full object-cover">
+                                    </div>
+                                    
+                                    <!-- Main Content -->
+                                    <div class="pt-8 p-6">
+                                        <div class="mb-4">
+                                            <img id="preview-main-image" 
+                                                 src="https://via.placeholder.com/300x160/F7007C/FFFFFF?text=Upload+Main+Image" 
+                                                 alt="Campaign" 
+                                                 class="w-full h-32 object-cover rounded-lg">
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            <h3 class="font-bold text-lg text-gray-800 mb-2" id="preview-title">
+                                                Campaign Name
+                                            </h3>
+                                            <p class="text-gray-600 text-sm mb-4" id="preview-description">
+                                                Campaign description will appear here...
+                                            </p>
+                                            <button class="bg-gradient-to-r from-mode-pink to-mode-blue text-white px-6 py-2 rounded-lg font-semibold w-full hover:shadow-lg transition-all" id="preview-cta">
+                                                View Offer
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-center text-xs text-gray-500 mt-4">
+                                    ✨ Updates in real-time as you type ✨
+                                </p>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div>
-                        <label for="tune_url" class="block text-sm font-medium text-gray-700 mb-2">Tune URL *</label>
-                        <input type="url" id="tune_url" name="tune_url" required 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink"
-                               placeholder="https://track.modemobile.com/aff_c?offer_id=...">
+                    <!-- Form Actions -->
+                    <div class="flex justify-end space-x-4 pt-6 border-t">
+                        <button type="button" onclick="hideAddCampaignModal()" 
+                                class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-6 py-2 bg-gradient-to-r from-mode-pink to-mode-blue text-white rounded-md hover:from-mode-pink-dark hover:to-mode-blue-dark font-semibold">
+                            🚀 Add Campaign
+                        </button>
                     </div>
-                </div>
-                
-                <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                    <textarea id="description" name="description" required rows="3"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink"
-                              placeholder="Brief description of the campaign"></textarea>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="logo_url" class="block text-sm font-medium text-gray-700 mb-2">Logo URL *</label>
-                        <input type="url" id="logo_url" name="logo_url" required 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink"
-                               placeholder="https://example.com/logo.png">
-                        <p class="text-xs text-gray-500 mt-1">Small circular logo for top-left corner</p>
-                        <img id="logoPreview" class="hidden mt-2 h-16 w-16 rounded-full object-cover border-2 border-mode-pink image-preview" src="" alt="Logo Preview">
-                    </div>
-                    
-                    <div>
-                        <label for="main_image_url" class="block text-sm font-medium text-gray-700 mb-2">Main Image URL *</label>
-                        <input type="url" id="main_image_url" name="main_image_url" required 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink"
-                               placeholder="https://example.com/offer-image.jpg">
-                        <p class="text-xs text-gray-500 mt-1">Main offer image</p>
-                        <img id="imagePreview" class="hidden mt-2 h-24 w-auto rounded-lg object-cover border-2 border-mode-pink image-preview" src="" alt="Main Image Preview">
-                    </div>
-                </div>
-                
-                <div class="flex justify-end space-x-4 pt-6 border-t">
-                    <button type="button" onclick="hideAddCampaignModal()" 
-                            class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-                        Cancel
-                    </button>
-                    <button type="submit" 
-                            class="px-6 py-2 bg-mode-pink text-white rounded-md hover:bg-mode-pink/90">
-                        Add Campaign
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
