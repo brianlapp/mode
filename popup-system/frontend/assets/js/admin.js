@@ -410,4 +410,17 @@ class CampaignManager {
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.campaignManager = new CampaignManager();
-}); 
+});
+
+// Global functions for HTML onclick handlers
+function showAddCampaignModal() {
+    if (window.campaignManager) {
+        window.campaignManager.showAddCampaignModal();
+    }
+}
+
+function hideAddCampaignModal() {
+    if (window.campaignManager) {
+        window.campaignManager.closeModals();
+    }
+} 
