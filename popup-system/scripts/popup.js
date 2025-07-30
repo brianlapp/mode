@@ -79,7 +79,7 @@
          */
         async loadCampaigns() {
             try {
-                const response = await fetch(`${CONFIG.API_BASE}/campaigns/active/${this.config.property}`);
+                const response = await fetch(`${CONFIG.API_BASE}/campaigns`);
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
