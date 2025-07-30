@@ -86,6 +86,15 @@ async def admin_dashboard():
 async def integration_guide():
     """Serve the integration guide page"""
     integration_file = frontend_path / "admin" / "integration.html"
+    # Debug info
+    return HTMLResponse(f"""
+    <h1>Debug Integration Route</h1>
+    <p>frontend_path: {frontend_path}</p>
+    <p>integration_file: {integration_file}</p>
+    <p>File exists: {integration_file.exists()}</p>
+    <p>Directory contents: {list(frontend_path.glob('**/*')) if frontend_path.exists() else 'frontend_path does not exist'}</p>
+    """)
+    
     if not integration_file.exists():
         raise HTTPException(status_code=404, detail="Integration guide not found")
     return FileResponse(integration_file)
