@@ -102,15 +102,24 @@ async def add_campaign_modal():
 app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
 app.include_router(properties_router, prefix="/api", tags=["properties"])
 
-# Popup script endpoint (future)
+# Popup script endpoint
 @app.get("/popup.js")
 async def serve_popup_script():
     """Serve the production popup script"""
-    script_path = os.path.join(os.path.dirname(__file__), "..", "scripts", "popup.js")
-    if os.path.exists(script_path):
-        return FileResponse(script_path, media_type="application/javascript")
-    else:
-        return PlainTextResponse("// Popup script not found", media_type="application/javascript")
+    # Try multiple possible paths for Railway deployment
+    possible_paths = [
+        os.path.join(os.path.dirname(__file__), "..", "scripts", "popup.js"),
+        os.path.join(os.path.dirname(__file__), "scripts", "popup.js"),
+        "popup-system/scripts/popup.js",
+        "scripts/popup.js"
+    ]
+    
+    for script_path in possible_paths:
+        if os.path.exists(script_path):
+            return FileResponse(script_path, media_type="application/javascript")
+    
+    # If file not found, return error info for debugging
+    return PlainTextResponse(f"// Popup script not found. Checked paths: {possible_paths}", media_type="application/javascript")
 
 @app.get("/popup.min.js")
 async def serve_popup_script_minified():
