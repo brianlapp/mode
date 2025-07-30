@@ -41,6 +41,12 @@ if frontend_path.exists():
 @app.on_event("startup")
 async def startup():
     init_db()
+    # 🛡️ PROTECT MIKE'S REVENUE MACHINE - Ensure only real campaigns exist
+    try:
+        from startup_campaigns import protect_mikes_revenue_machine
+        protect_mikes_revenue_machine()
+    except Exception as e:
+        print(f"⚠️ Warning: Could not run campaign protection: {e}")
 
 # Health check endpoint
 @app.get("/health")
