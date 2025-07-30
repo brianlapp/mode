@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModeFreeFinds - Thank You Demo</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 60px 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .brand {
+            color: #F7007C;
+            font-weight: 800;
+        }
+        p {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+        .demo-note {
+            background: #f8f9fa;
+            border-left: 4px solid #F7007C;
+            padding: 15px;
+            margin: 30px 0;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 0.8em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Thank You!</h1>
+        <p>Thanks for signing up for <span class="brand">ModeFreeFinds</span>!</p>
+        <p>Check your email for exclusive offers and market insights.</p>
+        
+        <div class="demo-note">
+            <strong>🚀 Live Demo:</strong> This page demonstrates the Mode Popup System with 5 real financial campaigns. 
+            The popup shows automatically with beautiful Thanks.co design and cycles through all offers.
+        </div>
+        
+        <div class="footer">
+            <p>Mode Popup Management System - Production Demo<br>
+            Powered by Railway • Mode Branding • Real Campaign Data</p>
+        </div>
+    </div>
+
+    <!-- Mode Popup System - Production Implementation -->
+    <script src="https://mode-dash-production.up.railway.app/popup.js"></script>
+    <script>
+    ModePopup.init({
+      property: 'mff',
+      placement: 'thankyou',
+      frequency: 'always',  // For demo - shows on every refresh
+      debug: false          // Clean production experience
+    });
+    </script>
+    <!-- End Mode Popup System -->
+    
+</body>
+</html> 
