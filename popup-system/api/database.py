@@ -11,10 +11,16 @@ from pathlib import Path
 def get_db_path():
     """Get database path with persistent volume support"""
     # Try persistent volume first (Railway production)
-    volume_path = "/app/api/data"
+    volume_path = "/app/popup-system/api/data"
     if os.path.exists(volume_path):
         os.makedirs(volume_path, exist_ok=True)
         return os.path.join(volume_path, "popup_campaigns.db")
+    
+    # Secondary fallback for Railway
+    fallback_path = "/app/api/data"
+    if os.path.exists(fallback_path):
+        os.makedirs(fallback_path, exist_ok=True)
+        return os.path.join(fallback_path, "popup_campaigns.db")
     
     # Fallback to local path (development)
     return "popup_campaigns.db"
