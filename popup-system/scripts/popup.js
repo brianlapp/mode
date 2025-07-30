@@ -33,6 +33,7 @@
             this.isVisible = false;
             this.autoRotateTimer = null;
             this.sessionId = this.generateSessionId();
+            this.trackingData = this.captureTrackingData(); // Phase 2: Capture URL params
         }
 
         /**
@@ -609,7 +610,13 @@
                         session_id: this.sessionId,
                         placement: this.config.placement,
                         user_agent: navigator.userAgent,
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
+                        // Phase 2: Enhanced tracking data
+                        source: this.trackingData.source,
+                        subsource: this.trackingData.subsource,
+                        utm_campaign: this.trackingData.utm_campaign,
+                        referrer: this.trackingData.referrer,
+                        landing_page: this.trackingData.landing_page
                     })
                 });
 
@@ -635,7 +642,13 @@
                         session_id: this.sessionId,
                         placement: this.config.placement,
                         user_agent: navigator.userAgent,
-                        timestamp: new Date().toISOString()
+                        timestamp: new Date().toISOString(),
+                        // Phase 2: Enhanced tracking data
+                        source: this.trackingData.source,
+                        subsource: this.trackingData.subsource,
+                        utm_campaign: this.trackingData.utm_campaign,
+                        referrer: this.trackingData.referrer,
+                        landing_page: this.trackingData.landing_page
                     })
                 });
 
@@ -650,6 +663,30 @@
          */
         generateSessionId() {
             return 'mode_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
+        }
+
+        /**
+         * Phase 2: Capture URL parameters for traffic attribution
+         */
+        captureTrackingData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Multiple parameter names for different tracking systems
+            const getFirstParam = (params) => {
+                for (const param of params) {
+                    const value = urlParams.get(param);
+                    if (value) return value;
+                }
+                return '';
+            };
+
+            return {
+                source: getFirstParam(['utm_source', 'source', 'src', 'ref']),
+                subsource: getFirstParam(['utm_medium', 'subsource', 'sub', 'medium']),
+                utm_campaign: getFirstParam(['utm_campaign', 'campaign', 'camp']),
+                referrer: document.referrer || '',
+                landing_page: window.location.href
+            };
         }
 
         /**

@@ -70,6 +70,29 @@ def init_db():
         except Exception as e:
             # Columns already exist or other error - this is okay
             pass
+            
+        # Add source/subsource tracking fields for Phase 2 attribution
+        try:
+            conn.execute("ALTER TABLE impressions ADD COLUMN source TEXT")
+            conn.execute("ALTER TABLE impressions ADD COLUMN subsource TEXT")
+            conn.execute("ALTER TABLE impressions ADD COLUMN utm_campaign TEXT")
+            conn.execute("ALTER TABLE impressions ADD COLUMN referrer TEXT")
+            conn.execute("ALTER TABLE impressions ADD COLUMN landing_page TEXT")
+            print("✅ Added Phase 2 tracking fields to impressions table")
+        except Exception as e:
+            # Columns already exist or other error - this is okay
+            pass
+            
+        try:
+            conn.execute("ALTER TABLE clicks ADD COLUMN source TEXT")
+            conn.execute("ALTER TABLE clicks ADD COLUMN subsource TEXT") 
+            conn.execute("ALTER TABLE clicks ADD COLUMN utm_campaign TEXT")
+            conn.execute("ALTER TABLE clicks ADD COLUMN referrer TEXT")
+            conn.execute("ALTER TABLE clicks ADD COLUMN landing_page TEXT")
+            print("✅ Added Phase 2 tracking fields to clicks table")
+        except Exception as e:
+            # Columns already exist or other error - this is okay
+            pass
         
         # Create campaign_properties table for property-specific settings
         conn.execute("""

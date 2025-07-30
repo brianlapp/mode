@@ -238,12 +238,13 @@ async def track_impression(request: Request):
         
         conn = get_db_connection()
         
-        # Insert impression record
+        # Insert impression record with Phase 2 tracking
         conn.execute("""
             INSERT INTO impressions (
                 campaign_id, property_code, session_id, placement, 
-                user_agent, timestamp, ip_hash
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                user_agent, timestamp, ip_hash, source, subsource, 
+                utm_campaign, referrer, landing_page
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             data["campaign_id"],
             data["property_code"],
@@ -251,7 +252,12 @@ async def track_impression(request: Request):
             data.get("placement", "thankyou"),
             data.get("user_agent", "")[:255],  # Limit user agent length
             data.get("timestamp", datetime.now().isoformat()),
-            hash(str(request.client.host)) if request.client else 0  # Simple IP hash
+            hash(str(request.client.host)) if request.client else 0,  # Simple IP hash
+            data.get("source", "")[:100],      # Phase 2: Traffic source
+            data.get("subsource", "")[:100],   # Phase 2: Traffic subsource
+            data.get("utm_campaign", "")[:100], # Phase 2: Campaign parameter
+            data.get("referrer", "")[:255],    # Phase 2: Referrer URL
+            data.get("landing_page", "")[:255] # Phase 2: Landing page URL
         ))
         
         conn.commit()
@@ -282,12 +288,13 @@ async def track_click(request: Request):
         
         conn = get_db_connection()
         
-        # Insert click record
+        # Insert click record with Phase 2 tracking
         conn.execute("""
             INSERT INTO clicks (
                 campaign_id, property_code, session_id, placement,
-                user_agent, timestamp, ip_hash, revenue_estimate
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                user_agent, timestamp, ip_hash, revenue_estimate,
+                source, subsource, utm_campaign, referrer, landing_page
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             data["campaign_id"],
             data["property_code"],
@@ -296,7 +303,12 @@ async def track_click(request: Request):
             data.get("user_agent", "")[:255],  # Limit user agent length
             data.get("timestamp", datetime.now().isoformat()),
             hash(str(request.client.host)) if request.client else 0,  # Simple IP hash
-            0.45  # Default estimated revenue (Mike's proven CPL)
+            0.45,  # Default estimated revenue (Mike's proven CPL)
+            data.get("source", "")[:100],      # Phase 2: Traffic source
+            data.get("subsource", "")[:100],   # Phase 2: Traffic subsource
+            data.get("utm_campaign", "")[:100], # Phase 2: Campaign parameter
+            data.get("referrer", "")[:255],    # Phase 2: Referrer URL
+            data.get("landing_page", "")[:255] # Phase 2: Landing page URL
         ))
         
         conn.commit()
@@ -360,4 +372,70 @@ async def get_impression_pixel(campaign_id: int):
         }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate impression pixel: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Failed to generate impression pixel: {str(e)}")
+
+@router.get("/analytics/attribution")
+async def get_attribution_analytics():
+    """Phase 2: Get traffic attribution analytics"""
+    conn = get_db_connection()
+    try:
+        # Revenue by source
+        cursor = conn.execute("""
+            SELECT 
+                COALESCE(source, 'Unknown') as source,
+                COUNT(*) as clicks,
+                SUM(revenue_estimate) as estimated_revenue,
+                AVG(revenue_estimate) as avg_cpl
+            FROM clicks 
+            WHERE timestamp >= datetime('now', '-30 days')
+            GROUP BY source
+            ORDER BY estimated_revenue DESC
+        """)
+        source_data = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
+        
+        # Revenue by subsource
+        cursor = conn.execute("""
+            SELECT 
+                COALESCE(subsource, 'Unknown') as subsource,
+                COUNT(*) as clicks,
+                SUM(revenue_estimate) as estimated_revenue,
+                AVG(revenue_estimate) as avg_cpl
+            FROM clicks 
+            WHERE timestamp >= datetime('now', '-30 days')
+            GROUP BY subsource
+            ORDER BY estimated_revenue DESC
+        """)
+        subsource_data = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
+        
+        # Campaign performance with attribution
+        cursor = conn.execute("""
+            SELECT 
+                c.name as campaign_name,
+                COALESCE(cl.source, 'Unknown') as source,
+                COUNT(cl.id) as clicks,
+                COUNT(i.id) as impressions,
+                ROUND(CAST(COUNT(cl.id) AS FLOAT) / NULLIF(COUNT(i.id), 0) * 100, 2) as ctr,
+                SUM(cl.revenue_estimate) as estimated_revenue
+            FROM campaigns c
+            LEFT JOIN clicks cl ON c.id = cl.campaign_id AND cl.timestamp >= datetime('now', '-30 days')
+            LEFT JOIN impressions i ON c.id = i.campaign_id AND i.timestamp >= datetime('now', '-30 days')
+            WHERE c.active = 1
+            GROUP BY c.name, cl.source
+            ORDER BY estimated_revenue DESC
+        """)
+        campaign_data = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
+        
+        return {
+            "period": "Last 30 days", 
+            "by_source": source_data,
+            "by_subsource": subsource_data,
+            "by_campaign": campaign_data,
+            "summary": {
+                "total_sources": len(source_data),
+                "total_clicks": sum(item['clicks'] for item in source_data),
+                "total_revenue": sum(item['estimated_revenue'] or 0 for item in source_data)
+            }
+        }
+        
+    finally:
+        conn.close() 
