@@ -3,87 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ModeFreeFinds - Thank You Demo</title>
+    <title>ModeFreeFinds - Thank You</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .container {
-            background: white;
-            border-radius: 15px;
-            padding: 60px 40px;
+            font-family: Arial, sans-serif;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            max-width: 500px;
-            margin: 20px;
+            padding: 50px;
+            background-color: #f8f9fa;
         }
         h1 {
             color: #333;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-        .brand {
-            color: #F7007C;
-            font-weight: 800;
         }
         p {
             color: #666;
-            font-size: 1.1em;
-            line-height: 1.6;
             margin: 20px 0;
         }
-        .demo-note {
-            background: #f8f9fa;
-            border-left: 4px solid #F7007C;
-            padding: 15px;
-            margin: 30px 0;
-            border-radius: 5px;
-            font-size: 0.9em;
-            color: #555;
-        }
         .footer {
-            margin-top: 40px;
-            font-size: 0.8em;
-            color: #888;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Thank You!</h1>
-        <p>Thanks for signing up for <span class="brand">ModeFreeFinds</span>!</p>
-        <p>Check your email for exclusive offers and market insights.</p>
-        
-        <div class="demo-note">
-            <strong>🚀 Live Demo:</strong> This page demonstrates the Mode Popup System with 5 real financial campaigns. 
-            The popup shows automatically with beautiful Thanks.co design and cycles through all offers.
-        </div>
-        
-        <div class="footer">
-            <p>Mode Popup Management System - Production Demo<br>
-            Powered by Railway • Mode Branding • Real Campaign Data</p>
-        </div>
-    </div>
-
-    <!-- Mode Popup System - Production Implementation -->
+    <h1>Thank You!</h1>
+    <p>Thanks for signing up for ModeFreeFinds!</p>
+    <p>Check your email for exclusive offers.</p>
+    
+    <!-- Mode Popup System - This is what Mike's team would add -->
     <script src="https://mode-dash-production.up.railway.app/popup.js"></script>
     <script>
     ModePopup.init({
       property: 'mff',
       placement: 'thankyou',
-      frequency: 'always',  // For demo - shows on every refresh
-      debug: false          // Clean production experience
+      frequency: 'always'  // For demo - use 'session' in production
     });
     </script>
     <!-- End Mode Popup System -->
     
+    <div class="footer">
+        <a href="instructions.html">Implementation Instructions for Development Team</a>
+    </div>
+    
 </body>
-</html> 
+</html>
