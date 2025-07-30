@@ -82,7 +82,7 @@ async def admin_dashboard():
         raise HTTPException(status_code=404, detail="Admin dashboard not found")
     return FileResponse(admin_file)
 
-@app.get("/admin/integration", response_class=HTMLResponse)
+@app.get("/integration-guide", response_class=HTMLResponse)
 async def integration_guide():
     """Serve the integration guide page"""
     integration_file = frontend_path / "admin" / "integration.html"
