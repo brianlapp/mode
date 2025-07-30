@@ -66,7 +66,7 @@ async def root():
                 <h1>🚀 Mode Popup Management System</h1>
                 <p>Campaign management dashboard for Mike's Tune CPL campaigns</p>
                 <a href="/admin">📊 Admin Dashboard</a>
-                <a href="/admin/integration.html">🚀 Integration Guide</a>
+                <a href="/admin/integration">🚀 Integration Guide</a>
                 <a href="/api/docs">📖 API Documentation</a>
                 <a href="/health">🔍 Health Check</a>
             </div>
@@ -82,7 +82,7 @@ async def admin_dashboard():
         raise HTTPException(status_code=404, detail="Admin dashboard not found")
     return FileResponse(admin_file)
 
-@app.get("/admin/integration.html", response_class=HTMLResponse)
+@app.get("/admin/integration", response_class=HTMLResponse)
 async def integration_guide():
     """Serve the integration guide page"""
     integration_file = frontend_path / "admin" / "integration.html"
