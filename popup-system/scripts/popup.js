@@ -85,7 +85,7 @@
                 }
                 
                 const data = await response.json();
-                this.campaigns = data.campaigns || [];
+                this.campaigns = data || [];
                 this.debug(`Loaded ${this.campaigns.length} campaigns for ${this.config.property}`);
                 
             } catch (error) {

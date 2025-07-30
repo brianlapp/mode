@@ -26,18 +26,29 @@
     <p>Check your email for exclusive offers.</p>
     
     <!-- Mode Popup System - This is what Mike's team would add -->
-    <script src="https://mode-dash-production.up.railway.app/popup.js" onload="console.log('✅ Popup script loaded')" onerror="console.log('❌ Popup script failed to load')"></script>
+    <script src="popup-system/scripts/popup.js" onload="console.log('✅ Popup script loaded')" onerror="console.log('❌ Popup script failed to load')"></script>
     <script>
     console.log('🔧 About to initialize ModePopup...');
     console.log('🔧 ModePopup available:', typeof ModePopup);
     
     if (typeof ModePopup !== 'undefined') {
       console.log('🚀 Initializing popup...');
-      ModePopup.init({
-        property: 'mff',
-        placement: 'thankyou',
-        frequency: 'always'
-      });
+      
+      // Add error handling to catch any issues
+      try {
+        ModePopup.init({
+          property: 'mff',
+          placement: 'thankyou',
+          frequency: 'always',
+          debug: true  // Enable debug mode
+        }).then(() => {
+          console.log('✅ Popup initialization completed!');
+        }).catch((error) => {
+          console.log('❌ Popup initialization failed:', error);
+        });
+      } catch (error) {
+        console.log('❌ Popup initialization error:', error);
+      }
     } else {
       console.log('❌ ModePopup not found!');
     }
