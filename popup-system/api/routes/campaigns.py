@@ -3,7 +3,7 @@ Campaign management API endpoints
 CRUD operations for Mike's Tune campaign management
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel, HttpUrl
 from typing import List, Optional
 from database import (
@@ -13,6 +13,7 @@ from database import (
     track_impression
 )
 import sqlite3
+from datetime import datetime
 
 router = APIRouter()
 
@@ -183,17 +184,133 @@ async def hard_delete_campaign(campaign_id: int):
     finally:
         conn.close()
 
-@router.post("/impression", response_model=dict)
-async def track_popup_impression(campaign_id: int, property_code: str):
-    """Track when popup is shown to user"""
-    if property_code not in ['mff', 'mmm', 'mcad', 'mmd']:
-        raise HTTPException(status_code=400, detail="Invalid property code")
-    
+@router.get("/campaigns/active/{property_code}")
+async def get_active_campaigns_for_property(property_code: str):
+    """Get active campaigns for a specific property (e.g., 'mff', 'mmm', 'mcad', 'mmd')"""
     try:
-        track_impression(campaign_id, property_code)
-        return {"status": "tracked"}
-    except sqlite3.Error as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        conn = get_db_connection()
+        cursor = conn.execute("""
+            SELECT c.id, c.name, c.tune_url, c.logo_url, c.main_image_url, 
+                   c.description, c.cta_text, c.offer_id, c.aff_id
+            FROM campaigns c
+            WHERE c.active = 1
+            ORDER BY c.priority DESC, c.created_at DESC
+        """)
+        
+        campaigns = []
+        for row in cursor.fetchall():
+            campaigns.append({
+                "id": row[0],
+                "name": row[1],
+                "tune_url": row[2],
+                "logo_url": row[3],
+                "main_image_url": row[4],
+                "description": row[5],
+                "cta_text": row[6] or "View Offer",
+                "offer_id": row[7],
+                "aff_id": row[8]
+            })
+        
+        conn.close()
+        
+        return {
+            "success": True,
+            "property_code": property_code,
+            "campaigns": campaigns,
+            "count": len(campaigns)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch campaigns: {str(e)}")
+
+
+@router.post("/impression")
+async def track_impression(request: Request):
+    """Track popup impression event"""
+    try:
+        data = await request.json()
+        
+        # Basic validation
+        required_fields = ["campaign_id", "property_code"]
+        for field in required_fields:
+            if field not in data:
+                raise HTTPException(status_code=400, detail=f"Missing required field: {field}")
+        
+        conn = get_db_connection()
+        
+        # Insert impression record
+        conn.execute("""
+            INSERT INTO impressions (
+                campaign_id, property_code, session_id, placement, 
+                user_agent, timestamp, ip_hash
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            data["campaign_id"],
+            data["property_code"],
+            data.get("session_id", ""),
+            data.get("placement", "thankyou"),
+            data.get("user_agent", "")[:255],  # Limit user agent length
+            data.get("timestamp", datetime.now().isoformat()),
+            hash(str(request.client.host)) if request.client else 0  # Simple IP hash
+        ))
+        
+        conn.commit()
+        conn.close()
+        
+        return {
+            "success": True,
+            "message": "Impression tracked successfully",
+            "campaign_id": data["campaign_id"],
+            "property_code": data["property_code"]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to track impression: {str(e)}")
+
+
+@router.post("/click") 
+async def track_click(request: Request):
+    """Track popup click event"""
+    try:
+        data = await request.json()
+        
+        # Basic validation
+        required_fields = ["campaign_id", "property_code"]
+        for field in required_fields:
+            if field not in data:
+                raise HTTPException(status_code=400, detail=f"Missing required field: {field}")
+        
+        conn = get_db_connection()
+        
+        # Insert click record
+        conn.execute("""
+            INSERT INTO clicks (
+                campaign_id, property_code, session_id, placement,
+                user_agent, timestamp, ip_hash, revenue_estimate
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            data["campaign_id"],
+            data["property_code"],
+            data.get("session_id", ""),
+            data.get("placement", "thankyou"),
+            data.get("user_agent", "")[:255],  # Limit user agent length
+            data.get("timestamp", datetime.now().isoformat()),
+            hash(str(request.client.host)) if request.client else 0,  # Simple IP hash
+            0.45  # Default estimated revenue (Mike's proven CPL)
+        ))
+        
+        conn.commit()
+        conn.close()
+        
+        return {
+            "success": True,
+            "message": "Click tracked successfully",
+            "campaign_id": data["campaign_id"],
+            "property_code": data["property_code"]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to track click: {str(e)}")
 
 @router.get("/campaigns/{campaign_id}", response_model=Campaign)
 async def get_campaign_by_id(campaign_id: int):

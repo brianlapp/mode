@@ -6,7 +6,7 @@ Simple campaign management dashboard + embeddable popup script
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse
 import uvicorn
 import os
 from pathlib import Path
@@ -66,6 +66,7 @@ async def root():
                 <h1>🚀 Mode Popup Management System</h1>
                 <p>Campaign management dashboard for Mike's Tune CPL campaigns</p>
                 <a href="/admin">📊 Admin Dashboard</a>
+                <a href="/admin/integration.html">🚀 Integration Guide</a>
                 <a href="/api/docs">📖 API Documentation</a>
                 <a href="/health">🔍 Health Check</a>
             </div>
@@ -81,6 +82,14 @@ async def admin_dashboard():
         raise HTTPException(status_code=404, detail="Admin dashboard not found")
     return FileResponse(admin_file)
 
+@app.get("/admin/integration.html", response_class=HTMLResponse)
+async def integration_guide():
+    """Serve the integration guide page"""
+    integration_file = frontend_path / "admin" / "integration.html"
+    if not integration_file.exists():
+        raise HTTPException(status_code=404, detail="Integration guide not found")
+    return FileResponse(integration_file)
+
 @app.get("/admin/add-campaign", response_class=HTMLResponse)
 async def add_campaign_modal():
     """Serve the add campaign modal HTML"""
@@ -95,13 +104,31 @@ app.include_router(properties_router, prefix="/api", tags=["properties"])
 
 # Popup script endpoint (future)
 @app.get("/popup.js")
-async def get_popup_script():
-    """Serve the embeddable popup script"""
-    return {
-        "message": "Popup script coming in Phase 3!",
-        "usage": "Include this script on your thank you pages",
-        "example": '<script src="https://your-domain.railway.app/popup.js"></script>'
-    }
+async def serve_popup_script():
+    """Serve the production popup script"""
+    script_path = os.path.join(os.path.dirname(__file__), "..", "scripts", "popup.js")
+    if os.path.exists(script_path):
+        return FileResponse(script_path, media_type="application/javascript")
+    else:
+        return PlainTextResponse("// Popup script not found", media_type="application/javascript")
+
+@app.get("/popup.min.js")
+async def serve_popup_script_minified():
+    """Serve the minified popup script"""
+    script_path = os.path.join(os.path.dirname(__file__), "..", "scripts", "popup.min.js")
+    if os.path.exists(script_path):
+        return FileResponse(script_path, media_type="application/javascript")
+    else:
+        return PlainTextResponse("// Minified popup script not found", media_type="application/javascript")
+
+@app.get("/popup-styles.css")
+async def serve_popup_styles():
+    """Serve the popup CSS styles"""
+    css_path = os.path.join(os.path.dirname(__file__), "..", "scripts", "popup-styles.css")
+    if os.path.exists(css_path):
+        return FileResponse(css_path, media_type="text/css")
+    else:
+        return PlainTextResponse("/* Popup styles not found */", media_type="text/css")
 
 if __name__ == "__main__":
     uvicorn.run(

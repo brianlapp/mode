@@ -79,12 +79,33 @@ def init_db():
             )
         """)
         
-        # Create simple impressions tracking table (minimal analytics)
+        # Create comprehensive impressions tracking table 
         conn.execute("""
             CREATE TABLE IF NOT EXISTS impressions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 campaign_id INTEGER NOT NULL,
                 property_code TEXT NOT NULL,
+                session_id TEXT,
+                placement TEXT DEFAULT 'thankyou',
+                user_agent TEXT,
+                ip_hash INTEGER,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
+            )
+        """)
+        
+        # Create clicks tracking table
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS clicks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                campaign_id INTEGER NOT NULL,
+                property_code TEXT NOT NULL,
+                session_id TEXT,
+                placement TEXT DEFAULT 'thankyou',
+                user_agent TEXT,
+                ip_hash INTEGER,
+                revenue_estimate DECIMAL(10,2) DEFAULT 0.45,
+                conversion_tracked BOOLEAN DEFAULT false,
                 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
             )
@@ -94,6 +115,10 @@ def init_db():
         conn.execute("CREATE INDEX IF NOT EXISTS idx_campaign_active ON campaigns(active)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_property_active ON campaign_properties(property_code, active)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_impressions_date ON impressions(timestamp)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_impressions_campaign ON impressions(campaign_id, timestamp)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_clicks_date ON clicks(timestamp)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_clicks_campaign ON clicks(campaign_id, timestamp)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_property_stats ON impressions(property_code, timestamp)")
         
         conn.commit()
         print("✅ Database initialized successfully")

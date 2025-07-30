@@ -1,0 +1,281 @@
+/*
+ * Mode Popup Styles
+ * Production CSS for embeddable popup system
+ * Mode branding with Thanks.co replica design
+ */
+
+/* Reset any potential conflicts */
+#mode-popup-overlay * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Overlay base styles */
+#mode-popup-overlay {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #111827;
+    text-align: left;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Mode brand colors */
+:root {
+    --mode-pink: #F7007C;
+    --mode-blue: #07C8F7;
+    --mode-purple: #7C3AED;
+    --mode-purple-hover: #6D28D9;
+    --mode-gray-light: #F3F4F6;
+    --mode-gray-medium: #6B7280;
+    --mode-gray-dark: #374151;
+    --mode-text-light: #9CA3AF;
+}
+
+/* Popup container animations */
+#mode-popup-container {
+    animation: modePopupSlideIn 0.3s ease-out;
+}
+
+@keyframes modePopupSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Popup close animation */
+#mode-popup-container.mode-popup-closing {
+    animation: modePopupSlideOut 0.3s ease-in forwards;
+}
+
+@keyframes modePopupSlideOut {
+    from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+    }
+}
+
+/* Close button hover effects */
+.mode-popup-close:hover {
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+.mode-popup-close:active {
+    background: rgba(0, 0, 0, 0.3) !important;
+    transform: scale(0.95);
+}
+
+/* CTA button animations */
+.mode-popup-cta {
+    transition: all 0.2s ease !important;
+}
+
+.mode-popup-cta:hover {
+    background: var(--mode-purple-hover) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.mode-popup-cta:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
+}
+
+/* Next button animations */
+.mode-popup-next {
+    transition: all 0.2s ease !important;
+}
+
+.mode-popup-next:hover {
+    border-color: #D1D5DB !important;
+    background: #F9FAFB !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mode-popup-next:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Pagination dots animation */
+.mode-popup-dots span {
+    transition: all 0.2s ease;
+}
+
+/* Image loading states */
+.mode-popup-image {
+    transition: opacity 0.3s ease;
+}
+
+.mode-popup-image.loading {
+    opacity: 0.7;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    #mode-popup-overlay {
+        padding: 8px !important;
+    }
+    
+    #mode-popup-container {
+        max-width: 95% !important;
+        margin: 0 auto !important;
+    }
+    
+    /* Adjust image sizes for mobile */
+    .mode-popup-main-image {
+        width: 260px !important;
+        height: 200px !important;
+    }
+    
+    /* Adjust text sizes for mobile */
+    .mode-popup-title {
+        font-size: 20px !important;
+    }
+    
+    .mode-popup-description {
+        font-size: 13px !important;
+    }
+}
+
+/* High DPI display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .mode-popup-logo {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Focus states for accessibility */
+.mode-popup-close:focus,
+.mode-popup-cta:focus,
+.mode-popup-next:focus {
+    outline: 2px solid var(--mode-blue);
+    outline-offset: 2px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    #mode-popup-container {
+        background: #1F2937 !important;
+        color: #F9FAFB !important;
+    }
+    
+    .mode-popup-tagline {
+        background: #374151 !important;
+        color: #D1D5DB !important;
+    }
+    
+    .mode-popup-title {
+        color: #F9FAFB !important;
+    }
+    
+    .mode-popup-description {
+        color: #D1D5DB !important;
+    }
+    
+    .mode-popup-next {
+        background: #374151 !important;
+        color: #D1D5DB !important;
+        border-color: #4B5563 !important;
+    }
+    
+    .mode-popup-footer {
+        color: #9CA3AF !important;
+    }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    #mode-popup-container {
+        animation: none;
+    }
+    
+    .mode-popup-close,
+    .mode-popup-cta,
+    .mode-popup-next,
+    .mode-popup-dots span {
+        transition: none !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    #mode-popup-overlay {
+        display: none !important;
+    }
+}
+
+/* Ensure popup appears above everything */
+#mode-popup-overlay {
+    z-index: 2147483647 !important; /* Maximum z-index value */
+}
+
+/* Mode branding gradient effects */
+.mode-popup-gradient {
+    background: linear-gradient(135deg, var(--mode-pink) 0%, var(--mode-blue) 100%);
+}
+
+/* Success animation for tracking */
+@keyframes modeTrackingSuccess {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+.mode-popup-tracked {
+    animation: modeTrackingSuccess 0.5s ease;
+}
+
+/* Loading spinner for slow connections */
+.mode-popup-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid var(--mode-purple);
+    border-radius: 50%;
+    animation: modePopupSpin 1s linear infinite;
+}
+
+@keyframes modePopupSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error states */
+.mode-popup-error {
+    color: #DC2626 !important;
+    font-size: 12px;
+    text-align: center;
+    padding: 8px;
+    background: #FEF2F2;
+    border-radius: 8px;
+    margin: 8px 0;
+}
+
+/* Invisible elements for screen readers */
+.mode-popup-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+} 
