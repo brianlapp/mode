@@ -225,7 +225,7 @@
             const popup = document.createElement('div');
             popup.id = CONFIG.POPUP_ID;
             const isDesktop = window.innerWidth >= CONFIG.DESKTOP_BREAKPOINT;
-            const maxWidth = isDesktop ? '480px' : '340px';
+            const maxWidth = isDesktop ? '600px' : '340px';
             
             popup.style.cssText = `
                 max-width: ${maxWidth};
@@ -269,7 +269,7 @@
             // Progressive image sizing for better desktop experience
             let imageSize;
             if (isDesktop) {
-                imageSize = 'width: 420px; height: 280px;'; // Large desktop images
+                imageSize = 'width: 480px; height: 200px;'; // Wide desktop images (landscape)
             } else if (isMobile) {
                 imageSize = 'width: 260px; height: 200px;'; // Mobile images
             } else {
@@ -322,7 +322,7 @@
                 </div>
                 
                 <!-- Main Content (Responsive padding for desktop) -->
-                <div style="padding: ${isDesktop ? '32px' : '24px'}; padding-top: ${isDesktop ? '120px' : '100px'}; text-align: center;">
+                <div style="padding: ${isDesktop ? '24px 32px' : '24px'}; padding-top: ${isDesktop ? '90px' : '100px'}; text-align: center;">
                     
                     <!-- Tagline Pill -->
                     <div style="
@@ -331,7 +331,7 @@
                         padding: 6px 12px;
                         border-radius: 16px;
                         font-size: 12px;
-                        margin-bottom: 24px;
+                        margin-bottom: ${isDesktop ? '16px' : '24px'};
                         display: inline-block;
                         font-weight: 500;
                     ">Mode Financial Offers</div>
@@ -346,7 +346,7 @@
                     ">${campaign.name || 'Exclusive Offer'}</h2>
                     
                     <!-- Campaign Image (Full Size) -->
-                    <div style="margin: 16px 0; display: flex; align-items: center; justify-content: center;">
+                    <div style="margin: ${isDesktop ? '12px 0' : '16px 0'}; display: flex; align-items: center; justify-content: center;">
                         <img src="${campaign.main_image_url || 'https://via.placeholder.com/280x220/F7007C/FFFFFF?text=Offer'}" 
                              alt="Campaign" 
                              style="${imageSize} object-fit: contain; object-position: center; border-radius: 12px; background-color: #f8f9fa;"
@@ -358,7 +358,7 @@
                         color: #6B7280;
                         font-size: 14px;
                         line-height: 1.4;
-                        margin: 16px 0 24px 0;
+                        margin: ${isDesktop ? '12px 0 16px 0' : '16px 0 24px 0'};
                         text-align: center;
                     ">${campaign.description || 'Exclusive financial opportunity - limited time offer.'}</p>
                     
@@ -373,7 +373,7 @@
                         font-size: 16px;
                         font-weight: 600;
                         cursor: pointer;
-                        margin-bottom: 12px;
+                        margin-bottom: ${isDesktop ? '8px' : '12px'};
                         transition: background 0.2s ease;
                     " onmouseover="this.style.background='#6D28D9'" onmouseout="this.style.background='#7C3AED'">
                         ${campaign.cta_text || 'View Offer'}
@@ -391,7 +391,7 @@
                         font-size: 14px;
                         font-weight: 500;
                         cursor: pointer;
-                        margin-bottom: 16px;
+                        margin-bottom: ${isDesktop ? '12px' : '16px'};
                         transition: all 0.2s ease;
                     " onmouseover="this.style.borderColor='#D1D5DB'; this.style.background='#F9FAFB'" 
                        onmouseout="this.style.borderColor='#E5E7EB'; this.style.background='white'">
