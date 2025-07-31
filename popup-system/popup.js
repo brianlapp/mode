@@ -277,21 +277,21 @@
                     tagline: 'Thanks for Reading - You\'ve unlocked bonus offers',
                     circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
                     footerLogo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMzAwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iODAiIHJ4PSI0MCIgZmlsbD0iIzAwRkY3RiIvPjx0ZXh0IHg9IjE1MCIgeT0iNDAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9ImJsYWNrIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TWFya2V0IE11bmNoaWVzPC90ZXh0Pjx0ZXh0IHg9IjI0MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZmlsbD0iYmxhY2siPmZyb20gbW9kZTwvdGV4dD48L3N2Zz4=',
-                    color: '#00FF7F'
+                    color: '#10B981'
                 },
                 'mcad': {
                     name: 'ModeClassActionsDaily',
                     tagline: 'Thanks for Joining - You\'ve unlocked bonus offers',
                     circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
                     footerLogo: 'https://modeclassactionsdaily.com/wp-content/uploads/2025/04/class-actions-logo.png',
-                    color: '#F7007C'
+                    color: '#EAB308'
                 },
                 'mmd': {
                     name: 'ModeMobileDaily',
                     tagline: 'Thanks for Reading - You\'ve unlocked bonus offers',
                     circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
                     footerLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
-                    color: '#F7007C'
+                    color: '#8B5CF6'
                 }
             };
             
@@ -367,29 +367,29 @@
                 <!-- Main Content (Mobile Optimized) -->
                 <div style="padding: ${isDesktop ? '24px 32px' : '20px'}; padding-top: ${isDesktop ? '50px' : '70px'}; text-align: center;">
                     
-                    <!-- Reward Pill (Eye-catching gradient!) -->
+                    <!-- Reward Pill (Property-branded gradient!) -->
                     <div style="
-                        background: linear-gradient(135deg, #F7007C 0%, #7C3AED 100%);
-                        color: white;
+                        background: linear-gradient(135deg, ${propertyBranding.color} 0%, ${this.getDarkerShade(propertyBranding.color)} 100%);
+                        color: ${this.getOptimalTextColor(propertyBranding.color)};
                         padding: 8px 16px;
                         border-radius: 20px;
-                        font-size: 12px;
+                        font-size: ${isDesktop ? '14px' : '12px'};
                         margin-bottom: ${isDesktop ? '12px' : '16px'};
                         display: inline-block;
                         font-weight: 600;
-                        box-shadow: 0 4px 12px rgba(247, 0, 124, 0.3);
-                        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                        box-shadow: 0 4px 12px ${this.getRGBAShadow(propertyBranding.color, 0.3)};
+                        text-shadow: ${this.getOptimalTextShadow(propertyBranding.color)};
                         animation: pulse-glow 2s ease-in-out infinite alternate;
                     ">${propertyBranding.tagline}</div>
                     
                     <style>
                     @keyframes pulse-glow {
                         0% { 
-                            box-shadow: 0 4px 12px rgba(247, 0, 124, 0.3);
+                            box-shadow: 0 4px 12px ${this.getRGBAShadow(propertyBranding.color, 0.3)};
                             transform: scale(1);
                         }
                         100% { 
-                            box-shadow: 0 6px 20px rgba(247, 0, 124, 0.4);
+                            box-shadow: 0 6px 20px ${this.getRGBAShadow(propertyBranding.color, 0.4)};
                             transform: scale(1.02);
                         }
                     }
@@ -786,6 +786,76 @@
         debug(...args) {
             if (this.config.debug) {
                 console.log('[ModePopup]', ...args);
+            }
+        }
+
+        /**
+         * Generate darker shade of a hex color for gradients
+         */
+        getDarkerShade(hexColor) {
+            // Remove # if present
+            const hex = hexColor.replace('#', '');
+            
+            // Parse RGB components
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            
+            // Darken by 30%
+            const factor = 0.7;
+            const newR = Math.round(r * factor);
+            const newG = Math.round(g * factor);
+            const newB = Math.round(b * factor);
+            
+            // Convert back to hex
+            return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
+        }
+
+        /**
+         * Convert hex color to RGBA for shadows
+         */
+        getRGBAShadow(hexColor, alpha) {
+            // Remove # if present
+            const hex = hexColor.replace('#', '');
+            
+            // Parse RGB components
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        /**
+         * Get optimal text color (black or white) based on background brightness
+         */
+        getOptimalTextColor(hexColor) {
+            // Remove # if present
+            const hex = hexColor.replace('#', '');
+            
+            // Parse RGB components
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            
+            // Calculate relative luminance using WCAG formula
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            // Return black for light backgrounds, white for dark backgrounds
+            return luminance > 0.5 ? '#000000' : '#ffffff';
+        }
+
+        /**
+         * Get optimal text shadow based on text color
+         */
+        getOptimalTextShadow(hexColor) {
+            const textColor = this.getOptimalTextColor(hexColor);
+            
+            // If text is black, use light shadow; if white, use dark shadow
+            if (textColor === '#000000') {
+                return '0 1px 2px rgba(255, 255, 255, 0.3)';
+            } else {
+                return '0 1px 2px rgba(0, 0, 0, 0.3)';
             }
         }
     }
