@@ -108,6 +108,16 @@ async def add_campaign_modal():
 app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
 app.include_router(properties_router, prefix="/api", tags=["properties"])
 
+# Database migration endpoint
+@app.post("/api/db/migrate")
+async def run_migration():
+    """Run database migration to add Phase 2 tracking columns"""
+    try:
+        init_db()
+        return {"success": True, "message": "Database migration completed successfully"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 # Popup script endpoint
 @app.get("/popup.js")
 async def serve_popup_script():
