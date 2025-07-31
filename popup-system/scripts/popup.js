@@ -259,6 +259,46 @@
         }
 
         /**
+         * Get property-specific branding (logos and messaging)
+         */
+        getPropertyBranding() {
+            const property = this.config.property?.toLowerCase() || 'mff';
+            
+            const brandingMap = {
+                'mff': {
+                    name: 'ModeFreeFinds',
+                    tagline: 'Thanks for Reading - You\'ve unlocked bonus offers',
+                    circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
+                    footerLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
+                    color: '#F7007C'
+                },
+                'mmm': {
+                    name: 'ModeMarketMunchies',
+                    tagline: 'Thanks for Reading - You\'ve unlocked bonus offers',
+                    circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
+                    footerLogo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMzAwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iODAiIHJ4PSI0MCIgZmlsbD0iIzAwRkY3RiIvPjx0ZXh0IHg9IjE1MCIgeT0iNDAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9ImJsYWNrIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TWFya2V0IE11bmNoaWVzPC90ZXh0Pjx0ZXh0IHg9IjI0MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZmlsbD0iYmxhY2siPmZyb20gbW9kZTwvdGV4dD48L3N2Zz4=',
+                    color: '#00FF7F'
+                },
+                'mcad': {
+                    name: 'ModeClassActionsDaily',
+                    tagline: 'Thanks for Joining - You\'ve unlocked bonus offers',
+                    circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
+                    footerLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
+                    color: '#F7007C'
+                },
+                'mmd': {
+                    name: 'ModeMobileDaily',
+                    tagline: 'Thanks for Reading - You\'ve unlocked bonus offers',
+                    circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
+                    footerLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
+                    color: '#F7007C'
+                }
+            };
+            
+            return brandingMap[property] || brandingMap['mff'];
+        }
+
+        /**
          * Get the popup HTML content with exact Thanks.co replica design
          */
         getPopupHTML(campaign) {
@@ -275,6 +315,9 @@
             } else {
                 imageSize = 'width: 280px; height: 220px;'; // Tablet images
             }
+
+            // Co-branding system: Property-specific logos and messaging
+            const propertyBranding = this.getPropertyBranding();
 
             return `
                 <!-- Close Button -->
@@ -315,14 +358,14 @@
                     overflow: hidden;
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 ">
-                    <img src="${campaign.logo_url || 'https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO'}" 
-                         alt="Logo"
+                    <img src="${propertyBranding.circleLogo}" 
+                         alt="${propertyBranding.name} Logo"
                          style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
-                         onerror="this.src='https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO'">
+                         onerror="this.src='https://via.placeholder.com/56/F7007C/FFFFFF?text=${propertyBranding.name.charAt(0)}'">
                 </div>
                 
                 <!-- Main Content (Responsive padding for desktop) -->
-                <div style="padding: ${isDesktop ? '24px 32px' : '24px'}; padding-top: ${isDesktop ? '70px' : '100px'}; text-align: center;">
+                <div style="padding: ${isDesktop ? '24px 32px' : '24px'}; padding-top: ${isDesktop ? '50px' : '100px'}; text-align: center;">
                     
                     <!-- Tagline Pill -->
                     <div style="
@@ -334,7 +377,7 @@
                         margin-bottom: ${isDesktop ? '12px' : '24px'};
                         display: inline-block;
                         font-weight: 500;
-                    ">Mode Financial Offers</div>
+                    ">${propertyBranding.tagline}</div>
                     
                     <!-- Title (Responsive sizing) -->
                     <h2 style="
@@ -420,7 +463,24 @@
                         font-size: 11px;
                         text-align: center;
                         line-height: 1.3;
-                    ">T&Cs Apply | Powered by <strong>Mode</strong> • Privacy Policy</div>
+                    ">T&Cs Apply | Powered by <strong>${propertyBranding.name}</strong> • Privacy Policy</div>
+                    
+                    <!-- Property Brand Logo (Below Footer) -->
+                    <div style="
+                        text-align: center;
+                        margin-top: 12px;
+                        padding-bottom: 8px;
+                    ">
+                        <img src="${propertyBranding.footerLogo}" 
+                             alt="${propertyBranding.name}"
+                             style="
+                                max-width: 75px;
+                                max-height: 24px;
+                                object-fit: contain;
+                                opacity: 0.8;
+                             "
+                             onerror="this.style.display='none'">
+                    </div>
                 </div>
             `;
         }
