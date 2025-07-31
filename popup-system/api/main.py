@@ -104,6 +104,14 @@ async def add_campaign_modal():
         raise HTTPException(status_code=404, detail="Add campaign modal not found")
     return FileResponse(modal_file)
 
+@app.get("/test-tracking.html", response_class=HTMLResponse)
+async def test_tracking_dashboard():
+    """Serve the Phase 2 tracking test dashboard"""
+    test_file = Path(__file__).parent.parent / "test-tracking.html"
+    if not test_file.exists():
+        raise HTTPException(status_code=404, detail="Test tracking dashboard not found")
+    return FileResponse(test_file)
+
 # Include API routes
 app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
 app.include_router(properties_router, prefix="/api", tags=["properties"])
