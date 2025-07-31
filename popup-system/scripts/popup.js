@@ -269,7 +269,7 @@
                     name: 'ModeFreeFinds',
                     tagline: 'Thanks for Reading - You\'ve unlocked bonus offers',
                     circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
-                    footerLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
+                    footerLogo: 'https://i0.wp.com/modefreefinds.com/wp-content/uploads/2024/11/FreeFinds-Large.png?resize=1024%2C310&ssl=1',
                     color: '#F7007C'
                 },
                 'mmm': {
@@ -283,7 +283,7 @@
                     name: 'ModeClassActionsDaily',
                     tagline: 'Thanks for Joining - You\'ve unlocked bonus offers',
                     circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
-                    footerLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
+                    footerLogo: 'https://modeclassactionsdaily.com/wp-content/uploads/2025/04/class-actions-logo.png',
                     color: '#F7007C'
                 },
                 'mmd': {
