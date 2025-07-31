@@ -112,6 +112,14 @@ async def test_tracking_dashboard():
         raise HTTPException(status_code=404, detail="Test tracking dashboard not found")
     return FileResponse(test_file)
 
+@app.get("/analytics", response_class=HTMLResponse)
+async def analytics_dashboard():
+    """Serve the Phase 2 analytics dashboard for Mike"""
+    dashboard_file = Path(__file__).parent.parent / "phase2-analytics-dashboard.html"
+    if not dashboard_file.exists():
+        raise HTTPException(status_code=404, detail="Analytics dashboard not found")
+    return FileResponse(dashboard_file)
+
 # Include API routes
 app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
 app.include_router(properties_router, prefix="/api", tags=["properties"])
