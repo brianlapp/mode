@@ -268,6 +268,7 @@
                 'mff': {
                     name: 'ModeFreeFinds',
                     tagline: 'Thanks for Reading - You\'ve unlocked bonus offers',
+                    mobileTagline: 'Thanks! - You\'ve unlocked bonus offers',
                     circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
                     footerLogo: 'https://i0.wp.com/modefreefinds.com/wp-content/uploads/2024/11/FreeFinds-Large.png?resize=1024%2C310&ssl=1',
                     color: '#F7007C'
@@ -275,6 +276,7 @@
                 'mmm': {
                     name: 'ModeMarketMunchies',
                     tagline: 'Thanks for Reading - You\'ve unlocked bonus offers',
+                    mobileTagline: 'Thanks! - You\'ve unlocked bonus offers',
                     circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
                     footerLogo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMzAwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iODAiIHJ4PSI0MCIgZmlsbD0iIzAwRkY3RiIvPjx0ZXh0IHg9IjE1MCIgeT0iNDAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9ImJsYWNrIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+TWFya2V0IE11bmNoaWVzPC90ZXh0Pjx0ZXh0IHg9IjI0MCIgeT0iNjAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMiIgZmlsbD0iYmxhY2siPmZyb20gbW9kZTwvdGV4dD48L3N2Zz4=',
                     color: '#33ff99'
@@ -282,6 +284,7 @@
                 'mcad': {
                     name: 'ModeClassActionsDaily',
                     tagline: 'Thanks for Joining - You\'ve unlocked bonus offers',
+                    mobileTagline: 'Thanks! - You\'ve unlocked bonus offers',
                     circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
                     footerLogo: 'https://modeclassactionsdaily.com/wp-content/uploads/2025/04/class-actions-logo.png',
                     color: '#ffc144'
@@ -289,6 +292,7 @@
                 'mmd': {
                     name: 'ModeMobileDaily',
                     tagline: 'Thanks for Reading - You\'ve unlocked bonus offers',
+                    mobileTagline: 'Thanks! - You\'ve unlocked bonus offers',
                     circleLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
                     footerLogo: 'https://assets.isu.pub/document-structure/230821210201-6b2c1d176d5b4af7574d98b41de5de0d/v1/d08ce648ec2d8a39bf81ea8b6f317a12.jpeg',
                     color: '#8B5CF6'
@@ -380,7 +384,7 @@
                         box-shadow: 0 4px 12px ${this.getRGBAShadow(propertyBranding.color, 0.12)};
                         text-shadow: ${this.getOptimalTextShadow(propertyBranding.color)};
                         animation: pulse-glow 2s ease-in-out infinite alternate;
-                    ">${propertyBranding.tagline}</div>
+                    ">${isMobile ? propertyBranding.mobileTagline : propertyBranding.tagline}</div>
                     
                     <style>
                     @keyframes pulse-glow {
