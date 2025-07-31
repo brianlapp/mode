@@ -706,9 +706,9 @@
                         placement: this.config.placement,
                         user_agent: navigator.userAgent,
                         timestamp: new Date().toISOString(),
-                        // Phase 2: Enhanced tracking data
-                        source: this.trackingData.source,
-                        subsource: this.trackingData.subsource,
+                        // Phase 2: Enhanced tracking data with campaign-specific subsource
+                        source: this.trackingData.source || 'popup',
+                        subsource: this.trackingData.subsource || `popup_${campaign.name.toLowerCase().replace(/\s+/g, '')}`,
                         utm_campaign: this.trackingData.utm_campaign,
                         referrer: this.trackingData.referrer,
                         landing_page: this.trackingData.landing_page
@@ -738,9 +738,9 @@
                         placement: this.config.placement,
                         user_agent: navigator.userAgent,
                         timestamp: new Date().toISOString(),
-                        // Phase 2: Enhanced tracking data
-                        source: this.trackingData.source,
-                        subsource: this.trackingData.subsource,
+                        // Phase 2: Enhanced tracking data with campaign-specific subsource
+                        source: this.trackingData.source || 'popup',
+                        subsource: this.trackingData.subsource || `popup_${campaign.name.toLowerCase().replace(/\s+/g, '')}`,
                         utm_campaign: this.trackingData.utm_campaign,
                         referrer: this.trackingData.referrer,
                         landing_page: this.trackingData.landing_page
@@ -777,7 +777,7 @@
 
             return {
                 source: getFirstParam(['utm_source', 'source', 'src', 'ref']),
-                subsource: getFirstParam(['utm_medium', 'subsource', 'sub', 'medium']),
+                subsource: getFirstParam(['utm_medium', 'subsource', 'sub', 'medium']) || 'popup', // Default to 'popup' if no URL param
                 utm_campaign: getFirstParam(['utm_campaign', 'campaign', 'camp']),
                 referrer: document.referrer || '',
                 landing_page: window.location.href
