@@ -358,10 +358,10 @@
                     overflow: hidden;
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 ">
-                    <img src="${propertyBranding.circleLogo}" 
-                         alt="${propertyBranding.name} Logo"
+                    <img src="${campaign.logo_url || 'https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO'}" 
+                         alt="Campaign Logo"
                          style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
-                         onerror="this.src='https://via.placeholder.com/56/F7007C/FFFFFF?text=${propertyBranding.name.charAt(0)}'">
+                         onerror="this.src='https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO'">
                 </div>
                 
                 <!-- Main Content (Responsive padding for desktop) -->
