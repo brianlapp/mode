@@ -21,7 +21,8 @@
         DEFAULT_PLACEMENT: 'thankyou', // 'thankyou', 'exit-intent', 'timed'
         ANIMATION_DURATION: 300,
         ROTATION_DELAY: 15000, // 15 seconds between auto-rotation
-        MOBILE_BREAKPOINT: 768
+        MOBILE_BREAKPOINT: 768,
+        DESKTOP_BREAKPOINT: 1024
     };
 
     // Main ModePopup class
@@ -220,11 +221,14 @@
                 box-sizing: border-box;
             `;
 
-            // Create popup container
+            // Create popup container with responsive sizing
             const popup = document.createElement('div');
             popup.id = CONFIG.POPUP_ID;
+            const isDesktop = window.innerWidth >= CONFIG.DESKTOP_BREAKPOINT;
+            const maxWidth = isDesktop ? '480px' : '340px';
+            
             popup.style.cssText = `
-                max-width: 340px;
+                max-width: ${maxWidth};
                 width: 100%;
                 background: white;
                 border-radius: 24px;
@@ -258,8 +262,19 @@
          * Get the popup HTML content with exact Thanks.co replica design
          */
         getPopupHTML(campaign) {
-            const isMobile = window.innerWidth < CONFIG.MOBILE_BREAKPOINT;
-            const imageSize = isMobile ? 'width: 260px; height: 200px;' : 'width: 280px; height: 220px;';
+            const screenWidth = window.innerWidth;
+            const isMobile = screenWidth < CONFIG.MOBILE_BREAKPOINT;
+            const isDesktop = screenWidth >= CONFIG.DESKTOP_BREAKPOINT;
+            
+            // Progressive image sizing for better desktop experience
+            let imageSize;
+            if (isDesktop) {
+                imageSize = 'width: 420px; height: 280px;'; // Large desktop images
+            } else if (isMobile) {
+                imageSize = 'width: 260px; height: 200px;'; // Mobile images
+            } else {
+                imageSize = 'width: 280px; height: 220px;'; // Tablet images
+            }
 
             return `
                 <!-- Close Button -->
@@ -306,8 +321,8 @@
                          onerror="this.src='https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO'">
                 </div>
                 
-                <!-- Main Content (Exact Thanks.co Match) -->
-                <div style="padding: 24px; padding-top: 100px; text-align: center;">
+                <!-- Main Content (Responsive padding for desktop) -->
+                <div style="padding: ${isDesktop ? '32px' : '24px'}; padding-top: ${isDesktop ? '120px' : '100px'}; text-align: center;">
                     
                     <!-- Tagline Pill -->
                     <div style="
@@ -321,10 +336,10 @@
                         font-weight: 500;
                     ">Mode Financial Offers</div>
                     
-                    <!-- Title (Exact Match) -->
+                    <!-- Title (Responsive sizing) -->
                     <h2 style="
                         margin: 0 0 8px 0;
-                        font-size: 24px;
+                        font-size: ${isDesktop ? '28px' : '24px'};
                         font-weight: 800;
                         line-height: 1.2;
                         color: #111827;
