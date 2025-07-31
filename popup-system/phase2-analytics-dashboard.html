@@ -136,9 +136,8 @@
 </head>
 <body>
     <div class="header">
-        <h1>📊 Phase 2 Analytics Dashboard</h1>
-        <p>Mike's Source/Subsource Revenue Attribution System</p>
-        <div class="status-badge success">✅ Live Production Data</div>
+        <h1>Analytics Dashboard</h1>
+        <p>Source/Subsource Revenue Attribution System</p>
     </div>
 
     <!-- Key Metrics -->
@@ -165,35 +164,35 @@
         </div>
     </div>
 
-    <!-- Test Traffic Generator -->
-    <div class="test-section">
-        <h3>🧪 Test Traffic Generator</h3>
-        <p>Generate sample tracking data to test the Phase 2 system:</p>
-        
-        <button class="test-btn" onclick="testTraffic('email', 'newsletter')">
-            📧 Email Traffic
-        </button>
-        <button class="test-btn" onclick="testTraffic('meta', 'cpc')">
-            📱 Meta Ads
-        </button>
-        <button class="test-btn" onclick="testTraffic('google', 'organic')">
-            🔍 Google Organic
-        </button>
-        <button class="test-btn" onclick="testTraffic('seekingalpha', 'article_link')">
-            🔗 Referral Traffic
-        </button>
-        
-        <div class="success-msg" id="success-msg"></div>
-    </div>
-
     <!-- Live Analytics -->
     <div class="analytics-section">
-        <h3>📈 Live Analytics Data</h3>
-        <button class="refresh-btn" onclick="loadAnalytics()">🔄 Refresh Data</button>
+        <h3>Live Analytics Data</h3>
+        <button class="refresh-btn" onclick="loadAnalytics()">Refresh Data</button>
         
         <div id="analytics-content">
             <p>Loading analytics data...</p>
         </div>
+    </div>
+
+    <!-- Test Traffic Generator -->
+    <div class="test-section">
+        <h3>Test Traffic Generator</h3>
+        <p>Generate sample tracking data to test the system:</p>
+        
+        <button class="test-btn" onclick="testTraffic('email', 'newsletter')">
+            Email Traffic
+        </button>
+        <button class="test-btn" onclick="testTraffic('meta', 'cpc')">
+            Meta Ads
+        </button>
+        <button class="test-btn" onclick="testTraffic('google', 'organic')">
+            Google Organic
+        </button>
+        <button class="test-btn" onclick="testTraffic('seekingalpha', 'article_link')">
+            Referral Traffic
+        </button>
+        
+        <div class="success-msg" id="success-msg"></div>
     </div>
 
     <script>
@@ -219,7 +218,7 @@
                     `${bestSource.source} ($${bestSource.estimated_revenue})` : '-';
                 
                 // Build analytics table
-                let html = '<h4>📊 Revenue by Source</h4>';
+                let html = '<h4>Revenue by Source</h4>';
                 html += '<table class="data-table">';
                 html += '<tr><th>Source</th><th>Clicks</th><th>Revenue</th><th>Avg CPL</th></tr>';
                 
@@ -233,7 +232,7 @@
                 });
                 html += '</table>';
                 
-                html += '<h4>📱 Revenue by Subsource</h4>';
+                html += '<h4>Revenue by Subsource</h4>';
                 html += '<table class="data-table">';
                 html += '<tr><th>Subsource</th><th>Clicks</th><th>Revenue</th><th>Avg CPL</th></tr>';
                 
@@ -247,7 +246,7 @@
                 });
                 html += '</table>';
                 
-                html += '<h4>💼 Campaign Performance</h4>';
+                html += '<h4>Campaign Performance</h4>';
                 html += '<table class="data-table">';
                 html += '<tr><th>Campaign</th><th>Source</th><th>Impressions</th><th>Clicks</th><th>CTR</th></tr>';
                 
@@ -267,7 +266,7 @@
                 
             } catch (error) {
                 document.getElementById('analytics-content').innerHTML = 
-                    `<p style="color: #DC2626;">❌ Error loading analytics: ${error.message}</p>`;
+                    `<p style="color: #DC2626;">Error loading analytics: ${error.message}</p>`;
             }
         }
         
@@ -317,7 +316,7 @@
                 
                 // Show success message
                 const successMsg = document.getElementById('success-msg');
-                successMsg.innerHTML = `✅ Generated ${source}/${subsource} traffic with $0.45 revenue!`;
+                successMsg.innerHTML = `Generated ${source}/${subsource} traffic with $0.45 revenue!`;
                 successMsg.style.display = 'block';
                 
                 setTimeout(() => {
@@ -326,7 +325,7 @@
                 }, 2000);
                 
             } catch (error) {
-                alert(`❌ Error generating test traffic: ${error.message}`);
+                alert(`Error generating test traffic: ${error.message}`);
             }
         }
         
