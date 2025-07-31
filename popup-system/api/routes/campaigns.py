@@ -407,21 +407,21 @@ async def get_attribution_analytics():
         """)
         subsource_data = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
         
-        # Campaign performance with attribution
+        # Campaign performance with attribution (fixed to use impression source when click source missing)
         cursor = conn.execute("""
             SELECT 
                 c.name as campaign_name,
-                COALESCE(cl.source, 'Unknown') as source,
-                COUNT(cl.id) as clicks,
-                COUNT(i.id) as impressions,
-                ROUND(CAST(COUNT(cl.id) AS FLOAT) / NULLIF(COUNT(i.id), 0) * 100, 2) as ctr,
+                COALESCE(cl.source, i.source, 'Unknown') as source,
+                COUNT(DISTINCT cl.id) as clicks,
+                COUNT(DISTINCT i.id) as impressions,
+                ROUND(CAST(COUNT(DISTINCT cl.id) AS FLOAT) / NULLIF(COUNT(DISTINCT i.id), 0) * 100, 2) as ctr,
                 SUM(cl.revenue_estimate) as estimated_revenue
             FROM campaigns c
             LEFT JOIN clicks cl ON c.id = cl.campaign_id AND cl.timestamp >= datetime('now', '-30 days')
             LEFT JOIN impressions i ON c.id = i.campaign_id AND i.timestamp >= datetime('now', '-30 days')
             WHERE c.active = 1
-            GROUP BY c.name, cl.source
-            ORDER BY estimated_revenue DESC
+            GROUP BY c.name, COALESCE(cl.source, i.source, 'Unknown')
+            ORDER BY estimated_revenue DESC NULLS LAST
         """)
         campaign_data = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
         
