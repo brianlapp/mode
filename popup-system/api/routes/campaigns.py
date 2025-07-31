@@ -34,6 +34,7 @@ class CampaignUpdate(BaseModel):
     logo_url: Optional[str] = None
     main_image_url: Optional[str] = None
     description: Optional[str] = None
+    cta_text: Optional[str] = None
     active: Optional[bool] = None
 
 class Campaign(BaseModel):

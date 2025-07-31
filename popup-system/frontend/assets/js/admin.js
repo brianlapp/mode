@@ -350,9 +350,13 @@ class CampaignManager {
                             </div>
                             
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Tune URL (Read-only)</label>
-                                <input type="text" value="${campaign.tune_url}" readonly
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tune URL (Editable for Subsource Tracking)</label>
+                                <input type="url" id="edit_tune_url" value="${campaign.tune_url}" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink"
+                                       placeholder="https://track.modemobile.com/aff_c?offer_id=6998&aff_id=43045&aff_sub5=popup">
+                                <div class="text-xs text-gray-500 mt-1">
+                                    💡 Add &aff_sub5=popup_[offerName] for enhanced tracking
+                                </div>
                             </div>
                             
                             <div class="grid grid-cols-2 gap-4">
@@ -603,6 +607,7 @@ class CampaignManager {
         const cta_text = document.getElementById('edit_cta_text').value;
         const logo_url = document.getElementById('edit_logo_url').value;
         const main_image_url = document.getElementById('edit_main_image_url').value;
+        const tune_url = document.getElementById('edit_tune_url').value;
         
         // Validate required fields
         if (!name.trim()) {
@@ -615,12 +620,18 @@ class CampaignManager {
             return;
         }
         
+        if (!tune_url.trim()) {
+            this.showAlert('Tune URL is required!', 'error');
+            return;
+        }
+        
         const updateData = {
             name: name.trim(),
             description: description.trim(),
             cta_text: cta_text.trim(),
             logo_url: logo_url.trim(),
-            main_image_url: main_image_url.trim()
+            main_image_url: main_image_url.trim(),
+            tune_url: tune_url.trim()
         };
         
         try {
