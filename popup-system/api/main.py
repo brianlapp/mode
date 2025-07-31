@@ -120,6 +120,14 @@ async def analytics_dashboard():
         raise HTTPException(status_code=404, detail="Analytics dashboard not found")
     return FileResponse(dashboard_file)
 
+@app.get("/property-colors-test.html", response_class=HTMLResponse)
+async def property_colors_test():
+    """Serve the property-specific reward pill test page"""
+    test_file = Path(__file__).parent.parent / "frontend" / "property-colors-test.html"
+    if not test_file.exists():
+        raise HTTPException(status_code=404, detail="Property colors test page not found")
+    return FileResponse(test_file)
+
 # Include API routes
 app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
 app.include_router(properties_router, prefix="/api", tags=["properties"])
@@ -140,7 +148,9 @@ async def serve_popup_script():
     """Serve the production popup script"""
     # Try multiple possible paths for Railway deployment
     possible_paths = [
+        os.path.join(os.path.dirname(__file__), "..", "frontend", "popup.js"),
         os.path.join(os.path.dirname(__file__), "..", "scripts", "popup.js"),
+        os.path.join(os.path.dirname(__file__), "..", "popup.js"),
         os.path.join(os.path.dirname(__file__), "scripts", "popup.js"),
         "popup-system/scripts/popup.js",
         "scripts/popup.js"
