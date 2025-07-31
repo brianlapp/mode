@@ -71,29 +71,6 @@ def init_db():
             # Columns already exist or other error - this is okay
             pass
             
-        # Add source/subsource tracking fields for Phase 2 attribution
-        try:
-            conn.execute("ALTER TABLE impressions ADD COLUMN source TEXT")
-            conn.execute("ALTER TABLE impressions ADD COLUMN subsource TEXT")
-            conn.execute("ALTER TABLE impressions ADD COLUMN utm_campaign TEXT")
-            conn.execute("ALTER TABLE impressions ADD COLUMN referrer TEXT")
-            conn.execute("ALTER TABLE impressions ADD COLUMN landing_page TEXT")
-            print("✅ Added Phase 2 tracking fields to impressions table")
-        except Exception as e:
-            # Columns already exist or other error - this is okay
-            pass
-            
-        try:
-            conn.execute("ALTER TABLE clicks ADD COLUMN source TEXT")
-            conn.execute("ALTER TABLE clicks ADD COLUMN subsource TEXT") 
-            conn.execute("ALTER TABLE clicks ADD COLUMN utm_campaign TEXT")
-            conn.execute("ALTER TABLE clicks ADD COLUMN referrer TEXT")
-            conn.execute("ALTER TABLE clicks ADD COLUMN landing_page TEXT")
-            print("✅ Added Phase 2 tracking fields to clicks table")
-        except Exception as e:
-            # Columns already exist or other error - this is okay
-            pass
-        
         # Create campaign_properties table for property-specific settings
         conn.execute("""
             CREATE TABLE IF NOT EXISTS campaign_properties (
@@ -140,6 +117,33 @@ def init_db():
             )
         """)
         
+        # Add source/subsource tracking fields for Phase 2 attribution (AFTER tables exist)
+        cursor = conn.execute("PRAGMA table_info(impressions)")
+        existing_columns = [row[1] for row in cursor.fetchall()]
+        
+        tracking_columns = ['source', 'subsource', 'utm_campaign', 'referrer', 'landing_page']
+        for column in tracking_columns:
+            if column not in existing_columns:
+                try:
+                    conn.execute(f"ALTER TABLE impressions ADD COLUMN {column} TEXT")
+                    print(f"✅ Added {column} to impressions table")
+                except Exception as e:
+                    print(f"⚠️ Failed to add {column} to impressions: {e}")
+        
+        # Do the same for clicks table
+        cursor = conn.execute("PRAGMA table_info(clicks)")
+        existing_columns = [row[1] for row in cursor.fetchall()]
+        
+        for column in tracking_columns:
+            if column not in existing_columns:
+                try:
+                    conn.execute(f"ALTER TABLE clicks ADD COLUMN {column} TEXT")
+                    print(f"✅ Added {column} to clicks table")
+                except Exception as e:
+                    print(f"⚠️ Failed to add {column} to clicks: {e}")
+        
+        print("✅ Phase 2 tracking fields verified/added")
+
         # Create indexes for performance
         conn.execute("CREATE INDEX IF NOT EXISTS idx_campaign_active ON campaigns(active)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_property_active ON campaign_properties(property_code, active)")
