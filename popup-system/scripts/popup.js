@@ -269,7 +269,7 @@
             // Progressive image sizing for better desktop experience
             let imageSize;
             if (isDesktop) {
-                imageSize = 'width: 480px; height: 200px;'; // Wide desktop images (landscape)
+                imageSize = 'width: 480px; height: 240px;'; // Wide desktop images (taller landscape)
             } else if (isMobile) {
                 imageSize = 'width: 260px; height: 200px;'; // Mobile images
             } else {
@@ -322,7 +322,7 @@
                 </div>
                 
                 <!-- Main Content (Responsive padding for desktop) -->
-                <div style="padding: ${isDesktop ? '24px 32px' : '24px'}; padding-top: ${isDesktop ? '90px' : '100px'}; text-align: center;">
+                <div style="padding: ${isDesktop ? '24px 32px' : '24px'}; padding-top: ${isDesktop ? '70px' : '100px'}; text-align: center;">
                     
                     <!-- Tagline Pill -->
                     <div style="
@@ -331,7 +331,7 @@
                         padding: 6px 12px;
                         border-radius: 16px;
                         font-size: 12px;
-                        margin-bottom: ${isDesktop ? '16px' : '24px'};
+                        margin-bottom: ${isDesktop ? '12px' : '24px'};
                         display: inline-block;
                         font-weight: 500;
                     ">Mode Financial Offers</div>
@@ -349,7 +349,7 @@
                     <div style="margin: ${isDesktop ? '12px 0' : '16px 0'}; display: flex; align-items: center; justify-content: center;">
                         <img src="${campaign.main_image_url || 'https://via.placeholder.com/280x220/F7007C/FFFFFF?text=Offer'}" 
                              alt="Campaign" 
-                             style="${imageSize} object-fit: contain; object-position: center; border-radius: 12px; background-color: #f8f9fa;"
+                             style="${imageSize} object-fit: contain; object-position: center; border-radius: 12px; background-color: white;"
                              onerror="this.src='https://via.placeholder.com/280x220/F7007C/FFFFFF?text=Offer'">
                     </div>
                     
