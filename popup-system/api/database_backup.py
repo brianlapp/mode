@@ -144,49 +144,6 @@ def init_db():
         
         print("✅ Phase 2 tracking fields verified/added")
 
-        # Add Mike's Tune-style reporting columns to campaigns table
-        cursor = conn.execute("PRAGMA table_info(campaigns)")
-        existing_columns = [row[1] for row in cursor.fetchall()]
-        
-        reporting_columns = {
-            'partner_name': 'TEXT',           # For Partner column in reports
-            'advertiser_name': 'TEXT',        # For Advertiser column in reports  
-            'payout_amount': 'DECIMAL(10,2) DEFAULT 0.45',  # For Payout column
-            'creative_file': 'TEXT'           # For Creative column (filename)
-        }
-        
-        for column, column_type in reporting_columns.items():
-            if column not in existing_columns:
-                try:
-                    conn.execute(f"ALTER TABLE campaigns ADD COLUMN {column} {column_type}")
-                    print(f"✅ Added {column} to campaigns table")
-                except Exception as e:
-                    print(f"⚠️ Failed to add {column} to campaigns: {e}")
-        
-        # Create conversions table for future Tune webhook integration
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS conversions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                campaign_id INTEGER NOT NULL,
-                property_code TEXT NOT NULL,
-                session_id TEXT,
-                conversion_value DECIMAL(10,2) DEFAULT 0.45,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                source TEXT,
-                subsource TEXT,
-                utm_campaign TEXT,
-                referrer TEXT,
-                landing_page TEXT,
-                tune_conversion_id TEXT,  -- Tune's conversion ID from webhook
-                FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
-            )
-        """)
-        
-        # Add indexes for Mike's reporting queries
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_conversions_campaign ON conversions(campaign_id, timestamp)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_conversions_property ON conversions(property_code, timestamp)")
-        
-        print("✅ Mike's attribution reporting columns verified/added")
         # Create indexes for performance
         conn.execute("CREATE INDEX IF NOT EXISTS idx_campaign_active ON campaigns(active)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_property_active ON campaign_properties(property_code, active)")
