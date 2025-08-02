@@ -1203,7 +1203,7 @@ class AnalyticsManager {
         } catch (error) {
             console.error('❌ Failed to load analytics:', error);
             this.hideLoading();
-            this.showAlert(`Failed to load analytics: ${error.message}`, 'error');
+            this.showAnalyticsError(error);
         }
     }
 
@@ -1283,33 +1283,117 @@ class AnalyticsManager {
         document.getElementById('analytics-loading').classList.add('hidden');
     }
 
+    showAnalyticsError(error) {
+        const tableContainer = document.getElementById('analytics-table-container');
+        const loadingContainer = document.getElementById('analytics-loading');
+        
+        if (!tableContainer || !loadingContainer) return;
+        
+        // Hide loading, show error in table container
+        loadingContainer.classList.add('hidden');
+        tableContainer.classList.remove('hidden');
+        
+        const tableBody = document.getElementById('analytics-table-body');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="11" class="px-6 py-12 text-center">
+                        <div class="flex flex-col items-center max-w-md mx-auto">
+                            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                <svg class="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Analytics Loading Failed</h3>
+                            <p class="text-sm text-gray-600 mb-4 text-center">
+                                ${error.message || 'Unable to load analytics data. Please check your connection and try again.'}
+                            </p>
+                            <button onclick="window.analyticsManager.loadAnalyticsData()" 
+                                    class="flex items-center gap-2 px-4 py-2 bg-mode-pink text-white rounded-lg hover:bg-mode-pink/80 transition-colors">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z"></path>
+                                </svg>
+                                Try Again
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        // Also show toast notification
+        this.showAlert(`Analytics error: ${error.message}`, 'error');
+    }
+
     exportToCSV() {
         if (!this.currentData || !this.currentData.data) {
             this.showAlert('No data available to export', 'warning');
             return;
         }
 
-        const csvContent = this.convertToCSV(this.currentData.data);
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `mode-analytics-${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        // Show export progress
+        const exportBtn = document.getElementById('export-csv');
+        const originalText = exportBtn.innerHTML;
+        exportBtn.innerHTML = `
+            <svg class="w-4 h-4 animate-spin" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z"></path>
+            </svg>
+            Exporting...
+        `;
+        exportBtn.disabled = true;
+
+        try {
+            const csvContent = this.convertToCSV(this.currentData.data);
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+                const filename = `mode-tune-analytics-${timestamp}-${this.currentData.data.length}-campaigns.csv`;
+                
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                this.showAlert(`Successfully exported ${this.currentData.data.length} campaigns to ${filename}`, 'success');
+            }
+        } catch (error) {
+            console.error('Export failed:', error);
+            this.showAlert('Export failed. Please try again.', 'error');
+        } finally {
+            // Restore button
+            setTimeout(() => {
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+            }, 1000);
         }
     }
 
     convertToCSV(data) {
         if (!data || data.length === 0) return '';
 
+        const csvArray = [];
+        
+        // Add report metadata
+        csvArray.push(`# Mode Analytics - Tune-Style Report`);
+        csvArray.push(`# Generated: ${new Date().toISOString()}`);
+        csvArray.push(`# Period: ${this.currentData.period || 'Last 30 days'}`);
+        csvArray.push(`# Total Campaigns: ${data.length}`);
+        csvArray.push(`# Total Impressions: ${data.reduce((sum, row) => sum + row.impressions, 0).toLocaleString()}`);
+        csvArray.push(`# Total Clicks: ${data.reduce((sum, row) => sum + row.clicks, 0).toLocaleString()}`);
+        csvArray.push(`# Total Revenue: $${data.reduce((sum, row) => sum + row.revenue, 0).toFixed(2)}`);
+        csvArray.push(''); // Empty line
+        
+        // Add headers
         const headers = ['Offer', 'Partner', 'Campaign', 'Creative', 'Impressions', 'Clicks', 'CTR %', 'Revenue', 'RPM', 'RPC', 'Payout'];
-        const csvArray = [headers.join(',')];
+        csvArray.push(headers.join(','));
 
+        // Add data rows
         data.forEach(row => {
             const csvRow = [
                 `"${row.offer}"`,
