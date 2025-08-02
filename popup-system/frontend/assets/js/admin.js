@@ -1091,4 +1091,254 @@ function hideAddCampaignModal() {
     if (window.campaignManager) {
         window.campaignManager.closeModals();
     }
-} 
+}
+
+/**
+ * Analytics Dashboard Manager
+ * Handles Mike's Tune-style analytics reporting
+ */
+class AnalyticsManager {
+    constructor() {
+        this.baseURL = '/api';
+        this.currentData = null;
+        this.init();
+    }
+
+    init() {
+        console.log('📊 Analytics Manager initializing...');
+        this.setupTabNavigation();
+        this.setupAnalyticsEventListeners();
+    }
+
+    setupTabNavigation() {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        
+        tabButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const targetTab = e.currentTarget.dataset.tab;
+                this.switchTab(targetTab);
+            });
+        });
+
+        // Handle URL hash for direct linking
+        const hash = window.location.hash.substring(1);
+        if (hash === 'analytics') {
+            this.switchTab('analytics');
+        }
+    }
+
+    switchTab(tabName) {
+        console.log(`🔄 Switching to tab: ${tabName}`);
+        
+        // Update URL hash
+        window.location.hash = tabName;
+        
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+        
+        // Update content sections
+        document.querySelectorAll('.tab-content').forEach(section => {
+            section.classList.add('hidden');
+        });
+        document.getElementById(`${tabName}-section`).classList.remove('hidden');
+        
+        // Load analytics data if switching to analytics tab
+        if (tabName === 'analytics') {
+            this.loadAnalyticsData();
+        }
+    }
+
+    setupAnalyticsEventListeners() {
+        // Refresh button
+        const refreshBtn = document.getElementById('refresh-analytics');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.loadAnalyticsData();
+            });
+        }
+
+        // Export CSV button
+        const exportBtn = document.getElementById('export-csv');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                this.exportToCSV();
+            });
+        }
+    }
+
+    async loadAnalyticsData() {
+        console.log('📊 Loading analytics data...');
+        
+        try {
+            // Show loading state
+            this.showLoading();
+            
+            // Load performance metrics and tune-style report in parallel
+            const [metricsResponse, reportResponse] = await Promise.all([
+                fetch(`${this.baseURL}/analytics/performance-metrics`),
+                fetch(`${this.baseURL}/analytics/tune-style-report`)
+            ]);
+
+            if (!metricsResponse.ok || !reportResponse.ok) {
+                throw new Error('Failed to fetch analytics data');
+            }
+
+            const metricsData = await metricsResponse.json();
+            const reportData = await reportResponse.json();
+
+            console.log('📊 Metrics data:', metricsData);
+            console.log('📊 Report data:', reportData);
+
+            // Update UI with real data
+            this.updatePerformanceMetrics(metricsData);
+            this.updateTuneStyleReport(reportData);
+            this.currentData = reportData;
+
+            // Hide loading state
+            this.hideLoading();
+
+        } catch (error) {
+            console.error('❌ Failed to load analytics:', error);
+            this.hideLoading();
+            this.showAlert(`Failed to load analytics: ${error.message}`, 'error');
+        }
+    }
+
+    updatePerformanceMetrics(data) {
+        if (!data.success) return;
+
+        const today = data.today;
+        const bestCampaign = data.best_campaign;
+
+        // Update today's metrics
+        document.getElementById('today-impressions').textContent = today.today_impressions || 0;
+        document.getElementById('today-clicks').textContent = today.today_clicks || 0;
+        document.getElementById('today-revenue').textContent = today.today_revenue ? `$${today.today_revenue.toFixed(2)}` : '$0.00';
+        document.getElementById('best-campaign').textContent = bestCampaign.name || 'No data';
+    }
+
+    updateTuneStyleReport(data) {
+        if (!data.success) return;
+
+        const tableBody = document.getElementById('analytics-table-body');
+        const tableContainer = document.getElementById('analytics-table-container');
+        
+        if (!tableBody || !tableContainer) return;
+
+        // Clear existing data
+        tableBody.innerHTML = '';
+
+        if (!data.data || data.data.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="11" class="px-6 py-8 text-center text-gray-500">
+                        <div class="flex flex-col items-center">
+                            <svg class="w-12 h-12 text-gray-300 mb-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5z"></path>
+                            </svg>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No Campaign Data</h3>
+                            <p class="text-sm">Analytics will appear here as your campaigns generate traffic</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        } else {
+            // Populate table with real data
+            data.data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50';
+                
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${row.offer}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 uppercase">${row.partner}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${row.campaign}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${row.creative}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">${row.impressions.toLocaleString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">${row.clicks.toLocaleString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${row.ctr.toFixed(2)}%</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">$${row.revenue.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">$${row.rpm.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600">$${row.rpc.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${row.payout.toFixed(2)}</td>
+                `;
+                
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Show the table
+        tableContainer.classList.remove('hidden');
+    }
+
+    showLoading() {
+        document.getElementById('analytics-loading').classList.remove('hidden');
+        document.getElementById('analytics-table-container').classList.add('hidden');
+    }
+
+    hideLoading() {
+        document.getElementById('analytics-loading').classList.add('hidden');
+    }
+
+    exportToCSV() {
+        if (!this.currentData || !this.currentData.data) {
+            this.showAlert('No data available to export', 'warning');
+            return;
+        }
+
+        const csvContent = this.convertToCSV(this.currentData.data);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `mode-analytics-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    convertToCSV(data) {
+        if (!data || data.length === 0) return '';
+
+        const headers = ['Offer', 'Partner', 'Campaign', 'Creative', 'Impressions', 'Clicks', 'CTR %', 'Revenue', 'RPM', 'RPC', 'Payout'];
+        const csvArray = [headers.join(',')];
+
+        data.forEach(row => {
+            const csvRow = [
+                `"${row.offer}"`,
+                `"${row.partner}"`,
+                `"${row.campaign}"`,
+                `"${row.creative}"`,
+                row.impressions,
+                row.clicks,
+                row.ctr.toFixed(2),
+                row.revenue.toFixed(2),
+                row.rpm.toFixed(2),
+                row.rpc.toFixed(2),
+                row.payout.toFixed(2)
+            ];
+            csvArray.push(csvRow.join(','));
+        });
+
+        return csvArray.join('\n');
+    }
+
+    showAlert(message, type = 'info') {
+        // Reuse existing alert system from CampaignManager
+        if (window.campaignManager) {
+            window.campaignManager.showAlert(message, type);
+        } else {
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+    }
+}
+
+// Initialize Analytics Manager
+window.analyticsManager = new AnalyticsManager(); 
