@@ -439,7 +439,8 @@ async def get_attribution_analytics():
         }
         
     finally:
-        conn.close() @router.get("/analytics/tune-style-report")
+        conn.close() 
+@router.get("/analytics/tune-style-report")
 async def get_tune_style_report(
     start_date: str = None,
     end_date: str = None,
@@ -471,38 +472,40 @@ async def get_tune_style_report(
             campaign_filter = "AND c.id = ?"
             params.append(campaign_id)
 
-        # Main query matching Mike's Tune screenshot layout - FIXED SQLite syntax
+        # Main query matching Mike's Tune screenshot layout
         query = f"""
             SELECT 
                 c.name as offer,
                 cl.property_code as partner,
                 CASE 
-                    WHEN c.main_image_url LIKE '%imgur%' 
-                    THEN REPLACE(REPLACE(c.main_image_url, 'https://i.imgur.com/', ''), 'https://imgur.com/', '')
+                    WHEN c.main_image_url LIKE '%imgur%' THEN SUBSTR(c.main_image_url, INSTR(c.main_image_url, '/',-1) + 1)
                     ELSE 'banner.png'
                 END as campaign,
                 CASE 
-                    WHEN c.logo_url LIKE '%imgur%' 
-                    THEN REPLACE(REPLACE(c.logo_url, 'https://i.imgur.com/', ''), 'https://imgur.com/', '')
+                    WHEN c.logo_url LIKE '%imgur%' THEN SUBSTR(c.logo_url, INSTR(c.logo_url, '/',-1) + 1)
                     ELSE 'logo.png'
                 END as creative,
                 COUNT(DISTINCT i.id) as impressions,
                 COUNT(DISTINCT cl.id) as clicks,
-                0 as conversions,
+                0 as conversions,  -- Future Tune webhook integration
                 COALESCE(c.payout_amount, 0.45) as payout,
-                0.0 as cpm,
-                ROUND(COALESCE(SUM(cl.revenue_estimate), 0), 2) as revenue,
                 CASE 
                     WHEN COUNT(DISTINCT i.id) > 0 
-                    THEN ROUND((COALESCE(SUM(cl.revenue_estimate), 0) / COUNT(DISTINCT i.id)) * 1000, 2)
+                    THEN ROUND((0 / COUNT(DISTINCT i.id)) * 1000, 2)  -- CPM (future feature)
+                    ELSE 0 
+                END as cpm,
+                ROUND(SUM(cl.revenue_estimate), 2) as revenue,
+                CASE 
+                    WHEN COUNT(DISTINCT i.id) > 0 
+                    THEN ROUND((SUM(cl.revenue_estimate) / COUNT(DISTINCT i.id)) * 1000, 2)
                     ELSE 0 
                 END as rpm,
                 CASE 
                     WHEN COUNT(DISTINCT cl.id) > 0 
-                    THEN ROUND(COALESCE(SUM(cl.revenue_estimate), 0) / COUNT(DISTINCT cl.id), 2)
+                    THEN ROUND(SUM(cl.revenue_estimate) / COUNT(DISTINCT cl.id), 2)
                     ELSE 0 
                 END as rpc,
-                ROUND(COALESCE(SUM(cl.revenue_estimate), 0), 2) as profit
+                ROUND(SUM(cl.revenue_estimate), 2) as profit  -- Same as revenue for now
             FROM campaigns c
             LEFT JOIN clicks cl ON c.id = cl.campaign_id {date_filter}
             LEFT JOIN impressions i ON c.id = i.campaign_id 
@@ -512,7 +515,7 @@ async def get_tune_style_report(
             {property_filter}
             {campaign_filter}
             GROUP BY c.id, cl.property_code, c.name
-            HAVING COUNT(DISTINCT cl.id) > 0
+            HAVING COUNT(DISTINCT cl.id) > 0  -- Only show campaigns with clicks
             ORDER BY revenue DESC
         """
         
