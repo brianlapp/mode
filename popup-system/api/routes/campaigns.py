@@ -195,7 +195,7 @@ async def get_active_campaigns_for_property(property_code: str):
                    c.description, c.cta_text, c.offer_id, c.aff_id
             FROM campaigns c
             WHERE c.active = 1
-            ORDER BY c.priority DESC, c.created_at DESC
+            ORDER BY c.created_at DESC
         """)
         
         campaigns = []
