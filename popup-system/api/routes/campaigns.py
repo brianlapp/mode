@@ -506,8 +506,8 @@ async def get_tune_style_report(
                 END as rpc,
                 ROUND(COALESCE(SUM(cl.revenue_estimate), 0), 2) as profit
             FROM campaigns c
-            LEFT JOIN clicks cl ON c.id = cl.campaign_id {date_filter}
-            LEFT JOIN impressions i ON c.id = i.campaign_id {date_filter.replace('cl.', 'i.')}
+            LEFT JOIN clicks cl ON c.offer_id = cl.campaign_id {date_filter}
+            LEFT JOIN impressions i ON c.offer_id = i.campaign_id {date_filter.replace('cl.', 'i.')}
             WHERE c.active = 1 
             {property_filter}
             {campaign_filter}
