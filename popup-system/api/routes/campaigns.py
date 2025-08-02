@@ -477,7 +477,7 @@ async def get_tune_style_report(
         query = f"""
             SELECT 
                 c.name as offer,
-                cl.property_code as partner,
+                COALESCE(cl.property_code, i.property_code) as partner,
                 CASE 
                     WHEN c.main_image_url LIKE '%imgur%' 
                     THEN REPLACE(REPLACE(c.main_image_url, 'https://i.imgur.com/', ''), 'https://imgur.com/', '')
@@ -507,14 +507,12 @@ async def get_tune_style_report(
                 ROUND(COALESCE(SUM(cl.revenue_estimate), 0), 2) as profit
             FROM campaigns c
             LEFT JOIN clicks cl ON c.id = cl.campaign_id {date_filter}
-            LEFT JOIN impressions i ON c.id = i.campaign_id 
-                AND DATE(i.timestamp) = DATE(cl.timestamp)
-                AND i.property_code = cl.property_code
+            LEFT JOIN impressions i ON c.id = i.campaign_id {date_filter.replace('cl.', 'i.')}
             WHERE c.active = 1 
             {property_filter}
             {campaign_filter}
-            GROUP BY c.id, cl.property_code, c.name
-            HAVING COUNT(DISTINCT cl.id) > 0
+            GROUP BY c.id, COALESCE(cl.property_code, i.property_code), c.name
+            HAVING COUNT(DISTINCT i.id) > 0
             ORDER BY revenue DESC
         """
         
