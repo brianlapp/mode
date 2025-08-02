@@ -13,5 +13,5 @@ PYTHONPATH = "/app"
 
 # Database persistence with proper volume mounting
 [[deploy.volumes]]
-mountPath = "/app/api/data"
+mountPath = "/app/popup-system/api/data"
 name = "popup-database" 
