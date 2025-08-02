@@ -439,9 +439,7 @@ async def get_attribution_analytics():
         }
         
     finally:
-        conn.close()
-
-@router.get("/analytics/tune-style-report")
+        conn.close() @router.get("/analytics/tune-style-report")
 async def get_tune_style_report(
     start_date: str = None,
     end_date: str = None,
