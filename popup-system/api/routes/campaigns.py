@@ -531,8 +531,8 @@ async def get_tune_style_report(
                 END as rpc,
                 0.0 as profit
             FROM campaigns c
-            LEFT JOIN impressions i ON c.offer_id = i.campaign_id
-            LEFT JOIN clicks cl ON c.offer_id = cl.campaign_id AND i.property_code = cl.property_code
+            LEFT JOIN impressions i ON c.id = i.campaign_id
+            LEFT JOIN clicks cl ON c.id = cl.campaign_id AND i.property_code = cl.property_code
             WHERE 1=1 {date_filter} {property_filter} {campaign_filter}
             GROUP BY c.offer_id, COALESCE(cl.property_code, i.property_code), c.name
             ORDER BY impressions DESC, revenue DESC
@@ -611,8 +611,8 @@ async def get_performance_metrics():
                 COUNT(DISTINCT cl.id) as clicks,
                 SUM(cl.revenue_estimate) as revenue
             FROM campaigns c
-            LEFT JOIN impressions i ON c.offer_id = i.campaign_id
-            LEFT JOIN clicks cl ON c.offer_id = cl.campaign_id AND i.property_code = cl.property_code
+            LEFT JOIN impressions i ON c.id = i.campaign_id
+            LEFT JOIN clicks cl ON c.id = cl.campaign_id AND i.property_code = cl.property_code
             WHERE DATE(i.timestamp) >= DATE('now', '-7 days')
             GROUP BY c.offer_id, c.name
             ORDER BY revenue DESC, impressions DESC

@@ -700,7 +700,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        campaign_id: campaign.id,
+                        campaign_id: campaign.offer_id,
                         property_code: this.config.property,
                         session_id: this.sessionId,
                         placement: this.config.placement,
@@ -732,7 +732,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        campaign_id: campaign.id,
+                        campaign_id: campaign.offer_id,
                         property_code: this.config.property,
                         session_id: this.sessionId,
                         placement: this.config.placement,
