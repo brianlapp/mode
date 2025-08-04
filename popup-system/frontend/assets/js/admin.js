@@ -1101,6 +1101,7 @@ class AnalyticsManager {
     constructor() {
         this.baseURL = '/api';
         this.currentData = null;
+        this.currentPreset = 'last_7_days'; // Default to Mike's preference
         this.init();
     }
 
@@ -1159,6 +1160,16 @@ class AnalyticsManager {
                 this.loadAnalyticsData();
             });
         }
+        
+        // Date preset selector
+        const datePreset = document.getElementById('date-preset');
+        if (datePreset) {
+            datePreset.addEventListener('change', (e) => {
+                console.log(`📅 Date preset changed to: ${e.target.value}`);
+                this.currentPreset = e.target.value;
+                this.loadAnalyticsData();
+            });
+        }
 
         // Export CSV button
         const exportBtn = document.getElementById('export-csv');
@@ -1179,7 +1190,7 @@ class AnalyticsManager {
             // Load performance metrics and tune-style report in parallel
             const [metricsResponse, reportResponse] = await Promise.all([
                 fetch(`${this.baseURL}/analytics/performance-metrics`),
-                fetch(`${this.baseURL}/analytics/tune-style-report`)
+                fetch(`${this.baseURL}/analytics/tune-style-report?preset=${this.currentPreset}`)
             ]);
 
             if (!metricsResponse.ok || !reportResponse.ok) {

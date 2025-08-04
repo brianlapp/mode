@@ -445,6 +445,7 @@ async def get_attribution_analytics():
 async def get_tune_style_report(
     start_date: str = None,
     end_date: str = None,
+    preset: str = None,
     property_code: str = None,
     campaign_id: int = None
 ):
@@ -453,7 +454,11 @@ async def get_tune_style_report(
         from tune_api_client import TuneAPIClient
         
         client = TuneAPIClient()
-        return client.get_stats_report(start_date=start_date, end_date=end_date)
+        return client.get_stats_report(
+            start_date=start_date, 
+            end_date=end_date, 
+            preset=preset or "last_7_days"  # Default to last 7 days like Mike prefers
+        )
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get Tune data: {str(e)}")
