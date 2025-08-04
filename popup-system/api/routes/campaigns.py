@@ -551,6 +551,8 @@ async def get_tune_style_report(
             row_dict['rpm'] = round(float(row_dict['rpm']), 2)
             row_dict['rpc'] = round(float(row_dict['rpc']), 2)
             row_dict['payout'] = round(float(row_dict['payout']), 2)
+            # Calculate CTR (Click Through Rate)
+            row_dict['ctr'] = round((row_dict['clicks'] / row_dict['impressions'] * 100) if row_dict['impressions'] > 0 else 0, 2)
             results.append(row_dict)
         
         return {
