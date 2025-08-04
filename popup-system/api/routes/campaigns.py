@@ -574,7 +574,7 @@ async def get_performance_metrics():
             LEFT JOIN clicks cl ON i.campaign_id = cl.campaign_id 
                 AND DATE(i.timestamp) = DATE(cl.timestamp)
                 AND i.property_code = cl.property_code
-            WHERE DATE(i.timestamp) = DATE('now')
+            WHERE i.timestamp >= datetime('now', '-1 day')
         """)
         today_data = dict(zip([col[0] for col in cursor.description], cursor.fetchone() or [0, 0, 0]))
         
@@ -586,9 +586,9 @@ async def get_performance_metrics():
                 COUNT(DISTINCT i.id) as impressions,
                 ROUND(CAST(COUNT(DISTINCT cl.id) AS FLOAT) / NULLIF(COUNT(DISTINCT i.id), 0) * 100, 2) as ctr
             FROM campaigns c
-            LEFT JOIN clicks cl ON c.id = cl.campaign_id 
+            LEFT JOIN clicks cl ON c.offer_id = cl.campaign_id 
                 AND cl.timestamp >= datetime('now', '-7 days')
-            LEFT JOIN impressions i ON c.id = i.campaign_id 
+            LEFT JOIN impressions i ON c.offer_id = i.campaign_id 
                 AND i.timestamp >= datetime('now', '-7 days')
             WHERE c.active = 1 
             GROUP BY c.id, c.name
