@@ -582,20 +582,26 @@ async def get_performance_metrics():
     """Real-time performance metrics using REAL Tune API data"""
     conn = get_db_connection()
     try:
-        # Get today's metrics
+        # Get today's metrics - separate queries to avoid JOIN issues
         today = datetime.now().strftime('%Y-%m-%d')
-        cursor = conn.execute("""
-            SELECT 
-                COUNT(DISTINCT i.id) as today_impressions,
-                COUNT(DISTINCT cl.id) as today_clicks,
-                SUM(cl.revenue_estimate) as today_revenue
-            FROM impressions i
-            LEFT JOIN clicks cl ON i.campaign_id = cl.campaign_id 
-                AND DATE(i.timestamp) = DATE(cl.timestamp)
-                AND i.property_code = cl.property_code
-            WHERE DATE(i.timestamp) = ?
-        """, (today,))
-        today_data = dict(zip([col[0] for col in cursor.description], cursor.fetchone() or [0, 0, 0]))
+        
+        # Count today's impressions
+        cursor = conn.execute("SELECT COUNT(*) FROM impressions WHERE DATE(timestamp) = ?", (today,))
+        today_impressions = cursor.fetchone()[0]
+        
+        # Count today's clicks  
+        cursor = conn.execute("SELECT COUNT(*) FROM clicks WHERE DATE(timestamp) = ?", (today,))
+        today_clicks = cursor.fetchone()[0]
+        
+        # Sum today's revenue
+        cursor = conn.execute("SELECT COALESCE(SUM(revenue_estimate), 0) FROM clicks WHERE DATE(timestamp) = ?", (today,))
+        today_revenue = cursor.fetchone()[0]
+        
+        today_data = {
+            'today_impressions': today_impressions,
+            'today_clicks': today_clicks, 
+            'today_revenue': today_revenue
+        }
         
         # Get best performing campaign (last 7 days)
         cursor = conn.execute("""
