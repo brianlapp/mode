@@ -1270,11 +1270,11 @@ class AnalyticsManager {
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${row.creative}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">${row.impressions.toLocaleString()}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">${row.clicks.toLocaleString()}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${row.ctr.toFixed(2)}%</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">$${row.revenue.toFixed(2)}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">${row.rpm.toFixed(2)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600">$${row.rpc.toFixed(2)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${row.payout.toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${(row.ctr || 0).toFixed(2)}%</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">$${(row.revenue || 0).toFixed(2)}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">${(row.rpm || 0).toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600">$${(row.rpc || 0).toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${(row.payout || 0).toFixed(2)}</td>
                 `;
                 
                 tableBody.appendChild(tr);
