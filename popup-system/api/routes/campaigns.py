@@ -612,7 +612,7 @@ async def get_performance_metrics():
                 SUM(cl.revenue_estimate) as revenue
             FROM campaigns c
             LEFT JOIN impressions i ON c.id = i.campaign_id
-            LEFT JOIN clicks cl ON c.id = cl.campaign_id AND i.property_code = cl.property_code
+            LEFT JOIN clicks cl ON c.offer_id = cl.campaign_id AND i.property_code = cl.property_code
             WHERE DATE(i.timestamp) >= DATE('now', '-7 days')
             GROUP BY c.offer_id, c.name
             ORDER BY revenue DESC, impressions DESC
