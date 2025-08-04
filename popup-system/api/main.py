@@ -40,6 +40,14 @@ if frontend_path.exists():
 # Initialize database on startup
 @app.on_event("startup")
 async def startup():
+    # 🛡️ ENSURE RAILWAY VOLUME MOUNT - Critical for data persistence
+    try:
+        from ensure_volume import ensure_railway_volume
+        if not ensure_railway_volume():
+            print("🚨 CRITICAL: Volume mount failed - data will not persist!")
+    except Exception as e:
+        print(f"⚠️ Warning: Volume check failed: {e}")
+    
     init_db()
     # 🛡️ PROTECT MIKE'S REVENUE MACHINE - Ensure only real campaigns exist
     try:
