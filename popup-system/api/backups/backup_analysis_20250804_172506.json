@@ -1,0 +1,14 @@
+{
+  "campaigns": 5,
+  "impressions": 1,
+  "clicks": 1,
+  "revenue": 0.45,
+  "date_range": {
+    "first": "2025-07-31 00:27:39",
+    "last": "2025-07-31 00:27:39"
+  },
+  "file_size": 77824,
+  "backup_timestamp": "20250804_172506",
+  "backup_file": "backups/popup_campaigns_backup_20250804_172506.db",
+  "original_file": "popup_campaigns.db"
+}
