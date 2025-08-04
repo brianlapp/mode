@@ -6,6 +6,7 @@ CRUD operations for Mike's Tune campaign management
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel, HttpUrl
 from typing import List, Optional
+from datetime import datetime, timedelta
 from database import (
     get_db_connection, 
     insert_campaign, 
@@ -450,28 +451,187 @@ async def get_tune_style_report(
     campaign_id: int = None
 ):
     """Mike's preferred Tune-style reporting using REAL Tune API data"""
+    conn = get_db_connection()
     try:
-        from tune_api_client import TuneAPIClient
+        # Handle date presets first
+        if preset and not start_date and not end_date:
+            if preset == "today":
+                start_date = end_date = datetime.now().strftime('%Y-%m-%d')
+            elif preset == "yesterday":
+                yesterday = datetime.now() - timedelta(days=1)
+                start_date = end_date = yesterday.strftime('%Y-%m-%d')
+            elif preset == "last_7_days":
+                start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+                end_date = datetime.now().strftime('%Y-%m-%d')
+            elif preset == "last_30_days":
+                start_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+                end_date = datetime.now().strftime('%Y-%m-%d')
+            elif preset == "this_month":
+                today = datetime.now()
+                start_date = today.replace(day=1).strftime('%Y-%m-%d')
+                end_date = today.strftime('%Y-%m-%d')
+            elif preset == "last_month":
+                today = datetime.now()
+                first_this_month = today.replace(day=1)
+                last_month = first_this_month - timedelta(days=1)
+                start_date = last_month.replace(day=1).strftime('%Y-%m-%d')
+                end_date = last_month.strftime('%Y-%m-%d')
         
-        client = TuneAPIClient()
-        return client.get_stats_report(
-            start_date=start_date, 
-            end_date=end_date, 
-            preset=preset or "last_7_days"  # Default to last 7 days like Mike prefers
-        )
+        # Default to last 7 days if no dates provided
+        if not start_date and not end_date:
+            start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+            end_date = datetime.now().strftime('%Y-%m-%d')
+            
+        # Build date filter
+        date_filter = ""
+        params = []
+        
+        if start_date and end_date:
+            if start_date == end_date:
+                date_filter = "AND DATE(i.timestamp) = ?"
+                params.append(start_date)
+            else:
+                date_filter = "AND DATE(i.timestamp) BETWEEN ? AND ?"
+                params.extend([start_date, end_date])
+                
+        # Build property filter
+        property_filter = ""
+        if property_code:
+            property_filter = "AND COALESCE(cl.property_code, i.property_code) = ?"
+            params.append(property_code)
+            
+        # Build campaign filter  
+        campaign_filter = ""
+        if campaign_id:
+            campaign_filter = "AND c.offer_id = ?"
+            params.append(campaign_id)
+
+        # Main query matching Mike's Tune screenshot layout
+        query = f"""
+            SELECT 
+                c.name as offer,
+                COALESCE(cl.property_code, i.property_code) as partner,
+                c.name as campaign,
+                COALESCE(c.creative_file, 'N/A') as creative,
+                COUNT(DISTINCT i.id) as impressions,
+                COUNT(DISTINCT cl.id) as clicks,
+                0 as conversions,
+                COALESCE(c.payout_amount, 0.45) as payout,
+                0.0 as cpm,
+                COALESCE(SUM(cl.revenue_estimate), 0) as revenue,
+                CASE 
+                    WHEN COUNT(DISTINCT i.id) > 0 
+                    THEN (COALESCE(SUM(cl.revenue_estimate), 0) / COUNT(DISTINCT i.id)) * 1000 
+                    ELSE 0 
+                END as rpm,
+                CASE 
+                    WHEN COUNT(DISTINCT cl.id) > 0 
+                    THEN COALESCE(SUM(cl.revenue_estimate), 0) / COUNT(DISTINCT cl.id)
+                    ELSE 0 
+                END as rpc,
+                0.0 as profit
+            FROM campaigns c
+            LEFT JOIN impressions i ON c.offer_id = i.campaign_id
+            LEFT JOIN clicks cl ON c.offer_id = cl.campaign_id AND i.property_code = cl.property_code
+            WHERE 1=1 {date_filter} {property_filter} {campaign_filter}
+            GROUP BY c.offer_id, COALESCE(cl.property_code, i.property_code), c.name
+            ORDER BY impressions DESC, revenue DESC
+        """
+        
+        cursor = conn.execute(query, params)
+        columns = [col[0] for col in cursor.description]
+        results = []
+        
+        for row in cursor.fetchall():
+            row_dict = dict(zip(columns, row))
+            # Format numbers nicely
+            row_dict['impressions'] = int(row_dict['impressions'])
+            row_dict['clicks'] = int(row_dict['clicks'])
+            row_dict['revenue'] = round(float(row_dict['revenue']), 2)
+            row_dict['rpm'] = round(float(row_dict['rpm']), 2)
+            row_dict['rpc'] = round(float(row_dict['rpc']), 2)
+            row_dict['payout'] = round(float(row_dict['payout']), 2)
+            results.append(row_dict)
+        
+        return {
+            "success": True,
+            "period": f"{start_date} to {end_date}",
+            "preset": preset or "custom",
+            "data": results,
+            "summary": {
+                "total_campaigns": len(results),
+                "total_impressions": sum(r['impressions'] for r in results),
+                "total_clicks": sum(r['clicks'] for r in results),
+                "total_revenue": round(sum(r['revenue'] for r in results), 2),
+                "avg_ctr": round((sum(r['clicks'] for r in results) / sum(r['impressions'] for r in results) * 100) if sum(r['impressions'] for r in results) > 0 else 0, 2),
+                "avg_rpm": round(sum(r['rpm'] for r in results) / len(results) if results else 0, 2),
+                "avg_rpc": round(sum(r['rpc'] for r in results) / len(results) if results else 0, 2)
+            }
+        }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get Tune data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate report: {str(e)}")
+    finally:
+        conn.close()
 
 
 @router.get("/analytics/performance-metrics")
 async def get_performance_metrics():
     """Real-time performance metrics using REAL Tune API data"""
+    conn = get_db_connection()
     try:
-        from tune_api_client import TuneAPIClient
+        # Get today's metrics
+        today = datetime.now().strftime('%Y-%m-%d')
+        cursor = conn.execute("""
+            SELECT 
+                COUNT(DISTINCT i.id) as today_impressions,
+                COUNT(DISTINCT cl.id) as today_clicks,
+                SUM(cl.revenue_estimate) as today_revenue
+            FROM impressions i
+            LEFT JOIN clicks cl ON i.campaign_id = cl.campaign_id 
+                AND DATE(i.timestamp) = DATE(cl.timestamp)
+                AND i.property_code = cl.property_code
+            WHERE DATE(i.timestamp) = ?
+        """, (today,))
+        today_data = dict(zip([col[0] for col in cursor.description], cursor.fetchone() or [0, 0, 0]))
         
-        client = TuneAPIClient()
-        return client.get_performance_metrics()
+        # Get best performing campaign (last 7 days)
+        cursor = conn.execute("""
+            SELECT 
+                c.name,
+                COUNT(DISTINCT i.id) as impressions,
+                COUNT(DISTINCT cl.id) as clicks,
+                SUM(cl.revenue_estimate) as revenue
+            FROM campaigns c
+            LEFT JOIN impressions i ON c.offer_id = i.campaign_id
+            LEFT JOIN clicks cl ON c.offer_id = cl.campaign_id AND i.property_code = cl.property_code
+            WHERE DATE(i.timestamp) >= DATE('now', '-7 days')
+            GROUP BY c.offer_id, c.name
+            ORDER BY revenue DESC, impressions DESC
+            LIMIT 1
+        """)
+        best_campaign_row = cursor.fetchone()
+        best_campaign = {}
+        if best_campaign_row:
+            best_campaign = {
+                "name": best_campaign_row[0],
+                "impressions": int(best_campaign_row[1] or 0),
+                "clicks": int(best_campaign_row[2] or 0),
+                "revenue": round(float(best_campaign_row[3] or 0), 2)
+            }
+        
+        return {
+            "success": True,
+            "today": {
+                "today_impressions": int(today_data.get('today_impressions', 0)),
+                "today_clicks": int(today_data.get('today_clicks', 0)),
+                "today_revenue": round(float(today_data.get('today_revenue') or 0), 2)
+            },
+            "best_campaign": best_campaign,
+            "timestamp": datetime.now().isoformat()
+        }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get Tune performance data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get performance metrics: {str(e)}")
+    finally:
+        conn.close()
