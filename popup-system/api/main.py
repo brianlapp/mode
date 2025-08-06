@@ -55,6 +55,13 @@ async def startup():
         protect_mikes_revenue_machine()
     except Exception as e:
         print(f"⚠️ Warning: Could not run campaign protection: {e}")
+    
+    # 🚨 RESTORE MIKE'S PRODUCTION DATA if needed
+    try:
+        from restore_railway_data import restore_railway_production_data
+        restore_railway_production_data()
+    except Exception as e:
+        print(f"⚠️ Warning: Could not restore production data: {e}")
 
 # Health check endpoint
 @app.get("/health")
