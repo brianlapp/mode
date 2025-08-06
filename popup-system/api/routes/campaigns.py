@@ -97,11 +97,23 @@ class EmbeddedTuneAPIClient:
             try:
                 raw_data = api_result['raw_data']
                 response_data = raw_data['response']['data']
-                campaign_data = response_data.get('data', [])
-                totals = response_data.get('totals', {}).get('Stat', {})
                 
-                print(f"🔧 DEBUG: campaign_data type: {type(campaign_data)}, length: {len(campaign_data) if isinstance(campaign_data, list) else 'N/A'}")
-                print(f"🔧 DEBUG: totals type: {type(totals)}")
+                print(f"🔧 DEBUG: response_data type: {type(response_data)}")
+                print(f"🔧 DEBUG: response_data keys: {list(response_data.keys()) if isinstance(response_data, dict) else 'NOT_DICT'}")
+                
+                campaign_data = response_data.get('data', [])
+                print(f"🔧 DEBUG: campaign_data type: {type(campaign_data)}")
+                
+                # Check totals structure carefully
+                totals_raw = response_data.get('totals', {})
+                print(f"🔧 DEBUG: totals_raw type: {type(totals_raw)}")
+                
+                if isinstance(totals_raw, dict):
+                    totals = totals_raw.get('Stat', {})
+                    print(f"🔧 DEBUG: totals type: {type(totals)}")
+                else:
+                    print(f"🔧 DEBUG: totals_raw is not dict, it's: {totals_raw}")
+                    totals = {}
                 
             except Exception as data_error:
                 print(f"🔧 DEBUG: Error extracting data: {data_error}")
