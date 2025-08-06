@@ -25,8 +25,10 @@ class EmbeddedTuneAPIClient:
         self.working_endpoint = "https://currentpublisher.api.hasoffers.com/v3/Report.json"
         
     def _make_hasoffers_request(self, method: str = 'getStats', **additional_params):
-        """Make authenticated request to Mike's HasOffers API"""
-        import requests
+        """Make authenticated request to Mike's HasOffers API using urllib"""
+        import urllib.request
+        import urllib.parse
+        import json
         
         # Filter for ONLY our 5 popup campaigns
         popup_offer_ids = [6998, 7521, 7389, 7385, 7390]
@@ -37,25 +39,33 @@ class EmbeddedTuneAPIClient:
             'Method': method,
             'fields[]': ['Stat.clicks', 'Stat.conversions', 'Stat.payout', 'Stat.revenue', 'Stat.offer_id'],
             'filters[Stat.offer_id][conditional]': 'EQUAL_TO',
-            'filters[Stat.offer_id][values][]': popup_offer_ids,
-            'group_by[]': ['Stat.offer_id'],
             'totals': 1,
             'limit': 1000,
             **additional_params
         }
         
+        # Add popup campaign filters
+        for i, offer_id in enumerate(popup_offer_ids):
+            params[f'filters[Stat.offer_id][values][{i}]'] = offer_id
+        params['group_by[]'] = 'Stat.offer_id'
+        
         try:
-            response = requests.get(self.working_endpoint, params=params, timeout=15)
-            if response.status_code == 200:
-                data = response.json()
-                if 'response' in data and data.get('response', {}).get('status') == 1:
-                    return {
-                        'success': True,
-                        'source': 'EMBEDDED_HASOFFERS_API',
-                        'raw_data': data,
-                        'api_status': '✅ Embedded HasOffers API Working'
-                    }
-            return {'success': False, 'error': f"HTTP {response.status_code}", 'source': 'HTTP_ERROR'}
+            # Build URL with parameters
+            query_string = urllib.parse.urlencode(params, doseq=True)
+            url = f"{self.working_endpoint}?{query_string}"
+            
+            # Make request
+            with urllib.request.urlopen(url, timeout=15) as response:
+                if response.status == 200:
+                    data = json.loads(response.read().decode())
+                    if 'response' in data and data.get('response', {}).get('status') == 1:
+                        return {
+                            'success': True,
+                            'source': 'EMBEDDED_URLLIB_API',
+                            'raw_data': data,
+                            'api_status': '✅ Embedded urllib API Working'
+                        }
+                return {'success': False, 'error': f"HTTP {response.status}", 'source': 'HTTP_ERROR'}
         except Exception as e:
             return {'success': False, 'error': str(e), 'source': 'CONNECTION_ERROR'}
     
