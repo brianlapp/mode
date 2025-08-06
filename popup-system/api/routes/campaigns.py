@@ -634,7 +634,74 @@ async def get_impression_pixel(campaign_id: int):
 
 @router.get("/analytics/attribution")
 async def get_attribution_analytics():
-    """Phase 2: Get traffic attribution analytics"""
+    """Phase 2: Get traffic attribution analytics - NOW USING REAL TUNE API"""
+    try:
+        # Get real popup campaign data from TUNE API (last 30 days to match frontend)
+        tune_report = await get_tune_style_report(preset="last_30_days")
+        
+        if not tune_report.get("success"):
+            # Fallback to local database if API fails
+            return await _get_local_attribution_analytics()
+            
+        # Extract real data from TUNE API
+        summary = tune_report.get("summary", {})
+        real_clicks = summary.get("total_clicks", 0)
+        real_revenue = summary.get("total_revenue", 0)
+        campaigns = tune_report.get("data", [])
+        
+        # Convert TUNE data to attribution format
+        source_data = [
+            {
+                "source": "MFF_Popup",
+                "clicks": real_clicks,
+                "estimated_revenue": real_revenue,
+                "avg_cpl": (real_revenue / real_clicks) if real_clicks > 0 else 0.0
+            }
+        ]
+        
+        subsource_data = [
+            {
+                "subsource": "popup_campaigns",
+                "clicks": real_clicks,
+                "estimated_revenue": real_revenue,
+                "avg_cpl": (real_revenue / real_clicks) if real_clicks > 0 else 0.0
+            }
+        ]
+        
+        # Convert campaign data to attribution format
+        campaign_data = []
+        for campaign in campaigns:
+            if campaign.get("clicks", 0) > 0:
+                campaign_data.append({
+                    "campaign_name": campaign.get("offer", "Unknown"),
+                    "source": "MFF_Popup",
+                    "clicks": campaign.get("clicks", 0),
+                    "impressions": campaign.get("impressions", 0),
+                    "ctr": campaign.get("ctr", 0),
+                    "estimated_revenue": campaign.get("revenue", 0)
+                })
+        
+        return {
+            "success": True,
+            "period": "Last 30 days", 
+            "by_source": source_data,
+            "by_subsource": subsource_data,
+            "by_campaign": campaign_data,
+            "summary": {
+                "total_sources": len(source_data),
+                "total_clicks": real_clicks,
+                "total_revenue": real_revenue
+            },
+            "source": "🎯 REAL TUNE API (Attribution Mode)",
+            "api_status": f"✅ Real popup data - {len(campaigns)} campaigns"
+        }
+        
+    except Exception as e:
+        # Fallback to local database
+        return await _get_local_attribution_analytics()
+
+async def _get_local_attribution_analytics():
+    """Fallback: Local database attribution analytics"""
     conn = get_db_connection()
     try:
         # Revenue by source
@@ -665,7 +732,7 @@ async def get_attribution_analytics():
         """)
         subsource_data = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
         
-        # Campaign performance with attribution (fixed to use impression source when click source missing)
+        # Campaign performance with attribution 
         cursor = conn.execute("""
             SELECT 
                 c.name as campaign_name,
@@ -684,6 +751,7 @@ async def get_attribution_analytics():
         campaign_data = [dict(zip([col[0] for col in cursor.description], row)) for row in cursor.fetchall()]
         
         return {
+            "success": True,
             "period": "Last 30 days", 
             "by_source": source_data,
             "by_subsource": subsource_data,
@@ -692,7 +760,9 @@ async def get_attribution_analytics():
                 "total_sources": len(source_data),
                 "total_clicks": sum(item['clicks'] for item in source_data),
                 "total_revenue": sum(item['estimated_revenue'] or 0 for item in source_data)
-            }
+            },
+            "source": "Local Database (TUNE API failed)",
+            "api_status": "❌ Fallback to local data"
         }
         
     finally:
