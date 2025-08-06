@@ -93,11 +93,25 @@ class EmbeddedTuneAPIClient:
                     'source': 'Embedded HasOffers API Error'
                 }
             
-            # Process the real data
-            raw_data = api_result['raw_data']
-            response_data = raw_data['response']['data']
-            campaign_data = response_data.get('data', [])
-            totals = response_data.get('totals', {}).get('Stat', {})
+            # Process the real data with safety checks
+            try:
+                raw_data = api_result['raw_data']
+                response_data = raw_data['response']['data']
+                campaign_data = response_data.get('data', [])
+                totals = response_data.get('totals', {}).get('Stat', {})
+                
+                print(f"🔧 DEBUG: campaign_data type: {type(campaign_data)}, length: {len(campaign_data) if isinstance(campaign_data, list) else 'N/A'}")
+                print(f"🔧 DEBUG: totals type: {type(totals)}")
+                
+            except Exception as data_error:
+                print(f"🔧 DEBUG: Error extracting data: {data_error}")
+                return {
+                    'success': False,
+                    'error': f"Data extraction error: {str(data_error)}",
+                    'data': [],
+                    'summary': {},
+                    'source': 'Embedded Data Processing Error'
+                }
             
             campaign_names = {
                 6998: "Trading Tips", 7521: "Behind The Markets", 
@@ -110,12 +124,22 @@ class EmbeddedTuneAPIClient:
             total_revenue = float(totals.get('revenue', 0))
             total_payout = float(totals.get('payout', 0))
             
-            # Create campaign lookup
+            # Create campaign lookup with error handling
             campaign_lookup = {}
             for campaign in campaign_data:
-                stats = campaign.get('Stat', {})
-                offer_id = int(stats.get('offer_id', 0))
-                campaign_lookup[offer_id] = stats
+                try:
+                    if isinstance(campaign, dict):
+                        stats = campaign.get('Stat', {})
+                        if isinstance(stats, dict):
+                            offer_id = int(stats.get('offer_id', 0))
+                            campaign_lookup[offer_id] = stats
+                        else:
+                            print(f"🔧 DEBUG: stats is not dict: {type(stats)}")
+                    else:
+                        print(f"🔧 DEBUG: campaign is not dict: {type(campaign)}")
+                except Exception as e:
+                    print(f"🔧 DEBUG: Error processing campaign: {e}")
+                    continue
             
             # Build report with real per-campaign data
             report_data = []
