@@ -28,6 +28,37 @@ except ImportError as e:
 
 router = APIRouter()
 
+@router.get("/test-tune-api")
+async def test_tune_api():
+    """Test if Tune API is accessible from Railway"""
+    if not TUNE_API_AVAILABLE or tune_client is None:
+        return {"status": "error", "message": "Tune API client not imported"}
+    
+    try:
+        import requests
+        # Test basic connectivity
+        response = requests.get("https://currentpublisher.api.hasoffers.com/", timeout=10)
+        
+        # Test actual Tune API call
+        tune_result = tune_client.get_stats()
+        
+        return {
+            "status": "success",
+            "tune_api_available": TUNE_API_AVAILABLE,
+            "basic_connectivity": response.status_code,
+            "tune_api_result": {
+                "success": tune_result.get('success'),
+                "source": tune_result.get('source'),
+                "error": tune_result.get('error')
+            }
+        }
+    except Exception as e:
+        return {
+            "status": "error", 
+            "message": str(e),
+            "tune_api_available": TUNE_API_AVAILABLE
+        }
+
 # Pydantic models for request/response
 class CampaignCreate(BaseModel):
     name: str
