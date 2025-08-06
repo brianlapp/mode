@@ -66,10 +66,14 @@ class TuneAPIClient:
         """
         Get real-time statistics from Mike's HasOffers API
         """
+        # Default to last 7 days for current performance
+        default_start = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+        default_end = datetime.now().strftime('%Y-%m-%d')
+        
         return self._make_hasoffers_request(
             method='getStats',
-            data_start=start_date or (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'),
-            data_end=end_date or datetime.now().strftime('%Y-%m-%d')
+            data_start=start_date or default_start,
+            data_end=end_date or default_end
         )
     
     def get_tune_style_report(self, start_date: str = None, end_date: str = None) -> Dict:
@@ -143,9 +147,12 @@ class TuneAPIClient:
                     'ctr': round(ctr, 2)
                 })
             
+            actual_start = start_date or (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+            actual_end = end_date or datetime.now().strftime('%Y-%m-%d')
+            
             return {
                 'success': True,
-                'period': f"{start_date or 'Last 30 days'} to {end_date or 'Today'}",
+                'period': f"{actual_start} to {actual_end} (August 2025)",
                 'data': report_data,
                 'summary': {
                     'total_campaigns': len(report_data),
