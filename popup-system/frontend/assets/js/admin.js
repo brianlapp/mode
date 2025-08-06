@@ -1187,11 +1187,11 @@ class AnalyticsManager {
             // Show loading state
             this.showLoading();
             
-            // Load attribution analytics and tune-style report in parallel
-            const [attributionResponse, reportResponse] = await Promise.all([
-                fetch(`${this.baseURL}/analytics/attribution`),
-                fetch(`${this.baseURL}/analytics/tune-style-report?preset=${this.currentPreset}`)
-            ]);
+                    // Load attribution analytics and tune-style report in parallel
+        const [attributionResponse, reportResponse] = await Promise.all([
+            fetch(`${this.baseURL}/analytics/attribution`),
+            fetch(`${this.baseURL}/analytics/tune-style-report?preset=last_30_days`)
+        ]);
 
             if (!attributionResponse.ok || !reportResponse.ok) {
                 throw new Error('Failed to fetch analytics data');
