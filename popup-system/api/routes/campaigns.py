@@ -451,8 +451,10 @@ async def get_tune_style_report(
     campaign_id: int = None
 ):
     """Mike's preferred Tune-style reporting using REAL Tune API data"""
-    conn = get_db_connection()
     try:
+        # Import Tune API client
+        from tune_api_integration import tune_client
+        
         # Handle date presets first
         if preset and not start_date and not end_date:
             if preset == "today":
@@ -477,11 +479,35 @@ async def get_tune_style_report(
                 start_date = last_month.replace(day=1).strftime('%Y-%m-%d')
                 end_date = last_month.strftime('%Y-%m-%d')
         
-        # Default to last 7 days if no dates provided
+        # Default to last 30 days if no dates provided (to match Tune API)
         if not start_date and not end_date:
-            start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+            start_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
             end_date = datetime.now().strftime('%Y-%m-%d')
+        
+        # Get REAL data from Tune Network API
+        tune_report = tune_client.get_tune_style_report(start_date, end_date)
+        
+        if tune_report['success']:
+            return {
+                "success": True,
+                "period": tune_report['period'],
+                "preset": preset or "custom",
+                "data": tune_report['data'],
+                "summary": tune_report['summary'],
+                "source": "Tune Network API"
+            }
+        else:
+            # Fallback to local database if Tune API fails
+            return await _get_local_tune_style_report(start_date, end_date, preset, property_code, campaign_id)
             
+    except Exception as e:
+        # Fallback to local database if Tune API integration fails
+        return await _get_local_tune_style_report(start_date, end_date, preset, property_code, campaign_id)
+
+async def _get_local_tune_style_report(start_date: str, end_date: str, preset: str, property_code: str, campaign_id: int):
+    """Fallback to local database if Tune API is unavailable"""
+    conn = get_db_connection()
+    try:
         # Build date filter
         date_filter = ""
         params = []
@@ -568,7 +594,8 @@ async def get_tune_style_report(
                 "avg_ctr": round((sum(r['clicks'] for r in results) / sum(r['impressions'] for r in results) * 100) if sum(r['impressions'] for r in results) > 0 else 0, 2),
                 "avg_rpm": round(sum(r['rpm'] for r in results) / len(results) if results else 0, 2),
                 "avg_rpc": round(sum(r['rpc'] for r in results) / len(results) if results else 0, 2)
-            }
+            },
+            "source": "Local Database (Tune API unavailable)"
         }
         
     except Exception as e:
