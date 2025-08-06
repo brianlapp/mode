@@ -40,17 +40,24 @@ async def test_tune_api():
     """Test if Tune API is accessible from Railway"""
     import os
     
-    # Check file system
+    # Check file system - look in the CORRECT directory
     current_dir = os.getcwd()
-    api_dir = os.path.dirname(__file__)
-    files_in_api_dir = os.listdir(api_dir) if os.path.exists(api_dir) else []
+    routes_dir = os.path.dirname(__file__)  # This is /app/popup-system/api/routes
+    api_dir = os.path.dirname(routes_dir)    # This should be /app/popup-system/api
+    
+    files_in_routes = os.listdir(routes_dir) if os.path.exists(routes_dir) else []
+    files_in_api = os.listdir(api_dir) if os.path.exists(api_dir) else []
     
     debug_info = {
         "current_working_directory": current_dir,
+        "routes_directory": routes_dir,
         "api_directory": api_dir,
-        "files_in_api_dir": files_in_api_dir,
+        "files_in_routes_dir": files_in_routes,
+        "files_in_api_dir": files_in_api,
         "tune_api_available": TUNE_API_AVAILABLE,
-        "tune_integration_exists": "tune_api_integration.py" in files_in_api_dir
+        "tune_integration_exists_in_api": "tune_api_integration.py" in files_in_api,
+        "expected_file_path": os.path.join(api_dir, "tune_api_integration.py"),
+        "file_exists_at_expected_path": os.path.exists(os.path.join(api_dir, "tune_api_integration.py"))
     }
     
     if not TUNE_API_AVAILABLE or tune_client is None:
