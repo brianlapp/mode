@@ -18,10 +18,17 @@ from datetime import datetime
 
 # Import Tune API client with error handling
 try:
+    import sys
+    import os
+    # Add the API directory to Python path
+    api_dir = os.path.dirname(__file__)
+    if api_dir not in sys.path:
+        sys.path.insert(0, api_dir)
+    
     from tune_api_integration import tune_client
     TUNE_API_AVAILABLE = True
     print("✅ Tune API client imported successfully")
-except ImportError as e:
+except Exception as e:
     print(f"⚠️ Tune API import failed: {e}")
     TUNE_API_AVAILABLE = False
     tune_client = None
@@ -31,8 +38,27 @@ router = APIRouter()
 @router.get("/test-tune-api")
 async def test_tune_api():
     """Test if Tune API is accessible from Railway"""
+    import os
+    
+    # Check file system
+    current_dir = os.getcwd()
+    api_dir = os.path.dirname(__file__)
+    files_in_api_dir = os.listdir(api_dir) if os.path.exists(api_dir) else []
+    
+    debug_info = {
+        "current_working_directory": current_dir,
+        "api_directory": api_dir,
+        "files_in_api_dir": files_in_api_dir,
+        "tune_api_available": TUNE_API_AVAILABLE,
+        "tune_integration_exists": "tune_api_integration.py" in files_in_api_dir
+    }
+    
     if not TUNE_API_AVAILABLE or tune_client is None:
-        return {"status": "error", "message": "Tune API client not imported"}
+        return {
+            "status": "error", 
+            "message": "Tune API client not imported",
+            "debug": debug_info
+        }
     
     try:
         import requests
@@ -50,13 +76,15 @@ async def test_tune_api():
                 "success": tune_result.get('success'),
                 "source": tune_result.get('source'),
                 "error": tune_result.get('error')
-            }
+            },
+            "debug": debug_info
         }
     except Exception as e:
         return {
             "status": "error", 
             "message": str(e),
-            "tune_api_available": TUNE_API_AVAILABLE
+            "tune_api_available": TUNE_API_AVAILABLE,
+            "debug": debug_info
         }
 
 # Pydantic models for request/response
