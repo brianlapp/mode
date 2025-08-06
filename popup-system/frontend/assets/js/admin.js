@@ -1187,24 +1187,24 @@ class AnalyticsManager {
             // Show loading state
             this.showLoading();
             
-            // Load performance metrics and tune-style report in parallel
-            const [metricsResponse, reportResponse] = await Promise.all([
-                fetch(`${this.baseURL}/analytics/performance-metrics`),
+            // Load attribution analytics and tune-style report in parallel
+            const [attributionResponse, reportResponse] = await Promise.all([
+                fetch(`${this.baseURL}/analytics/attribution`),
                 fetch(`${this.baseURL}/analytics/tune-style-report?preset=${this.currentPreset}`)
             ]);
 
-            if (!metricsResponse.ok || !reportResponse.ok) {
+            if (!attributionResponse.ok || !reportResponse.ok) {
                 throw new Error('Failed to fetch analytics data');
             }
 
-            const metricsData = await metricsResponse.json();
+            const attributionData = await attributionResponse.json();
             const reportData = await reportResponse.json();
 
-            console.log('📊 Metrics data:', metricsData);
+            console.log('📊 Attribution data:', attributionData);
             console.log('📊 Report data:', reportData);
 
             // Update UI with real data
-            this.updatePerformanceMetrics(metricsData);
+            this.updatePerformanceMetrics(attributionData);
             this.updateTuneStyleReport(reportData);
             this.currentData = reportData;
 
@@ -1219,16 +1219,22 @@ class AnalyticsManager {
     }
 
     updatePerformanceMetrics(data) {
-        if (!data.success) return;
+        // Use attribution data format instead of performance metrics
+        const summary = data.summary;
+        const bySource = data.by_source;
+        
+        // Calculate total impressions from campaign data
+        const totalImpressions = data.by_campaign.reduce((sum, campaign) => sum + (campaign.impressions || 0), 0);
+        
+        // Find best performing source
+        const bestSource = bySource.length > 0 ? 
+            bySource.reduce((a, b) => (a.estimated_revenue || 0) > (b.estimated_revenue || 0) ? a : b) : null;
 
-        const today = data.today;
-        const bestCampaign = data.best_campaign;
-
-        // Update today's metrics
-        document.getElementById('today-impressions').textContent = today.today_impressions || 0;
-        document.getElementById('today-clicks').textContent = today.today_clicks || 0;
-        document.getElementById('today-revenue').textContent = today.today_revenue ? `$${today.today_revenue.toFixed(2)}` : '$0.00';
-        document.getElementById('best-campaign').textContent = bestCampaign.name || 'No data';
+        // Update metrics
+        document.getElementById('today-impressions').textContent = totalImpressions.toLocaleString();
+        document.getElementById('today-clicks').textContent = summary.total_clicks || 0;
+        document.getElementById('today-revenue').textContent = summary.total_revenue ? `$${summary.total_revenue.toFixed(2)}` : '$0.00';
+        document.getElementById('best-campaign').textContent = bestSource ? bestSource.source : 'No data';
     }
 
     updateTuneStyleReport(data) {
