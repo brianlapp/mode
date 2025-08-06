@@ -582,19 +582,18 @@ async def get_performance_metrics():
     """Real-time performance metrics using REAL Tune API data"""
     conn = get_db_connection()
     try:
-        # Get today's metrics - separate queries to avoid JOIN issues
-        today = datetime.now().strftime('%Y-%m-%d')
+        # Get recent metrics (last 7 days to match attribution data)
         
-        # Count today's impressions - use more flexible date matching
-        cursor = conn.execute("SELECT COUNT(*) FROM impressions WHERE DATE(timestamp) = ? OR timestamp >= datetime('now', 'start of day')", (today,))
+        # Count recent impressions
+        cursor = conn.execute("SELECT COUNT(*) FROM impressions WHERE timestamp >= datetime('now', '-7 days')")
         today_impressions = cursor.fetchone()[0]
         
-        # Count today's clicks - use more flexible date matching  
-        cursor = conn.execute("SELECT COUNT(*) FROM clicks WHERE DATE(timestamp) = ? OR timestamp >= datetime('now', 'start of day')", (today,))
+        # Count recent clicks  
+        cursor = conn.execute("SELECT COUNT(*) FROM clicks WHERE timestamp >= datetime('now', '-7 days')")
         today_clicks = cursor.fetchone()[0]
         
-        # Sum today's revenue - use more flexible date matching
-        cursor = conn.execute("SELECT COALESCE(SUM(revenue_estimate), 0) FROM clicks WHERE DATE(timestamp) = ? OR timestamp >= datetime('now', 'start of day')", (today,))
+        # Sum recent revenue
+        cursor = conn.execute("SELECT COALESCE(SUM(revenue_estimate), 0) FROM clicks WHERE timestamp >= datetime('now', '-7 days')")
         today_revenue = cursor.fetchone()[0]
         
         today_data = {
