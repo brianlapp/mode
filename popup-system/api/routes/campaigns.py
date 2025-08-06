@@ -849,7 +849,8 @@ async def get_tune_style_report(
             if not end_date:
                 end_date = datetime.now().strftime('%Y-%m-%d')
             
-            # Filter for ONLY popup campaigns (working approach confirmed)
+            # Get ALL campaigns then filter for popup campaigns in code
+            # (API-level filtering only returns 1 campaign incorrectly)
             popup_offer_ids = [6998, 7521, 7389, 7385, 7390]
             
             params = {
@@ -863,10 +864,7 @@ async def get_tune_style_report(
                 'limit': 1000
             }
             
-            # Add popup campaign filters
-            params['filters[Stat.offer_id][conditional]'] = 'EQUAL_TO'
-            for offer_id in popup_offer_ids:
-                params['filters[Stat.offer_id][values][]'] = offer_id
+            # No API filtering - we'll filter in Python code below
             
             # Build URL
             query_string = urllib.parse.urlencode(params, doseq=True)
@@ -883,9 +881,16 @@ async def get_tune_style_report(
                     api_data = json.loads(response.read().decode())
                     
                     if api_data.get('response', {}).get('status') == 1:
-                        # Extract individual popup campaign data
+                        # Extract ALL campaign data and filter for popup campaigns
                         response_data = api_data.get('response', {}).get('data', {})
-                        campaigns = response_data.get('data', [])
+                        all_campaigns = response_data.get('data', [])
+                        
+                        # Filter for popup campaigns in Python code
+                        campaigns = []
+                        for campaign in all_campaigns:
+                            offer_id = int(campaign.get('Stat', {}).get('offer_id', 0))
+                            if offer_id in popup_offer_ids:
+                                campaigns.append(campaign)
                         
                         # Calculate popup totals from individual campaigns
                         popup_clicks = 0
