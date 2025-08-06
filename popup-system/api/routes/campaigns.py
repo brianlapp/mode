@@ -736,7 +736,14 @@ async def get_tune_style_report(
         try:
             print(f"🔧 DEBUG: Calling embedded Tune API with dates: {start_date} to {end_date}")
             tune_report = tune_client.get_tune_style_report(start_date, end_date)
-            print(f"🔧 DEBUG: Tune API returned: {type(tune_report)} - Success: {tune_report.get('success') if isinstance(tune_report, dict) else 'NOT_DICT'}")
+            print(f"🔧 DEBUG: Tune API returned: {type(tune_report)}")
+            
+            # Safety check - ensure tune_report is a dictionary
+            if not isinstance(tune_report, dict):
+                print(f"🔧 DEBUG: tune_report is not a dict: {type(tune_report)}")
+                raise Exception(f"Tune API returned {type(tune_report)} instead of dict")
+            
+            print(f"🔧 DEBUG: tune_report success: {tune_report.get('success')}")
             
             if tune_report.get('success'):
                 return {
