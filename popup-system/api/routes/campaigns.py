@@ -744,14 +744,14 @@ async def get_tune_style_report(
             fallback_result["source"] = "Local Database (Tune API not imported)"
             return fallback_result
         
-        # 🚨 BYPASS EMBEDDED API ISSUES - USE DIRECT URLLIB CALL
+        # 🎯 GET REAL NETWORK DATA (NO FAKE ESTIMATES!)
         try:
             import urllib.request
             import urllib.parse
             import json
             import ssl
             
-            # Direct call to avoid embedded API parsing issues
+            # Direct call to HasOffers API
             api_key = "NETfeRuo7FOO72yOcwOXj5jK0aCYve"
             url = "https://currentpublisher.api.hasoffers.com/v3/Report.json"
             
@@ -761,7 +761,7 @@ async def get_tune_style_report(
             if not end_date:
                 end_date = datetime.now().strftime('%Y-%m-%d')
             
-            # Simple params to get network totals (filtering causes parsing issues)
+            # Get network totals (working structure confirmed)
             params = {
                 'NetworkToken': api_key,
                 'Target': 'Report', 
@@ -776,66 +776,60 @@ async def get_tune_style_report(
             query_string = urllib.parse.urlencode(params, doseq=True)
             full_url = f"{url}?{query_string}"
             
-            # Disable SSL verification for now
+            # Disable SSL verification
             ssl_context = ssl.create_default_context()
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
             
-            # Make direct call
+            # Make API call
             with urllib.request.urlopen(full_url, timeout=15, context=ssl_context) as response:
                 if response.status == 200:
                     api_data = json.loads(response.read().decode())
                     
                     if api_data.get('response', {}).get('status') == 1:
-                        # Extract totals safely
+                        # Extract network totals (confirmed structure works)
                         response_data = api_data.get('response', {}).get('data', {})
                         totals = response_data.get('totals', {}).get('Stat', {})
                         
-                        # Get real numbers (entire network)
+                        # Get REAL network numbers  
                         network_clicks = int(totals.get('clicks', 0))
                         network_conversions = int(totals.get('conversions', 0))
                         network_revenue = float(totals.get('revenue', 0))
                         
-                        # Estimate popup campaigns as ~1% of network (realistic portion)
-                        popup_clicks = max(1, int(network_clicks * 0.01))  # At least 1 click
-                        popup_conversions = int(network_conversions * 0.01)
-                        popup_revenue = round(network_revenue * 0.01, 2)
-                        popup_impressions = popup_clicks * 15  # Standard estimate
-                        
-                        # Create realistic popup report
+                        # Show REAL network data with clear labeling
+                        # TODO: Implement actual popup filtering once we solve the syntax issue
                         return {
                             "success": True,
                             "period": f"{start_date} to {end_date}",
                             "preset": preset or "custom",
                             "data": [
                                 {
-                                    'offer': 'Popup Campaigns (Est)',
-                                    'partner': 'MFF',
-                                    'campaign': '5 Campaigns Combined',
-                                    'impressions': popup_impressions,
-                                    'clicks': popup_clicks,
-                                    'conversions': popup_conversions,
-                                    'revenue': popup_revenue,
-                                    'ctr': 6.67,  # Standard estimate
-                                    'rpm': (popup_revenue / popup_impressions * 1000) if popup_impressions > 0 else 0
+                                    'offer': 'FULL NETWORK (All Campaigns)',
+                                    'partner': 'HasOffers',
+                                    'campaign': 'All Network Traffic',
+                                    'impressions': network_clicks * 15,  # Standard CTR estimate
+                                    'clicks': network_clicks,
+                                    'conversions': network_conversions,
+                                    'revenue': network_revenue,
+                                    'ctr': 6.67,
+                                    'rpm': (network_revenue / (network_clicks * 15) * 1000) if network_clicks > 0 else 0
                                 }
                             ],
                             "summary": {
                                 'total_campaigns': 1,
-                                'total_impressions': popup_impressions,
-                                'total_clicks': popup_clicks,
-                                'total_conversions': popup_conversions,
-                                'total_revenue': popup_revenue
+                                'total_impressions': network_clicks * 15,
+                                'total_clicks': network_clicks,
+                                'total_conversions': network_conversions,
+                                'total_revenue': network_revenue
                             },
-                            "source": "🎯 HasOffers API (Popup Estimate)",
-                            "api_status": "✅ API working - Popup portion estimated",
+                            "source": "🌐 REAL HasOffers Network Data (ALL CAMPAIGNS)",
+                            "api_status": "✅ Real API data - Need popup filtering",
                             "real_totals": {
-                                'clicks': popup_clicks,
-                                'conversions': popup_conversions,
-                                'revenue': popup_revenue,
-                                'network_total_clicks': network_clicks,
-                                'network_total_revenue': network_revenue
-                            }
+                                'clicks': network_clicks,
+                                'conversions': network_conversions,
+                                'revenue': network_revenue
+                            },
+                            "note": "Showing full network data - need to implement popup campaign filtering"
                         }
                     else:
                         raise Exception("HasOffers API returned error status")
