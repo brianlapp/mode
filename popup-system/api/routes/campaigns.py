@@ -16,6 +16,16 @@ from database import (
 import sqlite3
 from datetime import datetime
 
+# Import Tune API client with error handling
+try:
+    from tune_api_integration import tune_client
+    TUNE_API_AVAILABLE = True
+    print("✅ Tune API client imported successfully")
+except ImportError as e:
+    print(f"⚠️ Tune API import failed: {e}")
+    TUNE_API_AVAILABLE = False
+    tune_client = None
+
 router = APIRouter()
 
 # Pydantic models for request/response
@@ -452,8 +462,6 @@ async def get_tune_style_report(
 ):
     """Mike's preferred Tune-style reporting using REAL Tune API data"""
     try:
-        # Import Tune API client
-        from tune_api_integration import tune_client
         
         # Handle date presets first
         if preset and not start_date and not end_date:
@@ -483,6 +491,12 @@ async def get_tune_style_report(
         if not start_date and not end_date:
             start_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
             end_date = datetime.now().strftime('%Y-%m-%d')
+        
+        # Check if Tune API is available
+        if not TUNE_API_AVAILABLE or tune_client is None:
+            fallback_result = await _get_local_tune_style_report(start_date, end_date, preset, property_code, campaign_id)
+            fallback_result["source"] = "Local Database (Tune API not imported)"
+            return fallback_result
         
         # Get REAL data from Tune Network API
         try:
