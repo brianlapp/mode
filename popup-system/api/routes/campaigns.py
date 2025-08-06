@@ -40,24 +40,36 @@ async def test_tune_api():
     """Test if Tune API is accessible from Railway"""
     import os
     
-    # Check file system - look in the CORRECT directory
+    # Comprehensive file system exploration
     current_dir = os.getcwd()
-    routes_dir = os.path.dirname(__file__)  # This is /app/popup-system/api/routes
-    api_dir = os.path.dirname(routes_dir)    # This should be /app/popup-system/api
     
-    files_in_routes = os.listdir(routes_dir) if os.path.exists(routes_dir) else []
-    files_in_api = os.listdir(api_dir) if os.path.exists(api_dir) else []
+    # Check multiple possible locations for the file
+    possible_paths = [
+        "/app/popup-system/api/tune_api_integration.py",
+        "/app/api/tune_api_integration.py", 
+        "/app/tune_api_integration.py",
+        os.path.join(current_dir, "tune_api_integration.py"),
+        os.path.join(current_dir, "..", "tune_api_integration.py")
+    ]
+    
+    file_locations = {}
+    for path in possible_paths:
+        file_locations[path] = os.path.exists(path)
+    
+    # List files in current directory and parent directories
+    current_files = os.listdir(current_dir) if os.path.exists(current_dir) else []
+    parent_dir = os.path.dirname(current_dir)
+    parent_files = os.listdir(parent_dir) if os.path.exists(parent_dir) else []
     
     debug_info = {
         "current_working_directory": current_dir,
-        "routes_directory": routes_dir,
-        "api_directory": api_dir,
-        "files_in_routes_dir": files_in_routes,
-        "files_in_api_dir": files_in_api,
+        "parent_directory": parent_dir,
+        "files_in_current_dir": current_files,
+        "files_in_parent_dir": parent_files,
         "tune_api_available": TUNE_API_AVAILABLE,
-        "tune_integration_exists_in_api": "tune_api_integration.py" in files_in_api,
-        "expected_file_path": os.path.join(api_dir, "tune_api_integration.py"),
-        "file_exists_at_expected_path": os.path.exists(os.path.join(api_dir, "tune_api_integration.py"))
+        "file_search_results": file_locations,
+        "tune_file_in_current": "tune_api_integration.py" in current_files,
+        "tune_file_in_parent": "tune_api_integration.py" in parent_files
     }
     
     if not TUNE_API_AVAILABLE or tune_client is None:
