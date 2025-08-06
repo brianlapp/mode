@@ -585,16 +585,16 @@ async def get_performance_metrics():
         # Get today's metrics - separate queries to avoid JOIN issues
         today = datetime.now().strftime('%Y-%m-%d')
         
-        # Count today's impressions
-        cursor = conn.execute("SELECT COUNT(*) FROM impressions WHERE DATE(timestamp) = ?", (today,))
+        # Count today's impressions - use more flexible date matching
+        cursor = conn.execute("SELECT COUNT(*) FROM impressions WHERE DATE(timestamp) = ? OR timestamp >= datetime('now', 'start of day')", (today,))
         today_impressions = cursor.fetchone()[0]
         
-        # Count today's clicks  
-        cursor = conn.execute("SELECT COUNT(*) FROM clicks WHERE DATE(timestamp) = ?", (today,))
+        # Count today's clicks - use more flexible date matching  
+        cursor = conn.execute("SELECT COUNT(*) FROM clicks WHERE DATE(timestamp) = ? OR timestamp >= datetime('now', 'start of day')", (today,))
         today_clicks = cursor.fetchone()[0]
         
-        # Sum today's revenue
-        cursor = conn.execute("SELECT COALESCE(SUM(revenue_estimate), 0) FROM clicks WHERE DATE(timestamp) = ?", (today,))
+        # Sum today's revenue - use more flexible date matching
+        cursor = conn.execute("SELECT COALESCE(SUM(revenue_estimate), 0) FROM clicks WHERE DATE(timestamp) = ? OR timestamp >= datetime('now', 'start of day')", (today,))
         today_revenue = cursor.fetchone()[0]
         
         today_data = {
