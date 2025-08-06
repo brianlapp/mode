@@ -761,16 +761,24 @@ async def get_tune_style_report(
             if not end_date:
                 end_date = datetime.now().strftime('%Y-%m-%d')
             
-            # Simple params for today's data
+            # Filter for ONLY our 5 popup campaigns  
+            popup_offer_ids = [6998, 7521, 7389, 7385, 7390]
+            
             params = {
                 'NetworkToken': api_key,
                 'Target': 'Report',
                 'Method': 'getStats',
                 'data_start': start_date,
                 'data_end': end_date,
-                'fields[]': ['Stat.clicks', 'Stat.conversions', 'Stat.revenue'],
-                'totals': 1
+                'fields[]': ['Stat.clicks', 'Stat.conversions', 'Stat.revenue', 'Stat.offer_id'],
+                'filters[Stat.offer_id][conditional]': 'EQUAL_TO',
+                'totals': 1,
+                'group_by[]': 'Stat.offer_id'
             }
+            
+            # Add popup campaign filters
+            for i, offer_id in enumerate(popup_offer_ids):
+                params[f'filters[Stat.offer_id][values][{i}]'] = offer_id
             
             # Build URL
             query_string = urllib.parse.urlencode(params, doseq=True)
