@@ -633,11 +633,11 @@ async def get_impression_pixel(campaign_id: int):
         raise HTTPException(status_code=500, detail=f"Failed to generate impression pixel: {str(e)}")
 
 @router.get("/analytics/attribution")
-async def get_attribution_analytics():
+async def get_attribution_analytics(preset: str = "last_30_days"):
     """Phase 2: Get traffic attribution analytics - NOW USING REAL TUNE API"""
     try:
-        # Get real popup campaign data from TUNE API (last 30 days to match frontend)
-        tune_report = await get_tune_style_report(preset="last_30_days")
+        # Get real popup campaign data from TUNE API using the selected preset
+        tune_report = await get_tune_style_report(preset=preset)
         
         if not tune_report.get("success"):
             # Fallback to local database if API fails
@@ -681,9 +681,18 @@ async def get_attribution_analytics():
                     "estimated_revenue": campaign.get("revenue", 0)
                 })
         
+        # Format period label based on preset
+        period_labels = {
+            "today": "Today",
+            "last_7_days": "Last 7 days", 
+            "last_14_days": "Last 14 days",
+            "last_30_days": "Last 30 days"
+        }
+        period_label = period_labels.get(preset, preset)
+        
         return {
             "success": True,
-            "period": "Last 30 days", 
+            "period": period_label, 
             "by_source": source_data,
             "by_subsource": subsource_data,
             "by_campaign": campaign_data,
@@ -923,31 +932,53 @@ async def get_tune_style_report(
                         network_conversions = popup_conversions
                         network_revenue = popup_revenue
                         
+                        # Always show all 5 campaigns - mix active with zero data
+                        campaign_names = {
+                            6998: "Trading Tips", 7521: "Behind The Markets", 
+                            7389: "Brownstone Research", 7385: "Hotsheets", 7390: "Best Gold"
+                        }
+                        
+                        # Create complete campaign list
+                        campaign_data = []
+                        active_offer_ids = {int(camp.get('offer_id', 0)) for camp in campaigns if camp.get('clicks', 0) > 0}
+                        
+                        for offer_id, name in campaign_names.items():
+                            # Find if this campaign has activity
+                            active_campaign = None
+                            for camp in active_campaigns:
+                                if name in camp.get('offer', ''):
+                                    active_campaign = camp
+                                    break
+                            
+                            if active_campaign:
+                                campaign_data.append(active_campaign)
+                            else:
+                                # Show with 0 data
+                                campaign_data.append({
+                                    'offer': name,
+                                    'partner': 'MFF',
+                                    'campaign': name,
+                                    'creative': 'N/A',
+                                    'impressions': 0,
+                                    'clicks': 0,
+                                    'conversions': 0,
+                                    'revenue': 0.0,
+                                    'ctr': 0,
+                                    'rpm': 0,
+                                    'rpc': 0,
+                                    'payout': 0.0,
+                                    'profit': 0.0
+                                })
+                        
                         # Determine what data we're showing
                         if network_clicks > 0:
                             # We have real popup campaign data
                             source_label = "🎯 REAL HasOffers API (Popup Campaigns Filtered)"
                             status_msg = f"✅ Real popup campaign data - {len(active_campaigns)} active campaigns"
-                            campaign_data = active_campaigns
                         else:
-                            # No popup campaign activity in this period
+                            # No popup campaign activity
                             source_label = "🎯 REAL HasOffers API (No Popup Activity)"
                             status_msg = f"✅ Real API filtering worked - no popup activity in {preset}"
-                            campaign_data = [{
-                                'offer': 'Popup Campaigns',
-                                'partner': 'MFF',
-                                'campaign': 'No Activity',
-                                'creative': 'N/A',
-                                'impressions': 0,
-                                'clicks': 0,
-                                'conversions': 0,
-                                'revenue': 0.0,
-                                'ctr': 0,
-                                'rpm': 0,
-                                'rpc': 0,
-                                'payout': 0.0,
-                                'profit': 0.0
-                            }]
                         
                         return {
                             "success": True,
@@ -955,7 +986,7 @@ async def get_tune_style_report(
                             "preset": preset or "custom",
                             "data": campaign_data,
                             "summary": {
-                                'total_campaigns': len(active_campaigns) if active_campaigns else 1,
+                                'total_campaigns': len(campaign_data),
                                 'total_impressions': network_clicks * 15,
                                 'total_clicks': network_clicks,
                                 'total_conversions': network_conversions,
