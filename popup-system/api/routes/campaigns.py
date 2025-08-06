@@ -485,23 +485,35 @@ async def get_tune_style_report(
             end_date = datetime.now().strftime('%Y-%m-%d')
         
         # Get REAL data from Tune Network API
-        tune_report = tune_client.get_tune_style_report(start_date, end_date)
-        
-        if tune_report['success']:
-            return {
-                "success": True,
-                "period": tune_report['period'],
-                "preset": preset or "custom",
-                "data": tune_report['data'],
-                "summary": tune_report['summary'],
-                "source": "Tune Network API"
-            }
-        else:
-            # Fallback to local database if Tune API fails
-            return await _get_local_tune_style_report(start_date, end_date, preset, property_code, campaign_id)
+        try:
+            tune_report = tune_client.get_tune_style_report(start_date, end_date)
+            
+            if tune_report.get('success'):
+                return {
+                    "success": True,
+                    "period": tune_report['period'],
+                    "preset": preset or "custom",
+                    "data": tune_report['data'],
+                    "summary": tune_report['summary'],
+                    "source": "REAL HasOffers API ✅",
+                    "api_status": tune_report.get('api_status'),
+                    "real_totals": tune_report.get('real_totals')
+                }
+            else:
+                # Fallback to local database if Tune API fails
+                fallback_result = await _get_local_tune_style_report(start_date, end_date, preset, property_code, campaign_id)
+                fallback_result["tune_api_error"] = tune_report.get('error', 'Unknown error')
+                fallback_result["source"] = "Local Database (Tune API failed)"
+                return fallback_result
+        except Exception as tune_error:
+            # Fallback to local database if Tune API integration fails
+            fallback_result = await _get_local_tune_style_report(start_date, end_date, preset, property_code, campaign_id)
+            fallback_result["tune_api_exception"] = str(tune_error)
+            fallback_result["source"] = "Local Database (Tune API exception)"
+            return fallback_result
             
     except Exception as e:
-        # Fallback to local database if Tune API integration fails
+        # Final fallback 
         return await _get_local_tune_style_report(start_date, end_date, preset, property_code, campaign_id)
 
 async def _get_local_tune_style_report(start_date: str, end_date: str, preset: str, property_code: str, campaign_id: int):
