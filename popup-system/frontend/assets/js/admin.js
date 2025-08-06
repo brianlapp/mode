@@ -1190,7 +1190,7 @@ class AnalyticsManager {
                     // Load attribution analytics and tune-style report in parallel
         const [attributionResponse, reportResponse] = await Promise.all([
             fetch(`${this.baseURL}/analytics/attribution`),
-            fetch(`${this.baseURL}/analytics/tune-style-report?preset=last_30_days`)
+            fetch(`${this.baseURL}/analytics/tune-style-report?preset=${this.currentPreset}`)
         ]);
 
             if (!attributionResponse.ok || !reportResponse.ok) {
