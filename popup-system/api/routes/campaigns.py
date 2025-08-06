@@ -710,7 +710,9 @@ async def get_tune_style_report(
         
         # Get REAL data from Tune Network API
         try:
+            print(f"🔧 DEBUG: Calling embedded Tune API with dates: {start_date} to {end_date}")
             tune_report = tune_client.get_tune_style_report(start_date, end_date)
+            print(f"🔧 DEBUG: Tune API returned: {type(tune_report)} - Success: {tune_report.get('success') if isinstance(tune_report, dict) else 'NOT_DICT'}")
             
             if tune_report.get('success'):
                 return {
@@ -726,7 +728,13 @@ async def get_tune_style_report(
             else:
                 # Fallback to local database if Tune API fails
                 fallback_result = await _get_local_tune_style_report(start_date, end_date, preset, property_code, campaign_id)
-                fallback_result["tune_api_error"] = tune_report.get('error', 'Unknown error')
+                # Fix the bug - tune_report might be a list or have different structure
+                error_msg = 'Unknown error'
+                if isinstance(tune_report, dict):
+                    error_msg = tune_report.get('error', str(tune_report))
+                else:
+                    error_msg = str(tune_report)[:200]  # Truncate long strings
+                fallback_result["tune_api_error"] = error_msg
                 fallback_result["source"] = "Local Database (Tune API failed)"
                 return fallback_result
         except Exception as tune_error:
