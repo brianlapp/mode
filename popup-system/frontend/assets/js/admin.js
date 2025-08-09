@@ -274,7 +274,39 @@ class CampaignManager {
             
             const result = await response.json();
             console.log('✅ Campaign created:', result);
-            
+
+            // Initialize default property: enable only current site at 100%
+            try {
+                const newId = result.id;
+                const host = (window.location.hostname || '').toLowerCase();
+                let propertyCode = 'mff';
+                if (host.includes('modefreefinds')) propertyCode = 'mff';
+                else if (host.includes('marketmunchies')) propertyCode = 'mmm';
+                else if (host.includes('modeclassactions')) propertyCode = 'mcad';
+                else if (host.includes('modemobiledaily')) propertyCode = 'mmd';
+
+                const initSettings = {};
+                for (const prop of this.properties) {
+                    initSettings[prop] = {
+                        active: prop === propertyCode,
+                        visibility_percentage: prop === propertyCode ? 100 : 0,
+                        impression_cap_daily: null,
+                        click_cap_daily: null
+                    };
+                }
+
+                const propResp = await fetch(`${this.baseURL}/campaigns/${newId}/properties`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(initSettings)
+                });
+                if (!propResp.ok) {
+                    console.warn('⚠️ Failed to initialize default property settings');
+                }
+            } catch (e) {
+                console.warn('⚠️ Default property init error:', e);
+            }
+
             this.showAlert('Campaign created successfully!', 'success');
             this.closeModals();
             await this.loadCampaigns(); // Refresh the list
@@ -910,14 +942,26 @@ class CampaignManager {
                                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-mode-pink/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-mode-pink"></div>
                                     </label>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                                        Visibility Percentage: <span id="visibility_${prop}_${campaign.id}_display">100%</span>
-                                    </label>
-                                    <input type="range" min="0" max="100" value="100" 
-                                           class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                                           id="visibility_${prop}_${campaign.id}"
-                                           oninput="document.getElementById('visibility_${prop}_${campaign.id}_display').textContent = this.value + '%'">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Visibility Percentage: <span id="visibility_${prop}_${campaign.id}_display">100%</span>
+                                        </label>
+                                        <input type="range" min="0" max="100" value="100" 
+                                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                                               id="visibility_${prop}_${campaign.id}"
+                                               oninput="document.getElementById('visibility_${prop}_${campaign.id}_display').textContent = this.value + '%'">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Daily Impression Cap (EST)</label>
+                                        <input type="number" min="0" step="1" placeholder="No Cap"
+                                               id="imp_cap_${prop}_${campaign.id}" class="form-input w-full" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Daily Click Cap (EST)</label>
+                                        <input type="number" min="0" step="1" placeholder="No Cap"
+                                               id="clk_cap_${prop}_${campaign.id}" class="form-input w-full" />
+                                    </div>
                                 </div>
                             </div>
                         `).join('')}
@@ -970,22 +1014,34 @@ class CampaignManager {
         for (const prop of this.properties) {
             const activeCheckbox = document.getElementById(`active_${prop}_${campaignId}`);
             const visibilitySlider = document.getElementById(`visibility_${prop}_${campaignId}`);
+            const impCapInput = document.getElementById(`imp_cap_${prop}_${campaignId}`);
+            const clkCapInput = document.getElementById(`clk_cap_${prop}_${campaignId}`);
             
             if (activeCheckbox && visibilitySlider) {
                 settings[prop] = {
                     active: activeCheckbox.checked,
-                    visibility_percentage: parseInt(visibilitySlider.value)
+                    visibility_percentage: parseInt(visibilitySlider.value),
+                    impression_cap_daily: impCapInput && impCapInput.value !== '' ? parseInt(impCapInput.value) : null,
+                    click_cap_daily: clkCapInput && clkCapInput.value !== '' ? parseInt(clkCapInput.value) : null
                 };
             }
         }
 
         try {
-            // Save settings via API (endpoint to be implemented)
             console.log('💾 Saving property settings:', { campaignId, settings });
-            
+            const response = await fetch(`${this.baseURL}/campaigns/${campaignId}/properties`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(settings)
+            });
+
+            if (!response.ok) {
+                const msg = await response.text();
+                throw new Error(`HTTP ${response.status} ${msg}`);
+            }
+
             this.showAlert('Property settings saved successfully!', 'success');
             this.closeModals();
-            
         } catch (error) {
             console.error('❌ Failed to save property settings:', error);
             this.showAlert('Failed to save settings. Please try again.', 'error');

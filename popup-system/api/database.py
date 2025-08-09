@@ -71,6 +71,38 @@ def init_db():
             # Columns already exist or other error - this is okay
             pass
             
+        # Create properties table for multi-domain support
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS properties (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT UNIQUE NOT NULL,       -- 'mff', 'mmm', 'mcad', 'mmd'
+                name TEXT NOT NULL,              -- 'ModeFreeFinds', etc.
+                domain TEXT,                     -- e.g., 'modefreefinds.com'
+                active BOOLEAN DEFAULT true,
+                popup_enabled BOOLEAN DEFAULT true,
+                popup_frequency TEXT DEFAULT 'session',   -- 'session', 'daily', 'always'
+                popup_placement TEXT DEFAULT 'thankyou',  -- 'thankyou', 'exit-intent'
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+
+        # Seed default properties if table empty
+        cur = conn.execute("SELECT COUNT(1) FROM properties")
+        if int(cur.fetchone()[0]) == 0:
+            default_props = [
+                ("mff", "ModeFreeFinds", "modefreefinds.com"),
+                ("mmm", "ModeMarketMunchies", "modemarketmunchies.com"),
+                ("mcad", "ModeClassActionsDaily", "modeclassactionsdaily.com"),
+                ("mmd", "ModeMobileDaily", "modemobiledaily.com"),
+            ]
+            for code, name, domain in default_props:
+                conn.execute(
+                    "INSERT OR IGNORE INTO properties (code, name, domain, active, popup_enabled) VALUES (?, ?, ?, 1, 1)",
+                    (code, name, domain),
+                )
+
         # Create campaign_properties table for property-specific settings
         conn.execute("""
             CREATE TABLE IF NOT EXISTS campaign_properties (
@@ -79,11 +111,64 @@ def init_db():
                 property_code TEXT NOT NULL,      -- 'mff', 'mmm', 'mcad', 'mmd'
                 visibility_percentage INTEGER DEFAULT 100,  -- 0-100%
                 active BOOLEAN DEFAULT true,
+                impression_cap_daily INTEGER NULL, -- Daily impression cap (EST)
+                click_cap_daily INTEGER NULL,      -- Daily click cap (EST)
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
                 UNIQUE(campaign_id, property_code)  -- One setting per campaign per property
             )
         """)
+
+        # Create properties table for multi-domain support
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS properties (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code TEXT UNIQUE NOT NULL,         -- 'mff', 'mmm', 'mcad', 'mmd'
+                name TEXT NOT NULL,
+                domain TEXT NOT NULL,             -- primary domain (used for resolve)
+                active BOOLEAN DEFAULT 1,
+                popup_enabled BOOLEAN DEFAULT 1,
+                popup_frequency TEXT DEFAULT 'session', -- 'session' | 'daily' | 'always'
+                popup_placement TEXT DEFAULT 'thankyou', -- 'thankyou' | 'exit-intent' | 'timed'
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+
+        # Seed/update default properties (idempotent upserts by code)
+        default_properties = [
+            ("mff", "ModeFreeFinds", "modefreefinds.com"),
+            ("mmm", "ModeMarketMunchies", "modemarketmunchies.com"),
+            ("mcad", "ModeClassActionsDaily", "modeclassactionsdaily.com"),
+            ("mmd", "ModeMobileDaily", "modemobiledaily.com"),
+        ]
+        for code, name, domain in default_properties:
+            conn.execute(
+                """
+                INSERT INTO properties (code, name, domain, active, popup_enabled)
+                VALUES (?, ?, ?, 1, 1)
+                ON CONFLICT(code) DO UPDATE SET
+                    name = excluded.name,
+                    domain = excluded.domain,
+                    updated_at = CURRENT_TIMESTAMP
+                """,
+                (code, name, domain),
+            )
+
+        # Ensure cap columns exist for existing databases
+        try:
+            cursor = conn.execute("PRAGMA table_info(campaign_properties)")
+            existing_columns = [row[1] for row in cursor.fetchall()]
+            if 'impression_cap_daily' not in existing_columns:
+                conn.execute("ALTER TABLE campaign_properties ADD COLUMN impression_cap_daily INTEGER")
+                print("✅ Added impression_cap_daily to campaign_properties")
+            if 'click_cap_daily' not in existing_columns:
+                conn.execute("ALTER TABLE campaign_properties ADD COLUMN click_cap_daily INTEGER")
+                print("✅ Added click_cap_daily to campaign_properties")
+        except Exception as e:
+            print(f"⚠️ Failed to add cap columns to campaign_properties: {e}")
         
         # Create comprehensive impressions tracking table 
         conn.execute("""
@@ -205,11 +290,81 @@ def init_db():
     finally:
         conn.close()
 
-def get_active_campaigns_for_property(property_code: str):
-    """Get all active campaigns for a specific property"""
+def detect_property_code_from_host(hostname: str) -> str:
+    """Resolve property_code from a given hostname using the properties table.
+    Falls back to heuristic substring checks and defaults to 'mff'.
+    """
+    host = (hostname or "").lower()
+    if not host:
+        return "mff"
+
     conn = get_db_connection()
     try:
-        cursor = conn.execute("""
+        # Exact domain match first
+        cursor = conn.execute(
+            "SELECT code FROM properties WHERE lower(domain) = ? AND active = 1",
+            (host,),
+        )
+        row = cursor.fetchone()
+        if row and row[0]:
+            return row[0]
+
+        # Substring match (e.g., subdomains)
+        cursor = conn.execute("SELECT code, domain FROM properties WHERE active = 1")
+        for r in cursor.fetchall():
+            code, domain = r[0], (r[1] or "").lower()
+            if domain and (domain in host or host.endswith("." + domain)):
+                return code
+
+    finally:
+        conn.close()
+
+    # Heuristic fallback
+    if "modefreefinds" in host:
+        return "mff"
+    if "marketmunchies" in host:
+        return "mmm"
+    if "modeclassactions" in host:
+        return "mcad"
+    if "modemobiledaily" in host:
+        return "mmd"
+    return "mff"
+
+def _get_est_day_bounds_sqlite_str():
+    """Return (start_utc_str, end_utc_str) for current day in EST as 'YYYY-MM-DD HH:MM:SS' (UTC),
+    which matches SQLite CURRENT_TIMESTAMP formatting for string comparisons."""
+    from datetime import datetime, time, timedelta, timezone
+    try:
+        # Python 3.9+
+        from zoneinfo import ZoneInfo  # type: ignore
+        est = ZoneInfo("America/New_York")
+        now_est = datetime.now(est)
+        start_est = datetime.combine(now_est.date(), time.min, tzinfo=est)
+        end_est = datetime.combine(now_est.date(), time.max, tzinfo=est)
+        start_utc = start_est.astimezone(timezone.utc)
+        end_utc = end_est.astimezone(timezone.utc)
+    except Exception:
+        # Fallback: approximate EST as UTC-5 (ignores DST)
+        now_utc = datetime.utcnow().replace(tzinfo=timezone.utc)
+        # Shift to EST (approx) then get date
+        now_est = now_utc - timedelta(hours=5)
+        start_est = datetime.combine(now_est.date(), time.min).replace(tzinfo=timezone.utc) + timedelta(hours=5)
+        end_est = datetime.combine(now_est.date(), time.max).replace(tzinfo=timezone.utc) + timedelta(hours=5)
+        start_utc = start_est - timedelta(hours=5)
+        end_utc = end_est - timedelta(hours=5)
+
+    # Format to SQLite CURRENT_TIMESTAMP-like string
+    start_str = start_utc.replace(microsecond=0).strftime('%Y-%m-%d %H:%M:%S')
+    end_str = end_utc.replace(microsecond=0).strftime('%Y-%m-%d %H:%M:%S')
+    return start_str, end_str
+
+
+def get_active_campaigns_for_property(property_code: str):
+    """Get all active campaigns for a specific property, enforcing daily caps in EST."""
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute(
+            """
             SELECT 
                 c.id,
                 c.name,
@@ -220,19 +375,95 @@ def get_active_campaigns_for_property(property_code: str):
                 c.cta_text,
                 c.offer_id,
                 c.aff_id,
-                cp.visibility_percentage
+                cp.visibility_percentage,
+                COALESCE(cp.impression_cap_daily, NULL) as impression_cap_daily,
+                COALESCE(cp.click_cap_daily, NULL) as click_cap_daily
             FROM campaigns c
             JOIN campaign_properties cp ON c.id = cp.campaign_id
-            WHERE c.active = true 
-            AND cp.active = true 
-            AND cp.property_code = ?
+            WHERE c.active = 1
+              AND cp.active = 1
+              AND cp.property_code = ?
             ORDER BY c.created_at DESC
-        """, (property_code,))
-        
-        campaigns = [dict(row) for row in cursor.fetchall()]
-        return campaigns
+            """,
+            (property_code,),
+        )
+
+        rows = [dict(row) for row in cursor.fetchall()]
+
+        # Enforce caps for the current EST day
+        start_str, end_str = _get_est_day_bounds_sqlite_str()
+        eligible = []
+        for row in rows:
+            campaign_id = row["id"]
+            # Count impressions today (EST window)
+            imp_cap = row.get("impression_cap_daily")
+            clk_cap = row.get("click_cap_daily")
+
+            # Only query if a cap is set
+            if imp_cap is not None:
+                cur_imp = conn.execute(
+                    """
+                    SELECT COUNT(1) FROM impressions
+                    WHERE campaign_id = ? AND property_code = ?
+                      AND timestamp >= ? AND timestamp <= ?
+                    """,
+                    (campaign_id, property_code, start_str, end_str),
+                )
+                imp_count = int(cur_imp.fetchone()[0])
+                if imp_count >= int(imp_cap):
+                    # Skip campaign - impression cap reached
+                    continue
+
+            if clk_cap is not None:
+                cur_clk = conn.execute(
+                    """
+                    SELECT COUNT(1) FROM clicks
+                    WHERE campaign_id = ? AND property_code = ?
+                      AND timestamp >= ? AND timestamp <= ?
+                    """,
+                    (campaign_id, property_code, start_str, end_str),
+                )
+                clk_count = int(cur_clk.fetchone()[0])
+                if clk_count >= int(clk_cap):
+                    # Skip campaign - click cap reached
+                    continue
+
+            eligible.append(row)
+
+        return eligible
     finally:
         conn.close()
+
+
+def detect_property_code_from_host(hostname: str) -> str:
+    """Best-effort map of hostname to property code using known domains.
+    Falls back to 'mff' if unknown."""
+    h = (hostname or "").lower()
+    try:
+        conn = get_db_connection()
+        try:
+            # Exact or contains match by domain
+            cur = conn.execute("SELECT code, domain FROM properties WHERE active = 1")
+            rows = cur.fetchall()
+            for row in rows:
+                code = row[0]
+                domain = (row[1] or '').lower()
+                if domain and (h == domain or h.endswith('.' + domain) or domain in h):
+                    return code
+        finally:
+            conn.close()
+    except Exception:
+        pass
+
+    if 'modefreefinds' in h:
+        return 'mff'
+    if 'marketmunchies' in h:
+        return 'mmm'
+    if 'modeclassactions' in h:
+        return 'mcad'
+    if 'modemobiledaily' in h:
+        return 'mmd'
+    return 'mff'
 
 def insert_campaign(name: str, tune_url: str, logo_url: str, main_image_url: str, description: str = "", cta_text: str = "View Offer", offer_id: str = "", aff_id: str = ""):
     """Insert new campaign with Tune tracking support"""

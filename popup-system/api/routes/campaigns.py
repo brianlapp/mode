@@ -13,6 +13,7 @@ from database import (
     get_active_campaigns_for_property,
     track_impression
 )
+from database import detect_property_code_from_host
 import sqlite3
 from datetime import datetime
 
@@ -315,6 +316,9 @@ class CampaignForPopup(BaseModel):
     logo_url: str
     main_image_url: str
     description: str
+    cta_text: str
+    offer_id: Optional[str] = ""
+    aff_id: Optional[str] = ""
     visibility_percentage: int
 
 @router.get("/campaigns", response_model=List[Campaign])
@@ -331,6 +335,21 @@ async def get_all_campaigns():
     finally:
         conn.close()
 
+@router.get("/campaigns/by-host", response_model=List[CampaignForPopup])
+async def get_campaigns_by_host(request: Request, host: str | None = None):
+    """Get active campaigns for the property resolved from the request host (multi-domain)."""
+    hostname = (host or "").strip().lower()
+    if not hostname:
+        forwarded = request.headers.get("x-forwarded-host") or request.headers.get("x-forwarded-server")
+        header_host = request.headers.get("host")
+        hostname = (forwarded or header_host or "").split(",")[0].strip().lower()
+        if ":" in hostname:
+            hostname = hostname.split(":")[0]
+
+    property_code = detect_property_code_from_host(hostname)
+    campaigns = get_active_campaigns_for_property(property_code)
+    return campaigns
+
 @router.get("/campaigns/{property_code}", response_model=List[CampaignForPopup])
 async def get_campaigns_for_property(property_code: str):
     """Get active campaigns for specific property (for popup script)"""
@@ -339,6 +358,74 @@ async def get_campaigns_for_property(property_code: str):
     
     campaigns = get_active_campaigns_for_property(property_code)
     return campaigns
+
+
+class PropertySetting(BaseModel):
+    active: bool = True
+    visibility_percentage: int = 100
+    impression_cap_daily: Optional[int] = None
+    click_cap_daily: Optional[int] = None
+
+
+@router.post("/campaigns/{campaign_id}/properties", response_model=dict)
+async def upsert_campaign_properties(campaign_id: int, settings: dict):
+    """Create or update per-property settings (active + visibility) for a campaign.
+
+    Expected payload format:
+    {
+      "mff": {"active": true, "visibility_percentage": 100},
+      "mmm": {"active": false, "visibility_percentage": 0},
+      ...
+    }
+    """
+    if not settings:
+        raise HTTPException(status_code=400, detail="No settings provided")
+
+    conn = get_db_connection()
+    try:
+        # Validate campaign exists
+        cur = conn.execute("SELECT id FROM campaigns WHERE id = ?", (campaign_id,))
+        if not cur.fetchone():
+            raise HTTPException(status_code=404, detail="Campaign not found")
+
+        # Upsert each property row
+        for property_code, cfg in settings.items():
+            if property_code not in ['mff', 'mmm', 'mcad', 'mmd']:
+                continue
+
+            # Support both dict payloads and model-like values
+            if isinstance(cfg, dict):
+                active_val = 1 if bool(cfg.get('active', True)) else 0
+                vis_val = int(cfg.get('visibility_percentage', 100))
+                imp_cap = cfg.get('impression_cap_daily')
+                clk_cap = cfg.get('click_cap_daily')
+            else:
+                active_val = 1 if (getattr(cfg, 'active', True)) else 0
+                vis_val = int(getattr(cfg, 'visibility_percentage', 100))
+                imp_cap = getattr(cfg, 'impression_cap_daily', None)
+                clk_cap = getattr(cfg, 'click_cap_daily', None)
+            vis_val = max(0, min(100, vis_val))
+
+            conn.execute(
+                """
+                INSERT INTO campaign_properties (campaign_id, property_code, visibility_percentage, active, impression_cap_daily, click_cap_daily)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(campaign_id, property_code)
+                DO UPDATE SET
+                    visibility_percentage = excluded.visibility_percentage,
+                    active = excluded.active,
+                    impression_cap_daily = excluded.impression_cap_daily,
+                    click_cap_daily = excluded.click_cap_daily
+                """,
+                (campaign_id, property_code, vis_val, active_val, imp_cap, clk_cap)
+            )
+
+        conn.commit()
+        return {"success": True, "message": "Property settings saved"}
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save settings: {str(e)}")
+    finally:
+        conn.close()
 
 @router.post("/campaigns", response_model=dict)
 async def create_campaign(campaign: CampaignCreate):

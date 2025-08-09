@@ -29,6 +29,7 @@
     class ModePopup {
         constructor() {
             this.campaigns = [];
+            this.rawCampaigns = [];
             this.currentCampaignIndex = 0;
             this.config = {};
             this.isVisible = false;
@@ -48,6 +49,8 @@
                 frequency: options.frequency || CONFIG.DEFAULT_FREQUENCY,
                 debug: options.debug || false,
                 autoRotate: options.autoRotate !== false, // Default true
+                // Default brand targeting ON when property is 'auto' or not specified; allow explicit opt-out
+                brandTargeting: (options.brandTargeting !== false) && (!options.property || options.property === 'auto'),
                 ...options
             };
 
@@ -81,19 +84,80 @@
          */
         async loadCampaigns() {
             try {
-                const response = await fetch(`${CONFIG.API_BASE}/campaigns`);
+                let propertyCode = (this.config.property || '').toLowerCase();
+                let response;
+
+                // Resolve property automatically via server if missing or set to 'auto'
+                if (!propertyCode || propertyCode === 'auto') {
+                    const host = window.location.hostname;
+                    try {
+                        const res = await fetch(`${CONFIG.API_BASE}/properties/resolve?host=${encodeURIComponent(host)}`);
+                        if (res.ok) {
+                            const info = await res.json();
+                            propertyCode = info.property_code || this.detectPropertyFromHostname(host) || 'mff';
+                        } else {
+                            propertyCode = this.detectPropertyFromHostname(host) || 'mff';
+                        }
+                    } catch (e) {
+                        propertyCode = this.detectPropertyFromHostname(host) || 'mff';
+                    }
+                    this.config.property = propertyCode;
+                }
+
+                // Choose endpoint: per-property when known, else by-host
+                if (propertyCode) {
+                    response = await fetch(`${CONFIG.API_BASE}/campaigns/${encodeURIComponent(propertyCode)}`);
+                } else {
+                    response = await fetch(`${CONFIG.API_BASE}/campaigns/by-host`);
+                }
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 const data = await response.json();
-                this.campaigns = data || [];
-                this.debug(`Loaded ${this.campaigns.length} campaigns for ${this.config.property}`);
+                // API may return wrapper or direct list depending on endpoint
+                const list = Array.isArray(data) ? data : (Array.isArray(data.campaigns) ? data.campaigns : []);
+                this.rawCampaigns = list || [];
+
+                if (this.config.brandTargeting) {
+                    this.campaigns = this.buildWeightedCampaignList(this.rawCampaigns);
+                } else {
+                    this.campaigns = this.rawCampaigns;
+                }
+
+                this.debug(`Loaded ${this.campaigns.length} campaigns for ${this.config.property} (brandTargeting=${this.config.brandTargeting})`);
                 
             } catch (error) {
                 this.debug('Failed to load campaigns:', error);
                 this.campaigns = [];
             }
+        }
+
+        /**
+         * Map hostname to property code when not explicitly provided
+         */
+        detectPropertyFromHostname(hostname) {
+            const h = (hostname || '').toLowerCase();
+            if (h.includes('modefreefinds')) return 'mff';
+            if (h.includes('marketmunchies')) return 'mmm';
+            if (h.includes('modeclassactions')) return 'mcad';
+            if (h.includes('modemobiledaily')) return 'mmd';
+            return 'mff';
+        }
+
+        /**
+         * Build a weighted campaign list using visibility_percentage
+         * Reduces weight scale by /10 to keep list small: 100% -> 10 slots, 50% -> 5 slots
+         */
+        buildWeightedCampaignList(items) {
+            if (!Array.isArray(items) || items.length === 0) return [];
+            const weighted = [];
+            items.forEach((c) => {
+                const vis = typeof c.visibility_percentage === 'number' ? c.visibility_percentage : 100;
+                const slots = Math.max(1, Math.round(vis / 10));
+                for (let i = 0; i < slots; i++) weighted.push(c);
+            });
+            return weighted;
         }
 
         /**
@@ -362,10 +426,9 @@
                     overflow: hidden;
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                 ">
-                    <img src="${campaign.logo_url || 'https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO'}" 
+                    <img src="${campaign.logo_url || ''}" 
                          alt="Campaign Logo"
-                         style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
-                         onerror="this.src='https://via.placeholder.com/56/F7007C/FFFFFF?text=LOGO'">
+                          style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: ${campaign.logo_url ? 'block' : 'none'};">
                 </div>
                 
                 <!-- Main Content (Mobile Optimized) -->
@@ -410,10 +473,9 @@
                     
                     <!-- Campaign Image (Mobile Optimized) -->
                     <div style="margin: ${isDesktop ? '12px 0' : '12px 0'}; display: flex; align-items: center; justify-content: center;">
-                        <img src="${campaign.main_image_url || 'https://via.placeholder.com/280x220/F7007C/FFFFFF?text=Offer'}" 
+                        <img src="${campaign.main_image_url || ''}" 
                              alt="Campaign" 
-                             style="${imageSize} object-fit: contain; object-position: center; border-radius: 12px; background-color: white;"
-                             onerror="this.src='https://via.placeholder.com/280x220/F7007C/FFFFFF?text=Offer'">
+                              style="${imageSize} object-fit: contain; object-position: center; border-radius: 12px; background-color: white; display: ${campaign.main_image_url ? 'block' : 'none'};">
                     </div>
                     
                     <!-- Description (Exact Match) -->
@@ -700,7 +762,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        campaign_id: campaign.offer_id,
+                        campaign_id: campaign.id,
                         property_code: this.config.property,
                         session_id: this.sessionId,
                         placement: this.config.placement,
@@ -732,7 +794,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        campaign_id: campaign.offer_id,
+                        campaign_id: campaign.id,
                         property_code: this.config.property,
                         session_id: this.sessionId,
                         placement: this.config.placement,

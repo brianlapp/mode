@@ -1,12 +1,13 @@
 """
 Property assignment API endpoints
 Manage campaign visibility and settings per property (MFF, MMM, MCAD, MMD)
+and resolve property by host for multi-domain support.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from typing import List, Dict
-from database import get_db_connection
+from database import get_db_connection, detect_property_code_from_host
 import sqlite3
 
 router = APIRouter()
@@ -18,10 +19,14 @@ class PropertySetting(BaseModel):
     property_code: str
     visibility_percentage: int = 100  # 0-100%
     active: bool = True
+    impression_cap_daily: int | None = None
+    click_cap_daily: int | None = None
 
 class PropertySettingUpdate(BaseModel):
-    visibility_percentage: int = None
-    active: bool = None
+    visibility_percentage: int | None = None
+    active: bool | None = None
+    impression_cap_daily: int | None = None
+    click_cap_daily: int | None = None
 
 @router.get("/campaigns/{campaign_id}/properties", response_model=List[PropertySetting])
 async def get_campaign_property_settings(campaign_id: int):
@@ -29,7 +34,8 @@ async def get_campaign_property_settings(campaign_id: int):
     conn = get_db_connection()
     try:
         cursor = conn.execute("""
-            SELECT property_code, visibility_percentage, active
+            SELECT property_code, visibility_percentage, active,
+                   impression_cap_daily, click_cap_daily
             FROM campaign_properties
             WHERE campaign_id = ?
             ORDER BY property_code
@@ -64,9 +70,19 @@ async def set_campaign_property_settings(campaign_id: int, settings: List[Proper
         # Insert new settings
         for setting in settings:
             conn.execute("""
-                INSERT INTO campaign_properties (campaign_id, property_code, visibility_percentage, active)
-                VALUES (?, ?, ?, ?)
-            """, (campaign_id, setting.property_code, setting.visibility_percentage, setting.active))
+                INSERT INTO campaign_properties (
+                    campaign_id, property_code, visibility_percentage, active,
+                    impression_cap_daily, click_cap_daily
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                campaign_id,
+                setting.property_code,
+                setting.visibility_percentage,
+                setting.active,
+                setting.impression_cap_daily,
+                setting.click_cap_daily
+            ))
         
         conn.commit()
         return {"message": f"Property settings updated for campaign {campaign_id}"}
@@ -97,6 +113,14 @@ async def update_property_setting(campaign_id: int, property_code: str, update: 
         if update.active is not None:
             update_fields.append("active = ?")
             values.append(update.active)
+
+        if update.impression_cap_daily is not None:
+            update_fields.append("impression_cap_daily = ?")
+            values.append(update.impression_cap_daily)
+
+        if update.click_cap_daily is not None:
+            update_fields.append("click_cap_daily = ?")
+            values.append(update.click_cap_daily)
         
         if not update_fields:
             raise HTTPException(status_code=400, detail="No fields to update")
@@ -113,13 +137,18 @@ async def update_property_setting(campaign_id: int, property_code: str, update: 
         if cursor.rowcount == 0:
             # Setting doesn't exist, create it
             conn.execute("""
-                INSERT INTO campaign_properties (campaign_id, property_code, visibility_percentage, active)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO campaign_properties (
+                    campaign_id, property_code, visibility_percentage, active,
+                    impression_cap_daily, click_cap_daily
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
             """, (
                 campaign_id, 
                 property_code, 
                 update.visibility_percentage or 100,
-                update.active if update.active is not None else True
+                update.active if update.active is not None else True,
+                update.impression_cap_daily,
+                update.click_cap_daily
             ))
         
         conn.commit()
@@ -134,6 +163,45 @@ async def update_property_setting(campaign_id: int, property_code: str, update: 
 async def get_valid_properties():
     """Get list of valid property codes"""
     return VALID_PROPERTIES
+
+@router.get("/properties/resolve", response_model=dict)
+async def resolve_property(request: Request, host: str | None = None):
+    """Resolve property details by host header or explicit host param."""
+    # Prefer explicit query param, else try forwarded/host headers
+    hostname = (host or "").strip().lower()
+    if not hostname:
+        # Try common proxy headers
+        forwarded = request.headers.get("x-forwarded-host") or request.headers.get("x-forwarded-server")
+        header_host = request.headers.get("host")
+        hostname = (forwarded or header_host or "").split(",")[0].strip().lower()
+        # Strip port if present
+        if ":" in hostname:
+            hostname = hostname.split(":")[0]
+
+    code = detect_property_code_from_host(hostname)
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute(
+            "SELECT code, name, domain, active, popup_enabled, popup_frequency, popup_placement FROM properties WHERE code = ?",
+            (code,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail=f"Property not found for host: {hostname}")
+
+        return {
+            "property_code": row[0],
+            "name": row[1],
+            "domain": row[2],
+            "active": bool(row[3]),
+            "popup_enabled": bool(row[4]),
+            "popup_frequency": row[5],
+            "popup_placement": row[6],
+            "hostname": hostname,
+        }
+    finally:
+        conn.close()
 
 @router.get("/properties/{property_code}/campaigns", response_model=List[dict])
 async def get_property_campaigns(property_code: str):

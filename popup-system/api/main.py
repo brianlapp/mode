@@ -162,10 +162,11 @@ async def run_migration():
 async def serve_popup_script():
     """Serve the production popup script"""
     # Try multiple possible paths for Railway deployment
+    # Prefer the canonical popup script in project root (popup-system/popup.js)
     possible_paths = [
-        os.path.join(os.path.dirname(__file__), "..", "frontend", "popup.js"),
-        os.path.join(os.path.dirname(__file__), "..", "scripts", "popup.js"),
-        os.path.join(os.path.dirname(__file__), "..", "popup.js"),
+        os.path.join(os.path.dirname(__file__), "..", "popup.js"),               # popup-system/popup.js
+        os.path.join(os.path.dirname(__file__), "..", "scripts", "popup.js"),    # popup-system/scripts/popup.js
+        os.path.join(os.path.dirname(__file__), "..", "frontend", "popup.js"),   # legacy frontend copy (fallback)
         os.path.join(os.path.dirname(__file__), "scripts", "popup.js"),
         "popup-system/scripts/popup.js",
         "scripts/popup.js"
