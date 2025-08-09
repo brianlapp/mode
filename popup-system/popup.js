@@ -106,7 +106,7 @@
 
                 // Choose endpoint: per-property when known, else by-host
                 if (propertyCode) {
-                    response = await fetch(`${CONFIG.API_BASE}/campaigns/${encodeURIComponent(propertyCode)}`);
+                    response = await fetch(`${CONFIG.API_BASE}/campaigns/active/${encodeURIComponent(propertyCode)}`);
                 } else {
                     response = await fetch(`${CONFIG.API_BASE}/campaigns/by-host`);
                 }
