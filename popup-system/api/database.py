@@ -229,6 +229,25 @@ def init_db():
         
         print("✅ Phase 2 tracking fields verified/added")
 
+        # Add daily cap columns to campaign_properties table if they don't exist
+        cursor = conn.execute("PRAGMA table_info(campaign_properties)")
+        existing_columns = [row[1] for row in cursor.fetchall()]
+        
+        cap_columns = {
+            'impression_cap_daily': 'INTEGER',
+            'click_cap_daily': 'INTEGER'
+        }
+        
+        for column, column_type in cap_columns.items():
+            if column not in existing_columns:
+                try:
+                    conn.execute(f"ALTER TABLE campaign_properties ADD COLUMN {column} {column_type}")
+                    print(f"✅ Added {column} to campaign_properties table")
+                except Exception as e:
+                    print(f"⚠️ Failed to add {column} to campaign_properties: {e}")
+        
+        print("✅ Daily cap columns verified/added to campaign_properties")
+
         # Add Mike's Tune-style reporting columns to campaigns table
         cursor = conn.execute("PRAGMA table_info(campaigns)")
         existing_columns = [row[1] for row in cursor.fetchall()]
