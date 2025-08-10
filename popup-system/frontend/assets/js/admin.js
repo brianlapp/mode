@@ -1006,6 +1006,58 @@ class CampaignManager {
                 modal.remove();
             }
         });
+        
+        // Load existing property settings
+        this.loadPropertySettings(campaign.id);
+    }
+
+    async loadPropertySettings(campaignId) {
+        try {
+            console.log('📄 Loading property settings for campaign:', campaignId);
+            const response = await fetch(`${this.baseURL}/campaigns/${campaignId}/properties`);
+            
+            if (!response.ok) {
+                console.warn('⚠️ No existing property settings found');
+                return;
+            }
+            
+            const settings = await response.json();
+            console.log('✅ Loaded property settings:', settings);
+            
+            // Populate form fields with existing values
+            settings.forEach(setting => {
+                const prop = setting.property_code;
+                
+                // Set active checkbox
+                const activeCheckbox = document.getElementById(`active_${prop}_${campaignId}`);
+                if (activeCheckbox) {
+                    activeCheckbox.checked = setting.active;
+                }
+                
+                // Set visibility slider
+                const visibilitySlider = document.getElementById(`visibility_${prop}_${campaignId}`);
+                const visibilityDisplay = document.getElementById(`visibility_${prop}_${campaignId}_display`);
+                if (visibilitySlider && visibilityDisplay) {
+                    visibilitySlider.value = setting.visibility_percentage;
+                    visibilityDisplay.textContent = setting.visibility_percentage + '%';
+                }
+                
+                // Set impression cap
+                const impCapInput = document.getElementById(`imp_cap_${prop}_${campaignId}`);
+                if (impCapInput && setting.impression_cap_daily !== null) {
+                    impCapInput.value = setting.impression_cap_daily;
+                }
+                
+                // Set click cap
+                const clkCapInput = document.getElementById(`clk_cap_${prop}_${campaignId}`);
+                if (clkCapInput && setting.click_cap_daily !== null) {
+                    clkCapInput.value = setting.click_cap_daily;
+                }
+            });
+            
+        } catch (error) {
+            console.error('❌ Failed to load property settings:', error);
+        }
     }
 
     async savePropertySettings(campaignId) {
