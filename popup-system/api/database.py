@@ -460,20 +460,15 @@ def get_active_campaigns_for_property(property_code: str):
             # Apply visibility percentage filter
             visibility_pct = row.get("visibility_percentage", 100)
             if visibility_pct < 100:
-                # Use a deterministic hash-based approach for consistent filtering
-                import hashlib
+                # Simple random-based approach for testing
+                import random
                 import time
                 
-                # Create a hash based on campaign_id and current hour to ensure
-                # consistent visibility within an hour but different across hours
-                current_hour = int(time.time() // 3600)  # Current hour epoch
-                hash_input = f"{campaign_id}_{property_code}_{current_hour}".encode()
-                hash_value = int(hashlib.md5(hash_input).hexdigest()[:8], 16)
+                # Seed with campaign_id for some consistency within short timeframes
+                random.seed(campaign_id * 1000 + int(time.time() // 300))  # Changes every 5 minutes
+                random_pct = random.randint(0, 99)
                 
-                # Convert to percentage (0-100)
-                hash_percentage = hash_value % 100
-                
-                if hash_percentage >= visibility_pct:
+                if random_pct >= visibility_pct:
                     # Skip this campaign - outside visibility percentage
                     continue
 
