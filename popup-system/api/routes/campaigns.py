@@ -204,8 +204,8 @@ print("✅ Embedded Tune API client created successfully")
 
 router = APIRouter()
 
-@router.post("/migrate")
-async def run_migration():
+@router.get("/debug-table")
+async def debug_table():
     """Manual migration endpoint to fix missing columns"""
     from database import get_db_connection
     conn = get_db_connection()
@@ -441,6 +441,18 @@ async def upsert_campaign_properties(campaign_id: int, settings: dict):
                 imp_cap = getattr(cfg, 'impression_cap_daily', None)
                 clk_cap = getattr(cfg, 'click_cap_daily', None)
             vis_val = max(0, min(100, vis_val))
+
+            # First, ensure the table has the required columns
+            try:
+                cursor = conn.execute("PRAGMA table_info(campaign_properties)")
+                existing_columns = [row[1] for row in cursor.fetchall()]
+                
+                if 'impression_cap_daily' not in existing_columns:
+                    conn.execute("ALTER TABLE campaign_properties ADD COLUMN impression_cap_daily INTEGER")
+                if 'click_cap_daily' not in existing_columns:
+                    conn.execute("ALTER TABLE campaign_properties ADD COLUMN click_cap_daily INTEGER")
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to update table schema: {str(e)}")
 
             conn.execute(
                 """
