@@ -382,30 +382,40 @@ def get_active_campaigns_for_property(property_code: str):
     """Get all active campaigns for a specific property, enforcing daily caps in EST."""
     conn = get_db_connection()
     try:
-        cursor = conn.execute(
+        # Check if daily cap columns exist first
+        schema_cursor = conn.execute("PRAGMA table_info(campaign_properties)")
+        columns = [row[1] for row in schema_cursor.fetchall()]
+        has_cap_columns = 'impression_cap_daily' in columns and 'click_cap_daily' in columns
+        
+        if has_cap_columns:
+            query = """
+                SELECT 
+                    c.id, c.name, c.tune_url, c.logo_url, c.main_image_url,
+                    c.description, c.cta_text, c.offer_id, c.aff_id,
+                    cp.visibility_percentage,
+                    COALESCE(cp.impression_cap_daily, NULL) as impression_cap_daily,
+                    COALESCE(cp.click_cap_daily, NULL) as click_cap_daily
+                FROM campaigns c
+                JOIN campaign_properties cp ON c.id = cp.campaign_id
+                WHERE c.active = 1 AND cp.active = 1 AND cp.property_code = ?
+                ORDER BY c.created_at DESC
             """
-            SELECT 
-                c.id,
-                c.name,
-                c.tune_url,
-                c.logo_url,
-                c.main_image_url,
-                c.description,
-                c.cta_text,
-                c.offer_id,
-                c.aff_id,
-                cp.visibility_percentage,
-                COALESCE(cp.impression_cap_daily, NULL) as impression_cap_daily,
-                COALESCE(cp.click_cap_daily, NULL) as click_cap_daily
-            FROM campaigns c
-            JOIN campaign_properties cp ON c.id = cp.campaign_id
-            WHERE c.active = 1
-              AND cp.active = 1
-              AND cp.property_code = ?
-            ORDER BY c.created_at DESC
-            """,
-            (property_code,),
-        )
+        else:
+            # Fallback query without cap columns
+            query = """
+                SELECT 
+                    c.id, c.name, c.tune_url, c.logo_url, c.main_image_url,
+                    c.description, c.cta_text, c.offer_id, c.aff_id,
+                    cp.visibility_percentage,
+                    NULL as impression_cap_daily,
+                    NULL as click_cap_daily
+                FROM campaigns c
+                JOIN campaign_properties cp ON c.id = cp.campaign_id
+                WHERE c.active = 1 AND cp.active = 1 AND cp.property_code = ?
+                ORDER BY c.created_at DESC
+            """
+        
+        cursor = conn.execute(query, (property_code,))
 
         rows = [dict(row) for row in cursor.fetchall()]
 
