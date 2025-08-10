@@ -457,6 +457,26 @@ def get_active_campaigns_for_property(property_code: str):
                     # Skip campaign - click cap reached
                     continue
 
+            # Apply visibility percentage filter
+            visibility_pct = row.get("visibility_percentage", 100)
+            if visibility_pct < 100:
+                # Use a deterministic hash-based approach for consistent filtering
+                import hashlib
+                import time
+                
+                # Create a hash based on campaign_id and current hour to ensure
+                # consistent visibility within an hour but different across hours
+                current_hour = int(time.time() // 3600)  # Current hour epoch
+                hash_input = f"{campaign_id}_{property_code}_{current_hour}".encode()
+                hash_value = int(hashlib.md5(hash_input).hexdigest()[:8], 16)
+                
+                # Convert to percentage (0-100)
+                hash_percentage = hash_value % 100
+                
+                if hash_percentage >= visibility_pct:
+                    # Skip this campaign - outside visibility percentage
+                    continue
+
             eligible.append(row)
 
         return eligible
