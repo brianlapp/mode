@@ -204,6 +204,42 @@ print("✅ Embedded Tune API client created successfully")
 
 router = APIRouter()
 
+@router.post("/migrate")
+async def run_migration():
+    """Manual migration endpoint to fix missing columns"""
+    from database import get_db_connection
+    conn = get_db_connection()
+    try:
+        # Add missing columns to campaign_properties table
+        cursor = conn.execute("PRAGMA table_info(campaign_properties)")
+        existing_columns = [row[1] for row in cursor.fetchall()]
+        
+        added_columns = []
+        cap_columns = {
+            'impression_cap_daily': 'INTEGER',
+            'click_cap_daily': 'INTEGER'
+        }
+        
+        for column, column_type in cap_columns.items():
+            if column not in existing_columns:
+                try:
+                    conn.execute(f"ALTER TABLE campaign_properties ADD COLUMN {column} {column_type}")
+                    conn.commit()
+                    added_columns.append(column)
+                except Exception as e:
+                    return {"status": "error", "message": f"Failed to add {column}: {str(e)}"}
+        
+        return {
+            "status": "success", 
+            "added_columns": added_columns,
+            "existing_columns": existing_columns,
+            "message": "Migration completed successfully"
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+    finally:
+        conn.close()
+
 @router.get("/test-tune-api")
 async def test_tune_api():
     """Test if Tune API is accessible from Railway"""
