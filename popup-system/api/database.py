@@ -71,12 +71,13 @@ def init_db():
             # Columns already exist or other error - this is okay
             pass
             
-        # Add featured priority field
+        # Add featured priority field (FORCE FIX)
         try:
             conn.execute("ALTER TABLE campaigns ADD COLUMN featured BOOLEAN DEFAULT false")
             print("✅ Added featured priority field to campaigns table")
         except Exception as e:
             # Column already exists or other error - this is okay
+            print(f"Featured column check: {e}")
             pass
             
         # Create properties table for multi-domain support
