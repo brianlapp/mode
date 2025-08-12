@@ -490,35 +490,7 @@ def get_active_campaigns_for_property(property_code: str):
         conn.close()
 
 
-def detect_property_code_from_host(hostname: str) -> str:
-    """Best-effort map of hostname to property code using known domains.
-    Falls back to 'mff' if unknown."""
-    h = (hostname or "").lower()
-    try:
-        conn = get_db_connection()
-        try:
-            # Exact or contains match by domain
-            cur = conn.execute("SELECT code, domain FROM properties WHERE active = 1")
-            rows = cur.fetchall()
-            for row in rows:
-                code = row[0]
-                domain = (row[1] or '').lower()
-                if domain and (h == domain or h.endswith('.' + domain) or domain in h):
-                    return code
-        finally:
-            conn.close()
-    except Exception:
-        pass
-
-    if 'modefreefinds' in h:
-        return 'mff'
-    if 'marketmunchies' in h:
-        return 'mmm'
-    if 'modeclassactions' in h:
-        return 'mcad'
-    if 'modemobiledaily' in h:
-        return 'mmd'
-    return 'mff'
+# Duplicate function removed - using the first implementation above
 
 def insert_campaign(name: str, tune_url: str, logo_url: str, main_image_url: str, description: str = "", cta_text: str = "View Offer", offer_id: str = "", aff_id: str = "", featured: bool = False):
     """Insert new campaign with Tune tracking and priority support"""
