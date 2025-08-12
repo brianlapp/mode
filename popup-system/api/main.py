@@ -194,6 +194,56 @@ async def run_migration():
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+# Emergency schema fix endpoint
+@app.post("/api/db/fix-schema")
+async def fix_database_schema():
+    """Emergency fix for missing featured column causing popup Internal Server Error"""
+    from database import get_db_connection
+    conn = get_db_connection()
+    try:
+        results = []
+        
+        # Check and add featured column to campaigns table
+        cursor = conn.execute("PRAGMA table_info(campaigns)")
+        columns = [row[1] for row in cursor.fetchall()]
+        
+        if 'featured' not in columns:
+            conn.execute("ALTER TABLE campaigns ADD COLUMN featured BOOLEAN DEFAULT false")
+            conn.commit()
+            results.append("✅ Added featured column to campaigns table")
+        else:
+            results.append("✅ Featured column already exists in campaigns table")
+        
+        # Check and add daily cap columns to campaign_properties table
+        cursor = conn.execute("PRAGMA table_info(campaign_properties)")
+        cp_columns = [row[1] for row in cursor.fetchall()]
+        
+        if 'impression_cap_daily' not in cp_columns:
+            conn.execute("ALTER TABLE campaign_properties ADD COLUMN impression_cap_daily INTEGER")
+            conn.commit()
+            results.append("✅ Added impression_cap_daily column to campaign_properties table")
+        else:
+            results.append("✅ impression_cap_daily column already exists")
+            
+        if 'click_cap_daily' not in cp_columns:
+            conn.execute("ALTER TABLE campaign_properties ADD COLUMN click_cap_daily INTEGER")
+            conn.commit()
+            results.append("✅ Added click_cap_daily column to campaign_properties table")
+        else:
+            results.append("✅ click_cap_daily column already exists")
+        
+        return {
+            "success": True, 
+            "message": "Schema fix completed",
+            "results": results,
+            "campaigns_columns": columns,
+            "campaign_properties_columns": cp_columns
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e), "message": "Schema fix failed"}
+    finally:
+        conn.close()
+
 # Popup script endpoint
 @app.get("/popup.js")
 async def serve_popup_script():
