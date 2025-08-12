@@ -384,28 +384,10 @@ async def get_campaigns_by_host(request: Request, host: str | None = None):
             hostname = hostname.split(":")[0]
 
     property_code = detect_property_code_from_host(hostname)
-    
-    # TEMPORARY FIX: Use simplified query to get live traffic working
-    conn = get_db_connection()
-    try:
-        cursor = conn.execute("""
-            SELECT 
-                c.id, c.name, c.tune_url, c.logo_url, c.main_image_url,
-                c.description, c.cta_text, c.offer_id, c.aff_id,
-                COALESCE(c.featured, 0) as featured,
-                cp.visibility_percentage
-            FROM campaigns c
-            JOIN campaign_properties cp ON c.id = cp.campaign_id
-            WHERE c.active = 1 AND cp.active = 1 AND cp.property_code = ?
-            ORDER BY COALESCE(c.featured, 0) DESC, c.created_at DESC
-        """, (property_code,))
-        
-        campaigns = [dict(row) for row in cursor.fetchall()]
-        return campaigns
-    finally:
-        conn.close()
+    campaigns = get_active_campaigns_for_property(property_code)
+    return campaigns
 
-@router.get("/campaigns/property/{property_code}", response_model=List[CampaignForPopup])
+@router.get("/campaigns/{property_code}", response_model=List[CampaignForPopup])
 async def get_campaigns_for_property(property_code: str):
     """Get active campaigns for specific property (for popup script)"""
     if property_code not in ['mff', 'mmm', 'mcad', 'mmd']:
