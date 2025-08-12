@@ -81,21 +81,29 @@ class CampaignManager {
                         </div>
                         <div class="ml-4">
                             <div class="text-sm font-medium text-gray-900">${campaign.name}</div>
-                            <div class="text-sm text-gray-500">ID: ${campaign.id}</div>
+                            <div class="text-sm text-gray-500 truncate" style="max-width: 200px;">${campaign.tune_url}</div>
                         </div>
                     </div>
                 </td>
                 <td class="px-6 py-4">
-                    <div class="text-sm text-gray-900">${campaign.description}</div>
-                    <div class="text-xs text-gray-500 truncate" style="max-width: 200px;">${campaign.tune_url}</div>
+                    <div class="text-xs text-gray-500">Show on all domains</div>
+                    <div class="text-sm font-medium text-gray-900">Auto-configured</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${campaign.featured ? `
+                        <span class="featured-badge">
+                            ⭐ Featured
+                        </span>
+                    ` : `
+                        <span class="priority-badge">
+                            📈 RPM Sorted
+                        </span>
+                    `}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${campaign.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                         ${campaign.active ? 'Active' : 'Inactive'}
                     </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-500">${new Date(campaign.created_at).toLocaleDateString()}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onclick="campaignManager.editCampaign(${campaign.id})" 
@@ -133,6 +141,9 @@ class CampaignManager {
 
         // Live Preview Functionality
         this.setupLivePreview();
+
+        // Featured Toggle Functionality
+        this.setupFeaturedToggle();
 
         // Image preview for URL inputs (small previews)
         const logoInput = document.getElementById('logo_url');
@@ -218,6 +229,24 @@ class CampaignManager {
         console.log('✨ Live preview functionality activated!');
     }
 
+    setupFeaturedToggle() {
+        const featuredInput = document.getElementById('featured');
+        if (featuredInput) {
+            featuredInput.addEventListener('change', function(e) {
+                const toggleBg = e.target.nextElementSibling.querySelector('.toggle-bg');
+                const toggleDot = e.target.nextElementSibling.querySelector('.toggle-dot');
+                
+                if (e.target.checked) {
+                    toggleBg.style.backgroundColor = '#F7007C';
+                    toggleDot.style.transform = 'translateX(20px)';
+                } else {
+                    toggleBg.style.backgroundColor = '#d1d5db';
+                    toggleDot.style.transform = 'translateX(0)';
+                }
+            });
+        }
+    }
+
     showAddCampaignModal() {
         const modal = document.getElementById('addCampaignModal');
         if (modal) {
@@ -252,7 +281,8 @@ class CampaignManager {
             logo_url: formData.get('logo_url'),
             main_image_url: formData.get('main_image_url'),
             description: formData.get('description'),
-            cta_text: formData.get('cta_text') || 'View Offer'
+            cta_text: formData.get('cta_text') || 'View Offer',
+            featured: formData.get('featured') === 'on'
         };
 
         // Validate required fields

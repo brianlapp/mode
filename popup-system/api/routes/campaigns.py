@@ -321,6 +321,7 @@ class CampaignCreate(BaseModel):
     cta_text: str = 'View Offer'
     offer_id: Optional[str] = ""  # Tune offer ID for impression pixels
     aff_id: Optional[str] = ""    # Tune affiliate ID for impression pixels
+    featured: Optional[bool] = False  # Featured priority flag
 
 class CampaignUpdate(BaseModel):
     name: Optional[str] = None
@@ -487,7 +488,8 @@ async def create_campaign(campaign: CampaignCreate):
             description=campaign.description,
             cta_text=campaign.cta_text,
             offer_id=campaign.offer_id,
-            aff_id=campaign.aff_id
+            aff_id=campaign.aff_id,
+            featured=campaign.featured
         )
         return {"id": campaign_id, "message": "Campaign created successfully"}
     except sqlite3.Error as e:

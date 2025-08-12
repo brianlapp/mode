@@ -71,6 +71,14 @@ def init_db():
             # Columns already exist or other error - this is okay
             pass
             
+        # Add featured priority field
+        try:
+            conn.execute("ALTER TABLE campaigns ADD COLUMN featured BOOLEAN DEFAULT false")
+            print("✅ Added featured priority field to campaigns table")
+        except Exception as e:
+            # Column already exists or other error - this is okay
+            pass
+            
         # Create properties table for multi-domain support
         conn.execute(
             """
@@ -392,13 +400,14 @@ def get_active_campaigns_for_property(property_code: str):
                 SELECT 
                     c.id, c.name, c.tune_url, c.logo_url, c.main_image_url,
                     c.description, c.cta_text, c.offer_id, c.aff_id,
+                    COALESCE(c.featured, 0) as featured,
                     cp.visibility_percentage,
                     COALESCE(cp.impression_cap_daily, NULL) as impression_cap_daily,
                     COALESCE(cp.click_cap_daily, NULL) as click_cap_daily
                 FROM campaigns c
                 JOIN campaign_properties cp ON c.id = cp.campaign_id
                 WHERE c.active = 1 AND cp.active = 1 AND cp.property_code = ?
-                ORDER BY c.created_at DESC
+                ORDER BY COALESCE(c.featured, 0) DESC, c.created_at DESC
             """
         else:
             # Fallback query without cap columns
@@ -406,13 +415,14 @@ def get_active_campaigns_for_property(property_code: str):
                 SELECT 
                     c.id, c.name, c.tune_url, c.logo_url, c.main_image_url,
                     c.description, c.cta_text, c.offer_id, c.aff_id,
+                    COALESCE(c.featured, 0) as featured,
                     cp.visibility_percentage,
                     NULL as impression_cap_daily,
                     NULL as click_cap_daily
                 FROM campaigns c
                 JOIN campaign_properties cp ON c.id = cp.campaign_id
                 WHERE c.active = 1 AND cp.active = 1 AND cp.property_code = ?
-                ORDER BY c.created_at DESC
+                ORDER BY COALESCE(c.featured, 0) DESC, c.created_at DESC
             """
         
         cursor = conn.execute(query, (property_code,))
@@ -509,14 +519,14 @@ def detect_property_code_from_host(hostname: str) -> str:
         return 'mmd'
     return 'mff'
 
-def insert_campaign(name: str, tune_url: str, logo_url: str, main_image_url: str, description: str = "", cta_text: str = "View Offer", offer_id: str = "", aff_id: str = ""):
-    """Insert new campaign with Tune tracking support"""
+def insert_campaign(name: str, tune_url: str, logo_url: str, main_image_url: str, description: str = "", cta_text: str = "View Offer", offer_id: str = "", aff_id: str = "", featured: bool = False):
+    """Insert new campaign with Tune tracking and priority support"""
     conn = get_db_connection()
     try:
         cursor = conn.execute("""
-            INSERT INTO campaigns (name, tune_url, logo_url, main_image_url, description, cta_text, offer_id, aff_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (name, tune_url, logo_url, main_image_url, description, cta_text, offer_id, aff_id))
+            INSERT INTO campaigns (name, tune_url, logo_url, main_image_url, description, cta_text, offer_id, aff_id, featured)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (name, tune_url, logo_url, main_image_url, description, cta_text, offer_id, aff_id, featured))
         
         campaign_id = cursor.lastrowid
         conn.commit()

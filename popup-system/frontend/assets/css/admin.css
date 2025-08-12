@@ -454,4 +454,48 @@
 
 #analytics-table-container::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #d60069 0%, #0598d1 100%);
+}
+
+/* Featured Campaign Toggle Styles */
+.toggle-bg {
+    transition: background-color 0.3s ease;
+}
+
+input:checked + div .toggle-bg {
+    background-color: #F7007C;
+}
+
+input:checked + div .toggle-dot {
+    transform: translateX(20px);
+    background-color: #ffffff;
+}
+
+.toggle-dot {
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+/* Featured badge styles */
+.featured-badge {
+    background: linear-gradient(135deg, #FBB042 0%, #F59E0B 100%);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 8px rgba(251, 176, 66, 0.3);
+}
+
+.priority-badge {
+    background: linear-gradient(135deg, #6B7280 0%, #4B5563 100%);
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 } 
