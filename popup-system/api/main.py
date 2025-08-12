@@ -244,6 +244,60 @@ async def fix_database_schema():
     finally:
         conn.close()
 
+# Domain configuration fix endpoint
+@app.post("/api/db/fix-domains")
+async def fix_domain_configuration():
+    """Fix missing domain mappings for property resolution"""
+    from database import get_db_connection
+    conn = get_db_connection()
+    try:
+        results = []
+        
+        # Define the correct domain mappings
+        domain_mappings = [
+            ('mff', 'ModeFreeFinds', 'modefreefinds.com'),
+            ('mmm', 'ModeMarketMunchies', 'modemarketmunchies.com'),
+            ('mcad', 'ModeClassActionsDaily', 'modeclassactionsdaily.com'),
+            ('mmd', 'ModeMobileDaily', 'modemobiledaily.com')
+        ]
+        
+        for code, name, domain in domain_mappings:
+            # Check if property exists and update domain
+            cursor = conn.execute("SELECT id, domain FROM properties WHERE code = ?", (code,))
+            row = cursor.fetchone()
+            
+            if row:
+                current_domain = row[1]
+                if current_domain != domain:
+                    conn.execute("UPDATE properties SET domain = ? WHERE code = ?", (domain, code))
+                    results.append(f"✅ Updated {code} domain from '{current_domain}' to '{domain}'")
+                else:
+                    results.append(f"✅ {code} domain already correct: {domain}")
+            else:
+                # Insert missing property
+                conn.execute("""
+                    INSERT INTO properties (code, name, domain, active, popup_enabled) 
+                    VALUES (?, ?, ?, 1, 1)
+                """, (code, name, domain))
+                results.append(f"✅ Added missing property {code}: {domain}")
+        
+        conn.commit()
+        
+        # Verify the configuration
+        cursor = conn.execute("SELECT code, name, domain FROM properties ORDER BY code")
+        properties = [dict(zip(['code', 'name', 'domain'], row)) for row in cursor.fetchall()]
+        
+        return {
+            "success": True,
+            "message": "Domain configuration fixed",
+            "results": results,
+            "properties": properties
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e), "message": "Domain fix failed"}
+    finally:
+        conn.close()
+
 # Popup script endpoint
 @app.get("/popup.js")
 async def serve_popup_script():
