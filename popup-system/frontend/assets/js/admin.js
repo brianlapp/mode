@@ -996,7 +996,18 @@ class CampaignManager {
         this.showPropertyModal(campaign);
     }
 
-    showPropertyModal(campaign) {
+    showPropertyModal(campaignOrId) {
+        // Handle both campaign object and campaign ID
+        const campaign = typeof campaignOrId === 'object' ? campaignOrId : this.campaigns.find(c => c.id == campaignOrId);
+        
+        if (!campaign) {
+            console.error('❌ Campaign not found for modal:', campaignOrId);
+            this.showAlert('Campaign not found', 'error');
+            return;
+        }
+        
+        console.log('🔍 DEBUG: Opening properties modal for campaign:', campaign);
+        
         // Create dynamic property modal
         const modalHTML = `
             <div id="propertyModal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
