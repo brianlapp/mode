@@ -1022,6 +1022,26 @@ class CampaignManager {
                                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-mode-pink/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-mode-pink"></div>
                                     </label>
                                 </div>
+                                <!-- Featured Campaign Toggle -->
+                                <div class="mb-4 p-3 border border-yellow-200 rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex-1">
+                                            <label class="flex items-center cursor-pointer">
+                                                <input type="checkbox" 
+                                                       id="featured_${prop}_${campaign.id}" 
+                                                       class="sr-only peer">
+                                                <div class="relative">
+                                                    <div class="w-11 h-6 bg-gray-200 rounded-full shadow-inner toggle-bg"></div>
+                                                    <div class="absolute w-4 h-4 bg-white rounded-full shadow toggle-dot transition-transform duration-200 ease-in-out transform translate-x-1 top-1 left-1"></div>
+                                                </div>
+                                                <span class="ml-3 text-sm font-medium text-gray-700">Featured Campaign</span>
+                                            </label>
+                                            <p class="text-xs text-gray-500 mt-1 ml-14">🌟 Show this campaign first on ${this.propertyNames[prop]}, then others by RPM</p>
+                                        </div>
+                                        <div class="text-2xl">⭐</div>
+                                    </div>
+                                </div>
+
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -1134,9 +1154,95 @@ class CampaignManager {
                     clkCapInput.value = setting.click_cap_daily;
                 }
             });
+
+            // Load featured campaign status for each property
+            for (const prop of this.properties) {
+                try {
+                    const featuredResponse = await fetch(`${this.baseURL}/properties/${prop}/featured`);
+                    if (featuredResponse.ok) {
+                        const featuredData = await featuredResponse.json();
+                        const isFeatured = featuredData.featured_campaign_id == campaignId;
+                        
+                        // Set featured toggle
+                        const featuredToggle = document.getElementById(`featured_${prop}_${campaignId}`);
+                        if (featuredToggle) {
+                            featuredToggle.checked = isFeatured;
+                            
+                            // Update toggle visual state
+                            const toggleBg = featuredToggle.nextElementSibling.querySelector('.toggle-bg');
+                            const toggleDot = featuredToggle.nextElementSibling.querySelector('.toggle-dot');
+                            if (isFeatured) {
+                                toggleBg.style.backgroundColor = '#F7007C';
+                                toggleDot.style.transform = 'translateX(20px)';
+                            }
+                            
+                            // Add change listener
+                            featuredToggle.addEventListener('change', () => {
+                                this.handleFeaturedToggle(prop, campaignId, featuredToggle.checked);
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.log(`No featured campaign data for ${prop}`);
+                }
+            }
             
         } catch (error) {
             console.error('❌ Failed to load property settings:', error);
+        }
+    }
+
+    async handleFeaturedToggle(propertyCode, campaignId, isChecked) {
+        try {
+            console.log(`🌟 Setting featured campaign for ${propertyCode}: ${isChecked ? campaignId : 'none'}`);
+            
+            // Update toggle visual state
+            const featuredToggle = document.getElementById(`featured_${propertyCode}_${campaignId}`);
+            if (featuredToggle) {
+                const toggleBg = featuredToggle.nextElementSibling.querySelector('.toggle-bg');
+                const toggleDot = featuredToggle.nextElementSibling.querySelector('.toggle-dot');
+                
+                if (isChecked) {
+                    toggleBg.style.backgroundColor = '#F7007C';
+                    toggleDot.style.transform = 'translateX(20px)';
+                } else {
+                    toggleBg.style.backgroundColor = '#d1d5db';
+                    toggleDot.style.transform = 'translateX(0)';
+                }
+            }
+            
+            // Call API to save featured campaign
+            const response = await fetch(`${this.baseURL}/properties/${propertyCode}/featured`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    campaign_id: isChecked ? campaignId : null 
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const campaignName = this.campaigns.find(c => c.id == campaignId)?.name;
+            const propertyName = this.propertyNames[propertyCode];
+            
+            this.showAlert(
+                `✅ ${campaignName} ${isChecked ? 'set as featured' : 'removed as featured'} for ${propertyName}`, 
+                'success'
+            );
+            
+        } catch (error) {
+            console.error('❌ Failed to update featured campaign:', error);
+            this.showAlert(`Failed to update featured campaign: ${error.message}`, 'error');
+            
+            // Revert toggle on error
+            const featuredToggle = document.getElementById(`featured_${propertyCode}_${campaignId}`);
+            if (featuredToggle) {
+                featuredToggle.checked = !isChecked;
+            }
         }
     }
 
