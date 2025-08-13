@@ -1177,15 +1177,20 @@ class CampaignManager {
             // Load featured campaign status for each property
             for (const prop of this.properties) {
                 try {
+                    console.log(`🔍 DEBUG: Loading featured status for ${prop}, campaign ${campaignId}`);
                     const featuredResponse = await fetch(`${this.baseURL}/properties/${prop}/featured`);
                     if (featuredResponse.ok) {
                         const featuredData = await featuredResponse.json();
+                        console.log(`🔍 DEBUG: Featured data for ${prop}:`, featuredData);
                         const isFeatured = featuredData.featured_campaign_id == campaignId;
+                        console.log(`🔍 DEBUG: Is campaign ${campaignId} featured for ${prop}? ${isFeatured}`);
                         
                         // Set featured toggle
                         const featuredToggle = document.getElementById(`featured_${prop}_${campaignId}`);
+                        console.log(`🔍 DEBUG: Featured toggle element for ${prop}:`, featuredToggle ? 'found' : 'NOT FOUND');
                         if (featuredToggle) {
                             featuredToggle.checked = isFeatured;
+                            console.log(`🔍 DEBUG: Set ${prop} featured toggle to:`, isFeatured);
                             
                             // Update toggle visual state
                             const toggleBg = featuredToggle.nextElementSibling.querySelector('.toggle-bg');
@@ -1202,7 +1207,7 @@ class CampaignManager {
                         }
                     }
                 } catch (error) {
-                    console.log(`No featured campaign data for ${prop}`);
+                    console.log(`🔍 DEBUG: No featured campaign data for ${prop}:`, error.message);
                 }
             }
             
