@@ -114,6 +114,41 @@
         .success { color: #10B981; }
         .error { color: #EF4444; }
         .warning { color: #F59E0B; }
+
+        /* Domain Navigation Styles */
+        .domain-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            width: 200px;
+            font-size: 11px;
+        }
+        
+        .domain-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-2px);
+        }
+        
+        .domain-btn.active {
+            border-color: #07C8F7;
+            background: rgba(7, 200, 247, 0.2);
+        }
+        
+        .domain-name {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        
+        .domain-url {
+            font-size: 10px;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -121,13 +156,44 @@
         <div>🔄 Loading popup script...</div>
     </div>
 
+    <!-- Domain Navigation -->
+    <div style="position: fixed; top: 50%; right: 20px; transform: translateY(-50%); z-index: 9999;">
+        <div style="background: rgba(0, 0, 0, 0.8); border-radius: 16px; padding: 20px; backdrop-filter: blur(10px);">
+            <h3 style="margin: 0 0 15px 0; color: #07C8F7; font-size: 14px; text-align: center;">🌐 Domain Previews</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="domain-btn active" data-property="mff" onclick="switchDomain('mff', 'ModeFreeFinds', 'modefreefinds.com')">
+                    <div class="domain-name">ModeFreeFinds</div>
+                    <div class="domain-url">modefreefinds.com</div>
+                </button>
+                <button class="domain-btn" data-property="mmm" onclick="switchDomain('mmm', 'ModeMarketMunchies', 'modemarketmunchies.com')">
+                    <div class="domain-name">ModeMarketMunchies</div>
+                    <div class="domain-url">modemarketmunchies.com</div>
+                </button>
+                <button class="domain-btn" data-property="mcad" onclick="switchDomain('mcad', 'ModeClassActionsDaily', 'modeclassactionsdaily.com')">
+                    <div class="domain-name">ModeClassActionsDaily</div>
+                    <div class="domain-url">modeclassactionsdaily.com</div>
+                </button>
+                <button class="domain-btn" data-property="mmd" onclick="switchDomain('mmd', 'ModeMobileDaily', 'modemobiledaily.com')">
+                    <div class="domain-name">ModeMobileDaily</div>
+                    <div class="domain-url">modemobiledaily.com</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>🎉 Mode Popup Test</h1>
-        <p>Testing the popup system with Mike's 5 real campaigns on Netlify!</p>
-        <p><strong>Campaigns:</strong> Trading Tips, Behind Markets, Brownstone, Hotsheets, Best Gold</p>
+        <h1>🎉 <span id="siteName">ModeFreeFinds</span> Preview</h1>
+        <p>Testing multi-domain popup system with property-specific campaigns!</p>
+        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 12px; margin: 20px 0;">
+            <div><strong>Current Property:</strong> <span id="currentDomain">modefreefinds.com</span></div>
+            <div><strong>Property Code:</strong> <span id="currentCode">mff</span></div>
+            <div><strong>Brand Targeting:</strong> <span style="color: #10B981;">✅ Enabled</span></div>
+        </div>
         
         <button class="button" onclick="manualTest()">🚀 Show Popup</button>
         <button class="button" onclick="nextCampaign()">➡️ Next Campaign</button>
+        <button class="button" onclick="testAutoProperty()">🔄 Test Auto-Detection</button>
         <button class="button" onclick="clearStorage()">🗑️ Clear Session</button>
     </div>
 
@@ -142,10 +208,11 @@
             <!--strong>API:</strong> <span id="apiStatus">Checking...</span-->
         </div>
         <div style="margin: 15px 0;">
-            <button onclick="testProperty('mff')">MFF</button>
-            <button onclick="testProperty('mmm')">MMM</button>
-            <button onclick="testProperty('mcad')">MCAD</button>
-            <button onclick="testProperty('mmd')">MMD</button>
+            <strong>Quick Switch:</strong><br>
+            <button onclick="switchDomain('mff', 'ModeFreeFinds', 'modefreefinds.com')">MFF</button>
+            <button onclick="switchDomain('mmm', 'ModeMarketMunchies', 'modemarketmunchies.com')">MMM</button>
+            <button onclick="switchDomain('mcad', 'ModeClassActionsDaily', 'modeclassactionsdaily.com')">MCAD</button>
+            <button onclick="switchDomain('mmd', 'ModeMobileDaily', 'modemobiledaily.com')">MMD</button>
         </div>
         <div style="margin: 15px 0;">
             <button onclick="testPlacement('thankyou')">Thank You</button>
@@ -214,12 +281,16 @@
             }
         }
 
-        // Test different properties
+        // Legacy function - now redirects to switchDomain
         function testProperty(property) {
-            log(`🏢 Testing property: ${property}`);
-            document.getElementById('currentProperty').textContent = property;
-            clearStorage();
-            manualTest();
+            const domains = {
+                'mff': ['ModeFreeFinds', 'modefreefinds.com'],
+                'mmm': ['ModeMarketMunchies', 'modemarketmunchies.com'],
+                'mcad': ['ModeClassActionsDaily', 'modeclassactionsdaily.com'],
+                'mmd': ['ModeMobileDaily', 'modemobiledaily.com']
+            };
+            const [siteName, domain] = domains[property] || ['Unknown', 'unknown.com'];
+            switchDomain(property, siteName, domain);
         }
 
         // Test different placements
@@ -245,6 +316,47 @@
         // Clear log
         function clearLog() {
             document.getElementById('log').innerHTML = '';
+        }
+
+        // Domain switching functionality
+        function switchDomain(propertyCode, siteName, domain) {
+            log(`🌐 Switching to domain: ${domain} (${propertyCode})`);
+            
+            // Update UI
+            document.getElementById('siteName').textContent = siteName;
+            document.getElementById('currentDomain').textContent = domain;
+            document.getElementById('currentCode').textContent = propertyCode;
+            document.getElementById('currentProperty').textContent = propertyCode;
+            
+            // Update active button
+            document.querySelectorAll('.domain-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-property="${propertyCode}"]`).classList.add('active');
+            
+            // Clear session and test new domain
+            clearStorage();
+            
+            // Test the new property
+            setTimeout(() => {
+                manualTest();
+            }, 500);
+            
+            updateStatus(`Switched to ${siteName}`, 'success');
+        }
+
+        // Test auto property detection
+        function testAutoProperty() {
+            log('🔄 Testing auto property detection...');
+            if (window.ModePopup) {
+                window.ModePopup.init({
+                    property: 'auto', // This will test hostname-based detection
+                    placement: document.getElementById('currentPlacement').textContent,
+                    frequency: 'always',
+                    debug: true
+                });
+                updateStatus('Testing auto property detection', 'warning');
+            }
         }
 
         // Update campaign info

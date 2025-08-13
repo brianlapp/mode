@@ -110,6 +110,19 @@ ModePopup.init({
 &lt;!-- End Mode Popup System --&gt;</pre>
     </div>
 
+    <h2>🚀 NEW: Multi-Domain Property System</h2>
+    <div class="highlight">
+        <strong>What's New:</strong> The popup system now supports property-specific targeting with daily caps and visibility controls per domain (MFF, MMM, MCAD, MMD).
+    </div>
+    
+    <h3>🎯 Property-Specific Features:</h3>
+    <ul>
+        <li><strong>Daily Caps:</strong> Set impression/click limits per property per day</li>
+        <li><strong>Visibility %:</strong> Control what percentage of traffic sees popups</li>
+        <li><strong>Auto-Detection:</strong> Use <code>property: 'auto'</code> to detect domain automatically</li>
+        <li><strong>EST Timezone:</strong> All caps reset at midnight Eastern time</li>
+    </ul>
+
     <h2>⚙️ Configuration Options</h2>
     <table class="property-table">
         <tr>
@@ -119,8 +132,8 @@ ModePopup.init({
         </tr>
         <tr>
             <td><code>property</code></td>
-            <td>'mff', 'mmm', 'mcad', 'mmd'</td>
-            <td>Which Mode property (ModeFreeFinds, ModeMarketMunchies, etc.)</td>
+            <td>'mff', 'mmm', 'mcad', 'mmd', 'auto'</td>
+            <td>Which Mode property. Use 'auto' for hostname-based detection.</td>
         </tr>
         <tr>
             <td><code>placement</code></td>

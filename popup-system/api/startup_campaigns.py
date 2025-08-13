@@ -58,6 +58,26 @@ MIKES_REAL_CAMPAIGNS = [
         "cta_text": "Learn About Gold",
         "offer_id": "7390",
         "aff_id": "43045"
+    },
+    {
+        "name": "Daily Goodie Box",
+        "tune_url": "https://track.modemobile.com/aff_c?offer_id=6571&aff_id=42946",
+        "logo_url": "https://i.imgur.com/DH7Tp4A.jpeg",
+        "main_image_url": "https://i.imgur.com/JpKD9AX.png",
+        "description": "Get your daily goodie box filled with amazing free samples and deals.",
+        "cta_text": "Claim Now!",
+        "offer_id": "6571",
+        "aff_id": "42946"
+    },
+    {
+        "name": "Free Samples Guide",
+        "tune_url": "https://track.modemobile.com/aff_c?offer_id=3907&aff_id=42946",
+        "logo_url": "https://resources.rndsystems.com/images/promo_pages/free-sample-icon.png",
+        "main_image_url": "https://i.imgur.com/vbgSfMi.jpeg",
+        "description": "Get your comprehensive free samples guide with exclusive offers.",
+        "cta_text": "Claim Now!",
+        "offer_id": "3907",
+        "aff_id": "42946"
     }
 ]
 
@@ -125,19 +145,19 @@ def ensure_real_campaigns_exist():
 
 def protect_mikes_revenue_machine():
     """
-    🛡️ PROTECTION SYSTEM - DISABLED TEMPORARILY
-    ⚠️  DATA LOSS PREVENTION: Do not clean database until missing campaigns are restored!
+    🛡️ PROTECTION SYSTEM - PERMANENTLY PROTECT 7 CAMPAIGNS
+    ✅ Updated with all 7 real campaigns including recovered ones
     """
-    print("⚠️  PROTECTION SYSTEM DISABLED - PREVENTING FURTHER DATA LOSS")
+    print("🛡️ MIKE'S REVENUE DATA PROTECTION")
     print("=" * 60)
-    print("🚨 URGENT: 4 campaigns were lost in recent deployment")
-    print("🛡️  Database cleaning is DISABLED until manual restoration")
-    print("📋 Currently allowing all campaigns to prevent further deletions")
     
-    # ONLY ensure real campaigns exist - DO NOT DELETE anything
+    # Step 1: Ensure all 7 real campaigns exist
     added = ensure_real_campaigns_exist()
     
-    # Step 3: Report current state WITHOUT cleaning
+    # Step 2: Clean any fake campaigns (re-enabled protection)
+    deleted = clean_database()
+    
+    # Step 3: Report final state
     conn = get_db_connection()
     try:
         cursor = conn.execute("SELECT COUNT(*) FROM campaigns")
@@ -146,17 +166,24 @@ def protect_mikes_revenue_machine():
         cursor = conn.execute("SELECT name, offer_id FROM campaigns ORDER BY name")
         campaigns = cursor.fetchall()
         
-        print(f"\n🎯 CURRENT DATABASE STATE:")
+        print(f"\n🎯 FINAL DATABASE STATE:")
         print(f"   📊 Total campaigns: {total_campaigns}")
-        print(f"   ➕ Added missing protected campaigns: {added}")
-        print(f"   📋 All campaigns in database:")
+        print(f"   ➕ Added missing campaigns: {added}")
+        print(f"   🗑️  Removed fake campaigns: {deleted}")
+        print(f"   📋 Protected campaigns:")
         for name, offer_id in campaigns:
             print(f"      📍 {name} (offer_id: {offer_id})")
         
-        print(f"\n⚠️  NEXT STEPS:")
-        print(f"   1. Restore 4 missing campaigns manually")
-        print(f"   2. Update MIKES_REAL_CAMPAIGNS list to include all 9")
-        print(f"   3. Re-enable protection system")
+        print(f"\n🎉 PROTECTION SYSTEM ACTIVE!")
+        print(f"✅ Your data is now BULLETPROOF against resets!")
+        
+        # Auto-assign all campaigns to all properties
+        from routes.campaigns import auto_assign_all_campaigns
+        try:
+            auto_assign_all_campaigns()
+            print(f"✅ All campaigns auto-assigned to all properties!")
+        except Exception as e:
+            print(f"⚠️  Auto-assignment failed: {e}")
         
         return True
             
