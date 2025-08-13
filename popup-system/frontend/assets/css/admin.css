@@ -456,7 +456,7 @@
     background: linear-gradient(135deg, #d60069 0%, #0598d1 100%);
 }
 
-/* Featured Campaign Toggle Styles */
+/* Featured Campaign Toggle Styles - KEPT FOR PROPERTIES SECTION */
 .toggle-bg {
     transition: background-color 0.3s ease;
 }

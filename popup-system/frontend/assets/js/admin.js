@@ -142,8 +142,8 @@ class CampaignManager {
         // Live Preview Functionality
         this.setupLivePreview();
 
-        // Featured Toggle Functionality
-        this.setupFeaturedToggle();
+        // Featured Toggle Functionality - MOVED TO PROPERTIES SECTION
+        // this.setupFeaturedToggle(); // Removed - now property-specific
 
         // Image preview for URL inputs (small previews)
         const logoInput = document.getElementById('logo_url');
@@ -229,23 +229,8 @@ class CampaignManager {
         console.log('✨ Live preview functionality activated!');
     }
 
-    setupFeaturedToggle() {
-        const featuredInput = document.getElementById('featured');
-        if (featuredInput) {
-            featuredInput.addEventListener('change', function(e) {
-                const toggleBg = e.target.nextElementSibling.querySelector('.toggle-bg');
-                const toggleDot = e.target.nextElementSibling.querySelector('.toggle-dot');
-                
-                if (e.target.checked) {
-                    toggleBg.style.backgroundColor = '#F7007C';
-                    toggleDot.style.transform = 'translateX(20px)';
-                } else {
-                    toggleBg.style.backgroundColor = '#d1d5db';
-                    toggleDot.style.transform = 'translateX(0)';
-                }
-            });
-        }
-    }
+    // Featured toggle functionality moved to Properties section
+    // setupFeaturedToggle() - REMOVED: Featured campaigns now managed per-property
 
     showAddCampaignModal() {
         const modal = document.getElementById('addCampaignModal');
@@ -281,8 +266,8 @@ class CampaignManager {
             logo_url: formData.get('logo_url'),
             main_image_url: formData.get('main_image_url'),
             description: formData.get('description'),
-            cta_text: formData.get('cta_text') || 'View Offer',
-            featured: formData.get('featured') === 'on'
+            cta_text: formData.get('cta_text') || 'View Offer'
+            // featured: removed - now managed per-property
         };
 
         // Validate required fields
