@@ -372,6 +372,84 @@ async def get_all_campaigns():
     finally:
         conn.close()
 
+@router.get("/campaigns/by-host-optimized", response_model=List[dict])
+async def get_campaigns_by_host_optimized(request: Request, host: str | None = None):
+    """Get campaigns for property with Mike's optimization: Featured first, then RPM-ordered"""
+    hostname = (host or "").strip().lower()
+    if not hostname:
+        forwarded = request.headers.get("x-forwarded-host") or request.headers.get("x-forwarded-server")
+        header_host = request.headers.get("host")
+        hostname = (forwarded or header_host or "").split(",")[0].strip().lower()
+        if ":" in hostname:
+            hostname = hostname.split(":")[0]
+
+    property_code = detect_property_code_from_host(hostname)
+    
+    conn = get_db_connection()
+    try:
+        # Get featured campaign for this property
+        cursor = conn.execute("""
+            SELECT featured_campaign_id FROM properties WHERE code = ?
+        """, (property_code,))
+        
+        featured_row = cursor.fetchone()
+        featured_campaign_id = featured_row[0] if featured_row else None
+        
+        # Get all active campaigns for this property with RPM calculation
+        cursor = conn.execute("""
+            SELECT 
+                c.id,
+                c.name,
+                c.tune_url,
+                c.logo_url,
+                c.main_image_url,
+                c.description,
+                c.cta_text,
+                c.offer_id,
+                c.aff_id,
+                c.active as campaign_active,
+                cp.visibility_percentage,
+                cp.active as property_active,
+                -- Calculate RPM (Revenue Per Mille impressions)
+                CASE 
+                    WHEN COALESCE(impressions_count.total, 0) = 0 THEN 0
+                    ELSE (COALESCE(revenue.total, 0) * 1000.0) / impressions_count.total
+                END as rpm
+            FROM campaigns c
+            JOIN campaign_properties cp ON c.id = cp.campaign_id
+            LEFT JOIN (
+                SELECT campaign_id, COUNT(*) as total
+                FROM impressions 
+                WHERE property_code = ?
+                GROUP BY campaign_id
+            ) impressions_count ON c.id = impressions_count.campaign_id
+            LEFT JOIN (
+                SELECT campaign_id, SUM(revenue_estimate) as total
+                FROM clicks 
+                WHERE property_code = ?
+                GROUP BY campaign_id
+            ) revenue ON c.id = revenue.campaign_id
+            WHERE c.active = 1 AND cp.active = 1 AND cp.property_code = ?
+            ORDER BY 
+                -- Featured campaign first
+                CASE WHEN c.id = ? THEN 0 ELSE 1 END,
+                -- Then by RPM (highest first)
+                rpm DESC,
+                -- Finally by creation date as fallback
+                c.created_at DESC
+        """, (property_code, property_code, property_code, featured_campaign_id))
+        
+        campaigns = [dict(row) for row in cursor.fetchall()]
+        
+        # Add debug info
+        for campaign in campaigns:
+            campaign['is_featured'] = campaign['id'] == featured_campaign_id
+            campaign['rpm'] = round(float(campaign.get('rpm', 0)), 2)
+        
+        return campaigns
+    finally:
+        conn.close()
+
 @router.get("/campaigns/by-host", response_model=List[dict])
 async def get_campaigns_by_host(request: Request, host: str | None = None):
     """Get active campaigns for the property resolved from the request host (multi-domain)."""

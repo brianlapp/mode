@@ -104,9 +104,10 @@
                     this.config.property = propertyCode;
                 }
 
-                // Choose endpoint: per-property when known, else by-host
+                // Choose endpoint: optimized RPM-ordered when property known, else by-host
                 if (propertyCode) {
-                    response = await fetch(`${CONFIG.API_BASE}/campaigns/active/${encodeURIComponent(propertyCode)}`);
+                    // Use the new optimized endpoint that returns featured first, then RPM-ordered
+                    response = await fetch(`${CONFIG.API_BASE}/campaigns/by-host-optimized`);
                 } else {
                     response = await fetch(`${CONFIG.API_BASE}/campaigns/by-host`);
                 }
