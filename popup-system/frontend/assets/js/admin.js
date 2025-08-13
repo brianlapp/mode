@@ -23,7 +23,14 @@ class CampaignManager {
         await this.loadCampaigns();
         await this.loadPropertiesGrid();
         this.setupEventListeners();
-        this.updateStats();
+        await this.updateStats();
+        
+        // Set up auto-refresh for real-time data (every 30 seconds)
+        setInterval(async () => {
+            await this.updateStats();
+        }, 30000);
+        
+        console.log('📊 Auto-refresh enabled: Dashboard will update every 30 seconds');
     }
 
     async loadCampaigns() {
@@ -1315,18 +1322,55 @@ class CampaignManager {
         }
     }
 
-    updateStats() {
+    async updateStats() {
+        // Update campaign stats from loaded data
         const totalCampaigns = this.campaigns.length;
         const activeCampaigns = this.campaigns.filter(c => c.active).length;
         
-        // Update stat cards
-        const totalElement = document.getElementById('totalCampaigns');
-        const activeElement = document.getElementById('activeCampaigns');
-        
-        if (totalElement) totalElement.textContent = totalCampaigns;
+        // Update active campaigns count immediately
+        const activeElement = document.getElementById('active-campaigns');
         if (activeElement) activeElement.textContent = activeCampaigns;
         
-        console.log(`📊 Stats updated: ${activeCampaigns} active campaigns out of ${totalCampaigns} total`);
+        console.log(`📊 Campaign stats updated: ${activeCampaigns} active campaigns out of ${totalCampaigns} total`);
+        
+        // Fetch real-time analytics data from API
+        try {
+            console.log('🔄 Fetching real-time performance metrics...');
+            const response = await fetch(`${this.baseURL}/analytics/performance-metrics`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('📊 Performance metrics received:', data);
+            
+            if (data.success && data.today) {
+                // Update Daily Impressions 
+                const impressionsElement = document.getElementById('daily-impressions');
+                if (impressionsElement) {
+                    impressionsElement.textContent = data.today.today_impressions.toLocaleString();
+                }
+                
+                // Update Daily Revenue
+                const revenueElement = document.getElementById('daily-revenue');
+                if (revenueElement) {
+                    revenueElement.textContent = `$${data.today.today_revenue.toFixed(2)}`;
+                }
+                
+                // Update Total Properties (static count - 4 properties)
+                const propertiesElement = document.getElementById('total-properties');
+                if (propertiesElement) {
+                    propertiesElement.textContent = '4'; // MFF, MMM, MCAD, MMD
+                }
+                
+                console.log(`✅ Real-time stats updated: ${data.today.today_impressions} impressions, $${data.today.today_revenue} revenue`);
+            }
+            
+        } catch (error) {
+            console.error('❌ Failed to fetch performance metrics:', error);
+            // Don't show error to user, just log it
+        }
     }
 
     showAlert(message, type = 'info') {
