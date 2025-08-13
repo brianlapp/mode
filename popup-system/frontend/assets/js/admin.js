@@ -1123,29 +1123,38 @@ class CampaignManager {
             const response = await fetch(`${this.baseURL}/campaigns/${campaignId}/properties`);
             
             if (!response.ok) {
-                console.warn('⚠️ No existing property settings found');
+                console.warn('⚠️ No existing property settings found, status:', response.status);
                 return;
             }
             
             const settings = await response.json();
             console.log('✅ Loaded property settings:', settings);
+            console.log('🔍 DEBUG: Settings array length:', settings.length);
             
             // Populate form fields with existing values
             settings.forEach(setting => {
                 const prop = setting.property_code;
+                console.log(`🔍 DEBUG: Loading settings for ${prop}:`, setting);
                 
                 // Set active checkbox
                 const activeCheckbox = document.getElementById(`active_${prop}_${campaignId}`);
+                console.log(`🔍 DEBUG: Active checkbox for ${prop}:`, activeCheckbox ? 'found' : 'NOT FOUND');
                 if (activeCheckbox) {
                     activeCheckbox.checked = setting.active;
+                    console.log(`🔍 DEBUG: Set ${prop} active to:`, setting.active);
                 }
                 
                 // Set visibility slider
                 const visibilitySlider = document.getElementById(`visibility_${prop}_${campaignId}`);
                 const visibilityDisplay = document.getElementById(`visibility_${prop}_${campaignId}_display`);
+                console.log(`🔍 DEBUG: Visibility elements for ${prop}:`, {
+                    slider: visibilitySlider ? 'found' : 'NOT FOUND',
+                    display: visibilityDisplay ? 'found' : 'NOT FOUND'
+                });
                 if (visibilitySlider && visibilityDisplay) {
                     visibilitySlider.value = setting.visibility_percentage;
                     visibilityDisplay.textContent = setting.visibility_percentage + '%';
+                    console.log(`🔍 DEBUG: Set ${prop} visibility to:`, setting.visibility_percentage);
                 }
                 
                 // Set impression cap
