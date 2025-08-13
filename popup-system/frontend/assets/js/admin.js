@@ -1035,7 +1035,8 @@ class CampaignManager {
                                             <label class="flex items-center cursor-pointer">
                                                 <input type="checkbox" 
                                                        id="featured_${prop}_${campaign.id}" 
-                                                       class="sr-only peer">
+                                                       class="sr-only peer"
+                                                       onchange="campaignManager.handleFeaturedToggle('${prop}', ${campaign.id}, this.checked)">
                                                 <div class="relative">
                                                     <div class="w-11 h-6 bg-gray-200 rounded-full shadow-inner toggle-bg"></div>
                                                     <div class="absolute w-4 h-4 bg-white rounded-full shadow toggle-dot transition-transform duration-200 ease-in-out transform translate-x-1 top-1 left-1"></div>
@@ -1124,6 +1125,9 @@ class CampaignManager {
             
             if (!response.ok) {
                 console.warn('⚠️ No existing property settings found, status:', response.status);
+                if (response.status === 500) {
+                    console.warn('⚠️ Server error - will use default settings');
+                }
                 return;
             }
             
