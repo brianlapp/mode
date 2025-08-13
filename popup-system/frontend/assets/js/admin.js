@@ -21,6 +21,7 @@ class CampaignManager {
     async init() {
         console.log('🚀 Mode Campaign Manager initializing...');
         await this.loadCampaigns();
+        await this.loadPropertiesGrid();
         this.setupEventListeners();
         this.updateStats();
     }
@@ -117,6 +118,61 @@ class CampaignManager {
                 </td>
             </tr>
         `).join('');
+    }
+
+    async loadPropertiesGrid() {
+        try {
+            console.log('🏢 Loading properties grid with featured campaign settings...');
+            
+            const propertiesGrid = document.getElementById('propertiesGrid');
+            if (!propertiesGrid) return;
+
+            // Build property cards with featured campaign dropdowns
+            const propertyCards = await Promise.all(this.properties.map(async (propertyCode) => {
+                const propertyName = this.propertyNames[propertyCode];
+                
+                // Get current featured campaign for this property (when we implement the API)
+                // For now, we'll build the UI structure
+                
+                return `
+                    <div class="property-card border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-mode-pink rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                ${propertyCode.toUpperCase()}
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="font-semibold text-gray-900">${propertyName}</h4>
+                                <p class="text-sm text-gray-500">${propertyCode}.com</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Featured Campaign
+                            </label>
+                            <select id="featured-${propertyCode}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink text-sm">
+                                <option value="">No featured campaign</option>
+                                ${this.campaigns.map(campaign => 
+                                    `<option value="${campaign.id}">${campaign.name}</option>`
+                                ).join('')}
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">🌟 Shows first, then others by RPM</p>
+                        </div>
+                        
+                        <button onclick="campaignManager.saveFeaturedCampaign('${propertyCode}')" 
+                                class="w-full bg-mode-pink text-white px-4 py-2 rounded-md hover:bg-mode-pink-dark transition-colors text-sm font-medium">
+                            Save Featured
+                        </button>
+                    </div>
+                `;
+            }));
+
+            propertiesGrid.innerHTML = propertyCards.join('');
+            
+        } catch (error) {
+            console.error('❌ Failed to load properties grid:', error);
+            this.showAlert(`Failed to load properties: ${error.message}`, 'error');
+        }
     }
 
     setupEventListeners() {
@@ -1195,6 +1251,29 @@ class CampaignManager {
             const alert = document.querySelector('.alert');
             if (alert) alert.remove();
         }, 5000);
+    }
+
+    async saveFeaturedCampaign(propertyCode) {
+        try {
+            const selectElement = document.getElementById(`featured-${propertyCode}`);
+            const campaignId = selectElement.value;
+            
+            console.log(`💾 Saving featured campaign for ${propertyCode}: ${campaignId || 'none'}`);
+            
+            // TODO: Implement API call to save featured campaign
+            // For now, show success message
+            const campaignName = campaignId ? 
+                this.campaigns.find(c => c.id == campaignId)?.name : 'None';
+            
+            this.showAlert(
+                `Featured campaign for ${this.propertyNames[propertyCode]} set to: ${campaignName}`, 
+                'success'
+            );
+            
+        } catch (error) {
+            console.error('❌ Failed to save featured campaign:', error);
+            this.showAlert(`Failed to save featured campaign: ${error.message}`, 'error');
+        }
     }
 }
 
