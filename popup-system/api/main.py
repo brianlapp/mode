@@ -68,6 +68,62 @@ async def startup():
 async def health_check():
     return {"status": "healthy", "service": "Mode Popup Management API"}
 
+# Quick fix endpoint for Railway database resets
+@app.post("/api/quick-fix")
+async def quick_fix():
+    """Run all necessary fixes after Railway database reset"""
+    try:
+        results = []
+        
+        # 1. Fix schema
+        from database import get_db_connection
+        conn = get_db_connection()
+        
+        # Add featured_campaign_id column
+        try:
+            conn.execute("ALTER TABLE properties ADD COLUMN featured_campaign_id INTEGER")
+            results.append("✅ Added featured_campaign_id column")
+        except:
+            results.append("✅ featured_campaign_id column already exists")
+            
+        # Add impression_cap_daily column
+        try:
+            conn.execute("ALTER TABLE campaign_properties ADD COLUMN impression_cap_daily INTEGER NULL")
+            results.append("✅ Added impression_cap_daily column")
+        except:
+            results.append("✅ impression_cap_daily column already exists")
+            
+        # Add click_cap_daily column  
+        try:
+            conn.execute("ALTER TABLE campaign_properties ADD COLUMN click_cap_daily INTEGER NULL")
+            results.append("✅ Added click_cap_daily column")
+        except:
+            results.append("✅ click_cap_daily column already exists")
+            
+        conn.commit()
+        conn.close()
+        
+        # 2. Ensure properties exist
+        from routes.campaigns import auto_assign_all_campaigns
+        try:
+            auto_assign_all_campaigns()
+            results.append("✅ Auto-assigned all campaigns to all properties")
+        except Exception as e:
+            results.append(f"⚠️ Auto-assignment: {e}")
+        
+        return {
+            "success": True,
+            "message": "Quick fix completed - featured toggle should work now!",
+            "results": results
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "message": "Quick fix failed"
+        }
+
 # Manual migration endpoint to fix missing columns
 @app.post("/migrate")
 async def run_migration():
