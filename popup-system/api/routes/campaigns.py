@@ -372,7 +372,7 @@ async def get_all_campaigns():
     finally:
         conn.close()
 
-@router.get("/campaigns/by-host", response_model=List[CampaignForPopup])
+@router.get("/campaigns/by-host", response_model=List[dict])
 async def get_campaigns_by_host(request: Request, host: str | None = None):
     """Get active campaigns for the property resolved from the request host (multi-domain)."""
     hostname = (host or "").strip().lower()
@@ -384,8 +384,34 @@ async def get_campaigns_by_host(request: Request, host: str | None = None):
             hostname = hostname.split(":")[0]
 
     property_code = detect_property_code_from_host(hostname)
-    campaigns = get_active_campaigns_for_property(property_code)
-    return campaigns
+    
+    # Use the same simple query as the properties endpoint that works
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("""
+            SELECT 
+                c.id,
+                c.name,
+                c.tune_url,
+                c.logo_url,
+                c.main_image_url,
+                c.description,
+                c.cta_text,
+                c.offer_id,
+                c.aff_id,
+                c.active as campaign_active,
+                cp.visibility_percentage,
+                cp.active as property_active
+            FROM campaigns c
+            JOIN campaign_properties cp ON c.id = cp.campaign_id
+            WHERE c.active = 1 AND cp.active = 1 AND cp.property_code = ?
+            ORDER BY c.created_at DESC
+        """, (property_code,))
+        
+        campaigns = [dict(row) for row in cursor.fetchall()]
+        return campaigns
+    finally:
+        conn.close()
 
 @router.get("/campaigns/{property_code}", response_model=List[CampaignForPopup])
 async def get_campaigns_for_property(property_code: str):
