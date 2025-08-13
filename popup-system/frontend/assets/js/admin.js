@@ -1244,11 +1244,21 @@ class CampaignManager {
     async savePropertySettings(campaignId) {
         const settings = {};
         
+        console.log('🔍 DEBUG: Starting savePropertySettings for campaign:', campaignId);
+        console.log('🔍 DEBUG: Available properties:', this.properties);
+        
         for (const prop of this.properties) {
             const activeCheckbox = document.getElementById(`active_${prop}_${campaignId}`);
             const visibilitySlider = document.getElementById(`visibility_${prop}_${campaignId}`);
             const impCapInput = document.getElementById(`imp_cap_${prop}_${campaignId}`);
             const clkCapInput = document.getElementById(`clk_cap_${prop}_${campaignId}`);
+            
+            console.log(`🔍 DEBUG: ${prop} elements:`, {
+                activeCheckbox: !!activeCheckbox,
+                visibilitySlider: !!visibilitySlider,
+                impCapInput: !!impCapInput,
+                clkCapInput: !!clkCapInput
+            });
             
             if (activeCheckbox && visibilitySlider) {
                 settings[prop] = {
@@ -1257,6 +1267,9 @@ class CampaignManager {
                     impression_cap_daily: impCapInput && impCapInput.value !== '' ? parseInt(impCapInput.value) : null,
                     click_cap_daily: clkCapInput && clkCapInput.value !== '' ? parseInt(clkCapInput.value) : null
                 };
+                console.log(`🔍 DEBUG: Settings for ${prop}:`, settings[prop]);
+            } else {
+                console.log(`🔍 DEBUG: Missing elements for ${prop}`);
             }
         }
 
@@ -1268,16 +1281,29 @@ class CampaignManager {
                 body: JSON.stringify(settings)
             });
 
+            console.log('🔍 DEBUG: Response status:', response.status);
+            console.log('🔍 DEBUG: Response ok:', response.ok);
+
             if (!response.ok) {
                 const msg = await response.text();
+                console.log('🔍 DEBUG: Error response:', msg);
                 throw new Error(`HTTP ${response.status} ${msg}`);
             }
+
+            const result = await response.json();
+            console.log('🔍 DEBUG: Success response:', result);
 
             this.showAlert('Property settings saved successfully!', 'success');
             this.closeModals();
         } catch (error) {
             console.error('❌ Failed to save property settings:', error);
-            this.showAlert('Failed to save settings. Please try again.', 'error');
+            console.error('❌ Error details:', {
+                message: error.message,
+                stack: error.stack,
+                campaignId,
+                settings
+            });
+            this.showAlert(`Failed to save settings: ${error.message}`, 'error');
         }
     }
 
