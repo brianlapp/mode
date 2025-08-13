@@ -66,7 +66,7 @@ class CampaignManager {
             console.log('⚠️ No campaigns to display');
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                    <td colspan="1" class="px-6 py-4 text-center text-gray-500">
                         No campaigns yet<br>
                         <span class="text-sm">Click "Add New Campaign" to get started</span>
                     </td>
@@ -80,48 +80,36 @@ class CampaignManager {
         tableBody.innerHTML = this.campaigns.map(campaign => `
             <tr class="hover:bg-gray-50 transition-colors">
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                        <div class="h-10 w-10 flex-shrink-0">
-                            <img class="h-10 w-10 rounded-full object-cover" 
-                                 src="${campaign.logo_url}" 
-                                 alt="${campaign.name}"
-                                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'%23F7007C\\' viewBox=\\'0 0 24 24\\'%3E%3Cpath d=\\'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z\\'/%3E%3C/svg%3E'">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="h-10 w-10 flex-shrink-0">
+                                <img class="h-10 w-10 rounded-full object-cover" 
+                                     src="${campaign.logo_url}" 
+                                     alt="${campaign.name}"
+                                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' fill=\\'%23F7007C\\' viewBox=\\'0 0 24 24\\'%3E%3Cpath d=\\'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z\\'/%3E%3C/svg%3E'">
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${campaign.name}</div>
+                                <div class="text-sm text-gray-500 truncate" style="max-width: 200px;">${campaign.tune_url}</div>
+                                <div class="text-xs text-gray-500 mt-1">Show on all domains • Auto-configured</div>
+                            </div>
                         </div>
-                        <div class="ml-4">
-                            <div class="text-sm font-medium text-gray-900">${campaign.name}</div>
-                            <div class="text-sm text-gray-500 truncate" style="max-width: 200px;">${campaign.tune_url}</div>
+                        <div class="flex items-center space-x-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${campaign.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${campaign.active ? 'Active' : 'Inactive'}
+                            </span>
+                            <div class="flex space-x-2 text-sm">
+                                <button onclick="campaignManager.editCampaign(${campaign.id})" 
+                                        class="text-mode-pink hover:text-mode-pink-dark">Edit</button>
+                                <button onclick="campaignManager.showPropertyModal(${campaign.id})" 
+                                        class="text-mode-blue hover:text-mode-blue-dark">Properties</button>
+                                <button onclick="campaignManager.toggleCampaign(${campaign.id}, ${!campaign.is_active})" 
+                                        class="text-gray-600 hover:text-gray-900">
+                                    ${campaign.active ? 'Deactivate' : 'Activate'}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="text-xs text-gray-500">Show on all domains</div>
-                    <div class="text-sm font-medium text-gray-900">Auto-configured</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    ${campaign.featured ? `
-                        <span class="featured-badge">
-                            ⭐ Featured
-                        </span>
-                    ` : `
-                        <span class="priority-badge">
-                            📈 RPM Sorted
-                        </span>
-                    `}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${campaign.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                        ${campaign.active ? 'Active' : 'Inactive'}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button onclick="campaignManager.editCampaign(${campaign.id})" 
-                            class="text-mode-pink hover:text-mode-pink-dark mr-3">Edit</button>
-                    <button onclick="campaignManager.manageProperties(${campaign.id})" 
-                            class="text-mode-blue hover:text-mode-blue-dark mr-3">Properties</button>
-                    <button onclick="campaignManager.toggleActive(${campaign.id})" 
-                            class="text-gray-600 hover:text-gray-900">
-                        ${campaign.active ? 'Deactivate' : 'Activate'}
-                    </button>
                 </td>
             </tr>
         `).join('');
@@ -1045,7 +1033,7 @@ class CampaignManager {
                                             </label>
                                             <p class="text-xs text-gray-500 mt-1 ml-14">🌟 Show this campaign first on ${this.propertyNames[prop]}, then others by RPM</p>
                                         </div>
-                                        <div class="text-2xl">⭐</div>
+
                                     </div>
                                 </div>
 
