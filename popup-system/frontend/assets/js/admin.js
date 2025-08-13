@@ -131,8 +131,17 @@ class CampaignManager {
             const propertyCards = await Promise.all(this.properties.map(async (propertyCode) => {
                 const propertyName = this.propertyNames[propertyCode];
                 
-                // Get current featured campaign for this property (when we implement the API)
-                // For now, we'll build the UI structure
+                // Get current featured campaign for this property
+                let currentFeaturedId = null;
+                try {
+                    const response = await fetch(`${this.baseURL}/properties/${propertyCode}/featured`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        currentFeaturedId = data.featured_campaign_id;
+                    }
+                } catch (error) {
+                    console.log(`No featured campaign set for ${propertyCode}`);
+                }
                 
                 return `
                     <div class="property-card border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-white">
@@ -153,7 +162,7 @@ class CampaignManager {
                             <select id="featured-${propertyCode}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink text-sm">
                                 <option value="">No featured campaign</option>
                                 ${this.campaigns.map(campaign => 
-                                    `<option value="${campaign.id}">${campaign.name}</option>`
+                                    `<option value="${campaign.id}" ${currentFeaturedId == campaign.id ? 'selected' : ''}>${campaign.name}</option>`
                                 ).join('')}
                             </select>
                             <p class="text-xs text-gray-500 mt-1">🌟 Shows first, then others by RPM</p>
@@ -1256,17 +1265,29 @@ class CampaignManager {
     async saveFeaturedCampaign(propertyCode) {
         try {
             const selectElement = document.getElementById(`featured-${propertyCode}`);
-            const campaignId = selectElement.value;
+            const campaignId = selectElement.value || null;
             
             console.log(`💾 Saving featured campaign for ${propertyCode}: ${campaignId || 'none'}`);
             
-            // TODO: Implement API call to save featured campaign
-            // For now, show success message
+            // Call API to save featured campaign
+            const response = await fetch(`${this.baseURL}/properties/${propertyCode}/featured`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ campaign_id: campaignId })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const result = await response.json();
             const campaignName = campaignId ? 
                 this.campaigns.find(c => c.id == campaignId)?.name : 'None';
             
             this.showAlert(
-                `Featured campaign for ${this.propertyNames[propertyCode]} set to: ${campaignName}`, 
+                `✅ Featured campaign for ${this.propertyNames[propertyCode]} set to: ${campaignName}`, 
                 'success'
             );
             

@@ -125,42 +125,40 @@ def ensure_real_campaigns_exist():
 
 def protect_mikes_revenue_machine():
     """
-    🛡️ ULTIMATE PROTECTION SYSTEM
-    Ensures ONLY Mike's real campaigns exist - NO MORE ZOMBIES!
+    🛡️ PROTECTION SYSTEM - DISABLED TEMPORARILY
+    ⚠️  DATA LOSS PREVENTION: Do not clean database until missing campaigns are restored!
     """
-    print("🛡️  MIKE'S REVENUE MACHINE PROTECTION SYSTEM")
-    print("=" * 50)
+    print("⚠️  PROTECTION SYSTEM DISABLED - PREVENTING FURTHER DATA LOSS")
+    print("=" * 60)
+    print("🚨 URGENT: 4 campaigns were lost in recent deployment")
+    print("🛡️  Database cleaning is DISABLED until manual restoration")
+    print("📋 Currently allowing all campaigns to prevent further deletions")
     
-    # Step 1: Clean out any fake campaigns
-    deleted = clean_database()
-    
-    # Step 2: Ensure all real campaigns exist
+    # ONLY ensure real campaigns exist - DO NOT DELETE anything
     added = ensure_real_campaigns_exist()
     
-    # Step 3: Verify final state
+    # Step 3: Report current state WITHOUT cleaning
     conn = get_db_connection()
     try:
         cursor = conn.execute("SELECT COUNT(*) FROM campaigns")
         total_campaigns = cursor.fetchone()[0]
         
-        cursor = conn.execute("SELECT name FROM campaigns ORDER BY name")
-        campaign_names = [row[0] for row in cursor.fetchall()]
+        cursor = conn.execute("SELECT name, offer_id FROM campaigns ORDER BY name")
+        campaigns = cursor.fetchall()
         
-        print(f"\n🎯 FINAL DATABASE STATE:")
+        print(f"\n🎯 CURRENT DATABASE STATE:")
         print(f"   📊 Total campaigns: {total_campaigns}")
-        print(f"   🗑️  Deleted fake campaigns: {deleted}")
-        print(f"   ➕ Added missing campaigns: {added}")
-        print(f"   📋 Campaign list:")
-        for name in campaign_names:
-            print(f"      ✅ {name}")
+        print(f"   ➕ Added missing protected campaigns: {added}")
+        print(f"   📋 All campaigns in database:")
+        for name, offer_id in campaigns:
+            print(f"      📍 {name} (offer_id: {offer_id})")
         
-        # Verify we only have real campaigns
-        if total_campaigns == len(MIKES_REAL_CAMPAIGNS):
-            print(f"\n🎉 SUCCESS! Database contains ONLY Mike's {len(MIKES_REAL_CAMPAIGNS)} real campaigns!")
-            return True
-        else:
-            print(f"\n⚠️  WARNING: Expected {len(MIKES_REAL_CAMPAIGNS)} campaigns, found {total_campaigns}")
-            return False
+        print(f"\n⚠️  NEXT STEPS:")
+        print(f"   1. Restore 4 missing campaigns manually")
+        print(f"   2. Update MIKES_REAL_CAMPAIGNS list to include all 9")
+        print(f"   3. Re-enable protection system")
+        
+        return True
             
     finally:
         conn.close()

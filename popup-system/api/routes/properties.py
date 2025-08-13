@@ -203,6 +203,77 @@ async def resolve_property(request: Request, host: str | None = None):
     finally:
         conn.close()
 
+@router.put("/properties/{property_code}/featured")
+async def set_featured_campaign(property_code: str, request: dict):
+    """Set the featured campaign for a specific property"""
+    try:
+        campaign_id = request.get('campaign_id')
+        
+        # Validate property code
+        if property_code not in VALID_PROPERTIES:
+            raise HTTPException(status_code=400, detail=f"Invalid property code: {property_code}")
+        
+        conn = get_db_connection()
+        
+        # If campaign_id is provided, validate it exists
+        if campaign_id:
+            cursor = conn.execute("SELECT id FROM campaigns WHERE id = ? AND active = 1", (campaign_id,))
+            if not cursor.fetchone():
+                raise HTTPException(status_code=404, detail="Campaign not found or inactive")
+        
+        # Update the featured campaign for this property
+        conn.execute("""
+            UPDATE properties 
+            SET featured_campaign_id = ? 
+            WHERE code = ?
+        """, (campaign_id, property_code))
+        
+        conn.commit()
+        
+        return {
+            "success": True,
+            "message": f"Featured campaign updated for {property_code}",
+            "property_code": property_code,
+            "featured_campaign_id": campaign_id
+        }
+        
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
+
+@router.get("/properties/{property_code}/featured")
+async def get_featured_campaign(property_code: str):
+    """Get the featured campaign for a specific property"""
+    try:
+        # Validate property code
+        if property_code not in VALID_PROPERTIES:
+            raise HTTPException(status_code=400, detail=f"Invalid property code: {property_code}")
+        
+        conn = get_db_connection()
+        
+        cursor = conn.execute("""
+            SELECT p.featured_campaign_id, c.name as campaign_name
+            FROM properties p
+            LEFT JOIN campaigns c ON p.featured_campaign_id = c.id
+            WHERE p.code = ?
+        """, (property_code,))
+        
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail=f"Property not found: {property_code}")
+        
+        return {
+            "property_code": property_code,
+            "featured_campaign_id": row[0],
+            "featured_campaign_name": row[1]
+        }
+        
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    finally:
+        conn.close()
+
 @router.get("/properties/{property_code}/campaigns", response_model=List[dict])
 async def get_property_campaigns(property_code: str):
     """Get all campaigns configured for a specific property"""
