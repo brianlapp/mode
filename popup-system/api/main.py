@@ -364,6 +364,32 @@ async def migrate_featured_to_properties():
     finally:
         conn.close()
 
+# Check properties table schema 
+@app.get("/api/db/properties-schema")
+async def check_properties_schema():
+    """Check properties table schema and data"""
+    from database import get_db_connection
+    conn = get_db_connection()
+    try:
+        # Get table schema
+        cursor = conn.execute("PRAGMA table_info(properties)")
+        columns = [dict(zip(['cid', 'name', 'type', 'notnull', 'dflt_value', 'pk'], row)) for row in cursor.fetchall()]
+        
+        # Get all properties data  
+        cursor = conn.execute("SELECT * FROM properties")
+        properties = [dict(row) for row in cursor.fetchall()]
+        
+        return {
+            "success": True,
+            "schema": columns,
+            "properties": properties,
+            "has_featured_column": 'featured_campaign_id' in [col['name'] for col in columns]
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    finally:
+        conn.close()
+
 # Popup script endpoint
 @app.get("/popup.js")
 async def serve_popup_script():
