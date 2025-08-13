@@ -298,6 +298,72 @@ async def fix_domain_configuration():
     finally:
         conn.close()
 
+# Property-specific featured campaign migration
+@app.post("/api/db/migrate-featured-to-properties")
+async def migrate_featured_to_properties():
+    """Migrate featured flag from campaigns to property-specific featured_campaign_id"""
+    from database import get_db_connection
+    conn = get_db_connection()
+    try:
+        results = []
+        
+        # Step 1: Add featured_campaign_id column to properties table
+        cursor = conn.execute("PRAGMA table_info(properties)")
+        columns = [row[1] for row in cursor.fetchall()]
+        
+        if 'featured_campaign_id' not in columns:
+            conn.execute("ALTER TABLE properties ADD COLUMN featured_campaign_id INTEGER")
+            conn.commit()
+            results.append("✅ Added featured_campaign_id column to properties table")
+        else:
+            results.append("✅ featured_campaign_id column already exists in properties table")
+        
+        # Step 2: Find any currently featured campaigns and migrate them
+        cursor = conn.execute("SELECT id, name FROM campaigns WHERE featured = 1")
+        featured_campaigns = cursor.fetchall()
+        
+        if featured_campaigns:
+            for campaign_id, campaign_name in featured_campaigns:
+                results.append(f"📋 Found featured campaign: {campaign_name} (ID: {campaign_id})")
+                
+                # For now, set this as featured for MFF property (most active property)
+                # User can adjust this later through the properties interface
+                conn.execute("""
+                    UPDATE properties 
+                    SET featured_campaign_id = ? 
+                    WHERE code = 'mff'
+                """, (campaign_id,))
+                results.append(f"🎯 Set {campaign_name} as featured for MFF property")
+        else:
+            results.append("📋 No currently featured campaigns found")
+        
+        # Step 3: Remove featured column from campaigns table (will be done in Phase 2)
+        # For now, just unset all featured flags to prevent confusion
+        conn.execute("UPDATE campaigns SET featured = 0")
+        results.append("✅ Cleared all campaign-level featured flags")
+        
+        conn.commit()
+        
+        # Step 4: Verify the migration
+        cursor = conn.execute("""
+            SELECT p.code, p.name, p.featured_campaign_id, c.name as featured_campaign_name
+            FROM properties p
+            LEFT JOIN campaigns c ON p.featured_campaign_id = c.id
+            ORDER BY p.code
+        """)
+        properties = [dict(zip(['property_code', 'property_name', 'featured_campaign_id', 'featured_campaign_name'], row)) for row in cursor.fetchall()]
+        
+        return {
+            "success": True,
+            "message": "Featured campaign migration completed",
+            "results": results,
+            "properties": properties
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e), "message": "Migration failed"}
+    finally:
+        conn.close()
+
 # Popup script endpoint
 @app.get("/popup.js")
 async def serve_popup_script():
