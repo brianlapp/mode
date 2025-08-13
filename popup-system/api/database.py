@@ -112,6 +112,14 @@ def init_db():
                     (code, name, domain),
                 )
 
+        # Add featured_campaign_id column to properties table (for property-specific featured campaigns)
+        try:
+            conn.execute("ALTER TABLE properties ADD COLUMN featured_campaign_id INTEGER")
+            print("✅ Added featured_campaign_id column to properties table")
+        except Exception as e:
+            # Column already exists or other error - this is okay
+            pass
+
         # Create campaign_properties table for property-specific settings
         conn.execute("""
             CREATE TABLE IF NOT EXISTS campaign_properties (
