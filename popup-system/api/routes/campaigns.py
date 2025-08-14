@@ -494,16 +494,42 @@ async def get_campaigns_by_host(request: Request, host: str | None = None):
     finally:
         conn.close()
 
-@router.get("/campaigns/{property_code}", response_model=List[CampaignForPopup])
+@router.get("/campaigns/{property_code}")
 async def get_campaigns_for_property(property_code: str):
     """Get active campaigns for specific property (for popup script)"""
     if property_code not in ['mff', 'mmm', 'mcad', 'mmd']:
         raise HTTPException(status_code=400, detail="Invalid property code")
     
-    # Use the database function directly to get the campaign list
-    from database import get_active_campaigns_for_property as db_get_campaigns
-    campaigns = db_get_campaigns(property_code)
-    return campaigns
+    # Use the exact same logic as the working /properties/{code}/campaigns endpoint
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("""
+            SELECT 
+                c.id,
+                c.name,
+                c.tune_url,
+                c.logo_url,
+                c.main_image_url,
+                c.description,
+                c.cta_text,
+                c.offer_id,
+                c.aff_id,
+                c.active as campaign_active,
+                cp.visibility_percentage,
+                cp.active as property_active
+            FROM campaigns c
+            JOIN campaign_properties cp ON c.id = cp.campaign_id
+            WHERE cp.property_code = ? AND c.active = 1 AND cp.active = 1
+            ORDER BY c.created_at DESC
+        """, (property_code,))
+        
+        campaigns = []
+        for row in cursor.fetchall():
+            campaigns.append(dict(row))
+        
+        return campaigns
+    finally:
+        conn.close()
 
 
 class PropertySetting(BaseModel):
