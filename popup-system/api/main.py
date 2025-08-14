@@ -68,6 +68,27 @@ async def startup():
 async def health_check():
     return {"status": "healthy", "service": "Mode Popup Management API"}
 
+@app.get("/debug/property-test")
+async def debug_property_test(property: str | None = None, host: str | None = None):
+    """Debug endpoint to test property parameter parsing"""
+    from database import detect_property_code_from_host
+    
+    # Test the same logic as the optimized endpoint
+    if property and property in ['mff', 'mmm', 'mcad', 'mmd']:
+        property_code = property.lower()
+        source = "explicit_parameter"
+    else:
+        hostname = (host or "").strip().lower()
+        property_code = detect_property_code_from_host(hostname)
+        source = "hostname_detection"
+    
+    return {
+        "input_property": property,
+        "input_host": host,
+        "resolved_property_code": property_code,
+        "source": source
+    }
+
 # Quick fix endpoint for Railway database resets
 @app.post("/api/quick-fix")
 async def quick_fix():
