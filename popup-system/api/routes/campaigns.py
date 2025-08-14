@@ -500,7 +500,9 @@ async def get_campaigns_for_property(property_code: str):
     if property_code not in ['mff', 'mmm', 'mcad', 'mmd']:
         raise HTTPException(status_code=400, detail="Invalid property code")
     
-    campaigns = get_active_campaigns_for_property(property_code)
+    # Use the database function directly to get the campaign list
+    from database import get_active_campaigns_for_property as db_get_campaigns
+    campaigns = db_get_campaigns(property_code)
     return campaigns
 
 
