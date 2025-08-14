@@ -373,17 +373,20 @@ async def get_all_campaigns():
         conn.close()
 
 @router.get("/campaigns/by-host-optimized", response_model=List[dict])
-async def get_campaigns_by_host_optimized(request: Request, host: str | None = None):
+async def get_campaigns_by_host_optimized(request: Request, host: str | None = None, property: str | None = None):
     """Get campaigns for property with Mike's optimization: Featured first, then RPM-ordered"""
-    hostname = (host or "").strip().lower()
-    if not hostname:
-        forwarded = request.headers.get("x-forwarded-host") or request.headers.get("x-forwarded-server")
-        header_host = request.headers.get("host")
-        hostname = (forwarded or header_host or "").split(",")[0].strip().lower()
-        if ":" in hostname:
-            hostname = hostname.split(":")[0]
-
-    property_code = detect_property_code_from_host(hostname)
+    # Use explicit property parameter if provided, otherwise detect from hostname
+    if property and property in ['mff', 'mmm', 'mcad', 'mmd']:
+        property_code = property.lower()
+    else:
+        hostname = (host or "").strip().lower()
+        if not hostname:
+            forwarded = request.headers.get("x-forwarded-host") or request.headers.get("x-forwarded-server")
+            header_host = request.headers.get("host")
+            hostname = (forwarded or header_host or "").split(",")[0].strip().lower()
+            if ":" in hostname:
+                hostname = hostname.split(":")[0]
+        property_code = detect_property_code_from_host(hostname)
     
     conn = get_db_connection()
     try:
