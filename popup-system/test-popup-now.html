@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMERGENCY POPUP TEST</title>
+    <style>
+        body { padding: 20px; font-family: Arial, sans-serif; }
+        .test-btn { 
+            background: #F7007C; color: white; border: none; 
+            padding: 15px 30px; margin: 10px; border-radius: 6px; 
+            cursor: pointer; font-size: 16px; 
+        }
+        .status { 
+            margin: 20px 0; padding: 15px; 
+            border-radius: 6px; font-weight: bold; 
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🚨 EMERGENCY POPUP TEST</h1>
+    <p>Testing if popup works with latest changes:</p>
+    
+    <button class="test-btn" onclick="testMFF()">Test MFF (Lifestyle)</button>
+    <button class="test-btn" onclick="testMMM()">Test MMM (Finance)</button>
+    
+    <div id="status"></div>
+    
+    <script src="https://mode-dash-production.up.railway.app/popup.js?v=emergency"></script>
+    <script>
+        function updateStatus(msg, type = 'success') {
+            const status = document.getElementById('status');
+            status.textContent = msg;
+            status.className = `status ${type}`;
+        }
+
+        async function testMFF() {
+            updateStatus('Testing MFF...', 'info');
+            try {
+                await ModePopup.init({
+                    property: 'mff',
+                    placement: 'thankyou',
+                    frequency: 'always',
+                    debug: true
+                });
+                updateStatus('✅ MFF popup initialized! Should show lifestyle campaigns.', 'success');
+            } catch (error) {
+                updateStatus(`❌ MFF Error: ${error.message}`, 'error');
+                console.error('MFF Error:', error);
+            }
+        }
+
+        async function testMMM() {
+            updateStatus('Testing MMM...', 'info');
+            try {
+                // Clear any existing popup state
+                localStorage.removeItem('mode_popup_session');
+                
+                await ModePopup.init({
+                    property: 'mmm',
+                    placement: 'thankyou', 
+                    frequency: 'always',
+                    debug: true
+                });
+                updateStatus('✅ MMM popup initialized! Should show finance campaigns.', 'success');
+            } catch (error) {
+                updateStatus(`❌ MMM Error: ${error.message}`, 'error');
+                console.error('MMM Error:', error);
+            }
+        }
+
+        // Auto-initialize with MFF first
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                updateStatus('Page loaded. Click buttons to test popup.', 'info');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
