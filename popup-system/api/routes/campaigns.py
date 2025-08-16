@@ -1105,7 +1105,14 @@ async def get_tune_style_report(
             
             # Get ALL campaigns then filter for popup campaigns in code
             # (API-level filtering only returns 1 campaign incorrectly)
-            popup_offer_ids = [6998, 7521, 7389, 7385, 7390]
+            # 🎯 DYNAMIC: Get all active campaign offer IDs from database (future-proof)
+            db_conn = get_db_connection()
+            try:
+                cursor = db_conn.execute("SELECT DISTINCT offer_id FROM campaigns WHERE active = 1 AND offer_id IS NOT NULL")
+                popup_offer_ids = [int(row[0]) for row in cursor.fetchall() if row[0]]
+                print(f"📊 Dynamic analytics: Found {len(popup_offer_ids)} active offer IDs: {popup_offer_ids}")
+            finally:
+                db_conn.close()
             
             params = {
                 'NetworkToken': api_key,
