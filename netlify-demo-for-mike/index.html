@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModeFreeFinds - Thank You</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #666;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Domain Navigation */
+        .domain-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid transparent;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 11px;
+            font-weight: 600;
+            width: 100%;
+            margin: 2px 0;
+        }
+        
+        .domain-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .domain-btn.active {
+            border-color: #07C8F7;
+            background: rgba(7, 200, 247, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Domain Navigation -->
+    <div style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        <div style="background: rgba(0, 0, 0, 0.8); border-radius: 12px; padding: 15px; backdrop-filter: blur(10px);">
+            <h3 style="margin: 0 0 10px 0; color: #07C8F7; font-size: 12px; text-align: center;">🌐 Domain Preview</h3>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+                <button class="domain-btn active" onclick="switchDomain('mff', 'ModeFreeFinds')">MFF</button>
+                <button class="domain-btn" onclick="switchDomain('mmm', 'ModeMarketMunchies')">MMM</button>
+                <button class="domain-btn" onclick="switchDomain('mcad', 'ModeClassActionsDaily')">MCAD</button>
+                <button class="domain-btn" onclick="switchDomain('mmd', 'ModeMobileDaily')">MMD</button>
+            </div>
+        </div>
+    </div>
+
+    <h1>Thank You!</h1>
+    <p>Thanks for signing up for <span id="siteName">ModeFreeFinds</span>!</p>
+    <p>Check your email for exclusive offers.</p>
+    
+    <!-- Mode Popup System - This is what Mike's team would add -->
+    <script src="https://mode-dash-production.up.railway.app/popup.js?v=20250814"></script>
+    <script>
+    // Initialize with MFF
+    let currentProperty = 'mff';
+    
+    ModePopup.init({
+      property: currentProperty,
+      placement: 'thankyou',
+      frequency: 'always'  // For demo - use 'session' in production
+    });
+    
+    // Domain switching function
+    function switchDomain(propertyCode, siteName) {
+        console.log(`Switching to ${siteName} (${propertyCode})`);
+        
+        // Update UI
+        document.getElementById('siteName').textContent = siteName;
+        
+        // Update active button
+        document.querySelectorAll('.domain-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Clear popup session and reinitialize
+        localStorage.removeItem('mode_popup_session');
+        currentProperty = propertyCode;
+        
+        // Reinitialize popup with new property
+        setTimeout(() => {
+            ModePopup.init({
+                property: propertyCode,
+                placement: 'thankyou',
+                frequency: 'always'
+            });
+        }, 300);
+    }
+    </script>
+    <!-- End Mode Popup System -->
+    
+    <div class="footer">
+        <a href="instructions.html">Implementation Instructions for Development Team</a>
+    </div>
+    
+</body>
+</html>
+ 
