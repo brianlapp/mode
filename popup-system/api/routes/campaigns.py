@@ -774,13 +774,38 @@ async def track_impression(request: Request):
         ))
         
         conn.commit()
+        
+        # 🎯 FIRE TUNE IMPRESSION PIXEL (This was missing!)
+        # Get campaign details for Tune pixel
+        cursor = conn.execute("""
+            SELECT offer_id, aff_id FROM campaigns WHERE id = ?
+        """, (data["campaign_id"],))
+        
+        campaign_result = cursor.fetchone()
         conn.close()
+        
+        tune_pixel_fired = False
+        if campaign_result:
+            offer_id, aff_id = campaign_result
+            if offer_id and aff_id:
+                # Fire Tune impression pixel
+                import httpx
+                tune_pixel_url = f"https://track.modemobile.com/aff_i?offer_id={offer_id}&aff_id={aff_id}"
+                
+                try:
+                    async with httpx.AsyncClient() as client:
+                        await client.get(tune_pixel_url, timeout=3.0)
+                    tune_pixel_fired = True
+                except Exception as pixel_error:
+                    # Don't fail the whole request if pixel fails
+                    print(f"⚠️ Tune pixel failed: {pixel_error}")
         
         return {
             "success": True,
             "message": "Impression tracked successfully",
             "campaign_id": data["campaign_id"],
-            "property_code": data["property_code"]
+            "property_code": data["property_code"],
+            "tune_pixel_fired": tune_pixel_fired
         }
         
     except Exception as e:
