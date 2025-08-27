@@ -399,6 +399,66 @@ async def db_force_init():
         from database import get_db_connection
         conn = get_db_connection()
         try:
+            # Ensure critical tables exist explicitly (idempotent)
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS campaign_properties (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    campaign_id INTEGER NOT NULL,
+                    property_code TEXT NOT NULL,
+                    visibility_percentage INTEGER DEFAULT 100,
+                    active BOOLEAN DEFAULT 1,
+                    impression_cap_daily INTEGER NULL,
+                    click_cap_daily INTEGER NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+                    UNIQUE(campaign_id, property_code)
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS impressions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    campaign_id INTEGER NOT NULL,
+                    property_code TEXT NOT NULL,
+                    session_id TEXT,
+                    placement TEXT DEFAULT 'thankyou',
+                    user_agent TEXT,
+                    ip_hash INTEGER,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    source TEXT,
+                    subsource TEXT,
+                    utm_campaign TEXT,
+                    referrer TEXT,
+                    landing_page TEXT,
+                    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS clicks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    campaign_id INTEGER NOT NULL,
+                    property_code TEXT NOT NULL,
+                    session_id TEXT,
+                    placement TEXT DEFAULT 'thankyou',
+                    user_agent TEXT,
+                    ip_hash INTEGER,
+                    revenue_estimate DECIMAL(10,2) DEFAULT 0.45,
+                    conversion_tracked BOOLEAN DEFAULT 0,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    source TEXT,
+                    subsource TEXT,
+                    utm_campaign TEXT,
+                    referrer TEXT,
+                    landing_page TEXT,
+                    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE
+                )
+                """
+            )
+            conn.commit()
             tables_cur = conn.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
             tables = [row[0] for row in tables_cur.fetchall()]
             schema = {}
