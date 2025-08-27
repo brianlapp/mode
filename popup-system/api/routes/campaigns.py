@@ -1177,7 +1177,20 @@ async def get_tune_style_report(
                 'limit': 1000
             }
             
-            # No API filtering - we'll filter in Python code below
+            # Add affiliate filter to limit to our traffic only (critical to prevent network-wide totals)
+            affiliate_ids = []
+            try:
+                cursor = db_conn.execute("SELECT DISTINCT aff_id FROM campaigns WHERE active = 1 AND aff_id IS NOT NULL")
+                affiliate_ids = [str(row[0]) for row in cursor.fetchall() if row[0]]
+            except Exception as e:
+                print(f"⚠️ Could not load affiliate_ids: {e}")
+
+            if affiliate_ids:
+                params['filters[Stat.affiliate_id][conditional]'] = 'EQUAL_TO'
+                for i, aff in enumerate(affiliate_ids):
+                    params[f'filters[Stat.affiliate_id][values][{i}]'] = aff
+
+            # No additional API filtering by sub params yet – keep simple and accurate by affiliate ID
             
             # Build URL
             query_string = urllib.parse.urlencode(params, doseq=True)
@@ -1267,6 +1280,14 @@ async def get_tune_style_report(
                             rpc = (revenue / clicks) if clicks > 0 else 0.0
                             profit = revenue - payout
 
+                            # Data quality guard: impressions cannot be less than clicks.
+                            # Per spec, do not fabricate values. Surface N/A and flag.
+                            data_quality = None
+                            if impressions > 0 and clicks > impressions:
+                                data_quality = "impressions_lt_clicks"
+                                ctr = None
+                                rpm = None
+
                             popup_clicks += clicks
                             popup_conversions += conversions
                             popup_revenue += revenue
@@ -1280,11 +1301,12 @@ async def get_tune_style_report(
                                 'clicks': clicks,
                                 'conversions': conversions,
                                 'revenue': round(revenue, 2),
-                                'ctr': round(ctr, 2),
-                                'rpm': round(rpm, 2),
+                                'ctr': (round(ctr, 2) if isinstance(ctr, (int, float)) else None),
+                                'rpm': (round(rpm, 2) if isinstance(rpm, (int, float)) else None),
                                 'rpc': round(rpc, 2),
                                 'payout': round(payout, 2),
-                                'profit': round(profit, 2)
+                                'profit': round(profit, 2),
+                                'data_quality': data_quality
                             })
 
                         # Include offers with impressions but no clicks in period (if any)
@@ -1346,7 +1368,11 @@ async def get_tune_style_report(
                                 'conversions': network_conversions,
                                 'revenue': network_revenue
                             },
-                            "popup_campaign_count": len(active_campaigns)
+                            "popup_campaign_count": len(active_campaigns),
+                            "debug": {
+                                "affiliate_ids": affiliate_ids,
+                                "filtered_offer_ids": popup_offer_ids
+                            }
                         }
                     else:
                         raise Exception("HasOffers API returned error status")
