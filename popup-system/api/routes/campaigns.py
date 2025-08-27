@@ -463,6 +463,88 @@ async def tune_inspect(preset: str = "last_7_days"):
     except Exception as e:
         return {'success': False, 'error': str(e)}
 
+@router.get("/analytics/local-offer-counts")
+async def local_offer_counts(preset: str = "last_7_days"):
+    """Diagnostics: Return local impressions and clicks counts per offer for the preset window.
+
+    This uses our internal impressions/clicks tables joined to campaigns by campaign_id, grouped by offers.
+    """
+    try:
+        # Resolve date window
+        if preset == "today":
+            start_date = end_date = datetime.now().strftime('%Y-%m-%d')
+        elif preset == "yesterday":
+            y = datetime.now() - timedelta(days=1)
+            start_date = end_date = y.strftime('%Y-%m-%d')
+        elif preset == "last_7_days":
+            start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+            end_date = datetime.now().strftime('%Y-%m-%d')
+        elif preset == "last_30_days":
+            start_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+            end_date = datetime.now().strftime('%Y-%m-%d')
+        else:
+            start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+            end_date = datetime.now().strftime('%Y-%m-%d')
+
+        conn = get_db_connection()
+        try:
+            # Impressions per offer
+            imp_cur = conn.execute(
+                """
+                SELECT c.offer_id, c.name, COUNT(*) as impressions
+                FROM impressions i
+                JOIN campaigns c ON c.id = i.campaign_id
+                WHERE DATE(i.timestamp) BETWEEN ? AND ?
+                GROUP BY c.offer_id, c.name
+                """,
+                (start_date, end_date)
+            )
+            impressions = {str(row[0]): {"offer_id": str(row[0]), "offer": row[1], "impressions": int(row[2])} for row in imp_cur.fetchall()}
+
+            # Clicks per offer
+            clk_cur = conn.execute(
+                """
+                SELECT c.offer_id, c.name, COUNT(*) as clicks, COALESCE(SUM(revenue_estimate), 0) as revenue
+                FROM clicks cl
+                JOIN campaigns c ON c.id = cl.campaign_id
+                WHERE DATE(cl.timestamp) BETWEEN ? AND ?
+                GROUP BY c.offer_id, c.name
+                """,
+                (start_date, end_date)
+            )
+            clicks = {str(row[0]): {"clicks": int(row[2]), "revenue_local": float(row[3] or 0)} for row in clk_cur.fetchall()}
+
+            # Merge
+            all_offer_ids = set(list(impressions.keys()) + list(clicks.keys()))
+            rows = []
+            for oid in sorted(all_offer_ids):
+                base = {"offer_id": oid, "offer": impressions.get(oid, {"offer": None}).get("offer")}
+                imp = impressions.get(oid, {"impressions": 0})
+                clk = clicks.get(oid, {"clicks": 0, "revenue_local": 0.0})
+                rows.append({
+                    **base,
+                    "impressions": imp.get("impressions", 0),
+                    "clicks": clk.get("clicks", 0),
+                    "revenue_local": round(clk.get("revenue_local", 0.0), 2)
+                })
+
+            return {
+                "success": True,
+                "preset": preset,
+                "period": f"{start_date} to {end_date}",
+                "data": rows,
+                "summary": {
+                    "total_offers": len(rows),
+                    "total_impressions": sum(r["impressions"] for r in rows),
+                    "total_clicks": sum(r["clicks"] for r in rows),
+                    "total_revenue_local": round(sum(r["revenue_local"] for r in rows), 2)
+                }
+            }
+        finally:
+            conn.close()
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 @router.get("/campaigns/by-host-optimized", response_model=List[dict])
 async def get_campaigns_by_host_optimized(request: Request, host: str | None = None, property: str | None = None):
     """Get campaigns for property with Mike's optimization: Featured first, then RPM-ordered"""
