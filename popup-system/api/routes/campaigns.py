@@ -373,6 +373,96 @@ async def get_all_campaigns():
     finally:
         conn.close()
 
+@router.get("/analytics/tune-inspect")
+async def tune_inspect(preset: str = "last_7_days"):
+    """Diagnostic: Compare unfiltered vs sub-filtered Tune stats per affiliate.
+
+    Finance (aff_id=43045): filter Stat.aff_sub5 LIKE 'popup_%'
+    Lifestyle (aff_id=42946): filter Stat.aff_sub2 = 'perks'
+    """
+    try:
+        # Resolve dates from preset
+        if preset == "today":
+            start_date = end_date = datetime.now().strftime('%Y-%m-%d')
+        elif preset == "yesterday":
+            y = datetime.now() - timedelta(days=1)
+            start_date = end_date = y.strftime('%Y-%m-%d')
+        elif preset == "last_7_days":
+            start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+            end_date = datetime.now().strftime('%Y-%m-%d')
+        elif preset == "last_30_days":
+            start_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
+            end_date = datetime.now().strftime('%Y-%m-%d')
+        else:
+            start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+            end_date = datetime.now().strftime('%Y-%m-%d')
+
+        import urllib.request, urllib.parse, json, ssl
+        api_key = "NETfeRuo7FOO72yOcwOXj5jK0aCYve"
+        url = "https://currentpublisher.api.hasoffers.com/v3/Report.json"
+        ssl_ctx = ssl.create_default_context(); ssl_ctx.check_hostname = False; ssl_ctx.verify_mode = ssl.CERT_NONE
+
+        def call(params: dict):
+            query = urllib.parse.urlencode(params, doseq=True)
+            with urllib.request.urlopen(f"{url}?{query}", timeout=15, context=ssl_ctx) as resp:
+                data = json.loads(resp.read().decode())
+                return data
+
+        # Active offer ids
+        db_conn = get_db_connection()
+        cursor = db_conn.execute("SELECT DISTINCT offer_id, aff_id FROM campaigns WHERE active = 1 AND offer_id IS NOT NULL")
+        rows = cursor.fetchall(); db_conn.close()
+        offer_ids = [int(r[0]) for r in rows if r[0]]
+        aff_ids = sorted({str(r[1]) for r in rows if r[1]})
+
+        base = {
+            'NetworkToken': api_key,
+            'Target': 'Report',
+            'Method': 'getStats',
+            'data_start': start_date,
+            'data_end': end_date,
+            'fields[]': ['Stat.clicks','Stat.conversions','Stat.revenue','Stat.offer_id','Stat.affiliate_id'],
+            'group_by[]': ['Stat.offer_id','Stat.affiliate_id'],
+            'limit': 1000
+        }
+        # add offer filters
+        for i, oid in enumerate(offer_ids):
+            base[f'filters[Stat.offer_id][values][{i}]'] = int(oid)
+        base['filters[Stat.offer_id][conditional]'] = 'EQUAL_TO'
+
+        # Unfiltered by sub parameters, but restricted to our affiliates
+        unfiltered = dict(base)
+        unfiltered['filters[Stat.affiliate_id][conditional]'] = 'EQUAL_TO'
+        for i, aid in enumerate(aff_ids):
+            unfiltered[f'filters[Stat.affiliate_id][values][{i}]'] = aid
+        unfiltered_resp = call(unfiltered)
+
+        # Filtered calls per affiliate
+        filtered_results = []
+        for aid in aff_ids:
+            params = dict(base)
+            params['filters[Stat.affiliate_id][conditional]'] = 'EQUAL_TO'
+            params['filters[Stat.affiliate_id][values][0]'] = aid
+            if aid == '43045':
+                params['filters[Stat.aff_sub5][conditional]'] = 'LIKE'
+                params['filters[Stat.aff_sub5][values][0]'] = 'popup_%'
+            elif aid == '42946':
+                params['filters[Stat.aff_sub2][conditional]'] = 'EQUAL_TO'
+                params['filters[Stat.aff_sub2][values][0]'] = 'perks'
+            filtered_results.append({'affiliate_id': aid, 'response': call(params), 'params': params})
+
+        return {
+            'success': True,
+            'preset': preset,
+            'period': f"{start_date} to {end_date}",
+            'affiliates': aff_ids,
+            'offer_ids': offer_ids,
+            'unfiltered': {'params': unfiltered, 'raw': unfiltered_resp},
+            'filtered': filtered_results
+        }
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
 @router.get("/campaigns/by-host-optimized", response_model=List[dict])
 async def get_campaigns_by_host_optimized(request: Request, host: str | None = None, property: str | None = None):
     """Get campaigns for property with Mike's optimization: Featured first, then RPM-ordered"""
