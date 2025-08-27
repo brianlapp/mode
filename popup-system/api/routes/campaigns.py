@@ -920,8 +920,17 @@ async def get_attribution_analytics(preset: str = "last_30_days"):
         tune_report = await get_tune_style_report(preset=preset)
         
         if not tune_report.get("success"):
-            # Fallback to local database if API fails
-            return await _get_local_attribution_analytics()
+            # Do NOT fallback. Return explicit failure so UI can show N/A.
+            return {
+                "success": False,
+                "period": preset,
+                "by_source": [],
+                "by_subsource": [],
+                "by_campaign": [],
+                "summary": {},
+                "source": "Tune API unavailable",
+                "error": tune_report.get("error") or tune_report.get("tune_api_error") or "Unknown Tune API error"
+            }
             
         # Extract real data from TUNE API
         summary = tune_report.get("summary", {})
@@ -986,8 +995,17 @@ async def get_attribution_analytics(preset: str = "last_30_days"):
         }
         
     except Exception as e:
-        # Fallback to local database
-        return await _get_local_attribution_analytics()
+        # Do NOT fallback. Return explicit failure so UI shows N/A.
+        return {
+            "success": False,
+            "period": preset,
+            "by_source": [],
+            "by_subsource": [],
+            "by_campaign": [],
+            "summary": {},
+            "source": "Tune API error",
+            "error": str(e)
+        }
 
 async def _get_local_attribution_analytics():
     """Fallback: Local database attribution analytics"""
@@ -1099,9 +1117,13 @@ async def get_tune_style_report(
         
         # Check if Tune API is available
         if not TUNE_API_AVAILABLE or tune_client is None:
-            fallback_result = await _get_local_tune_style_report(start_date, end_date, preset, property_code, campaign_id)
-            fallback_result["source"] = "Local Database (Tune API not imported)"
-            return fallback_result
+            return {
+                "success": False,
+                "data": [],
+                "summary": {},
+                "source": "Tune API unavailable",
+                "error": "Tune client not available"
+            }
         
         # 🎯 GET REAL POPUP CAMPAIGN DATA (FILTERED!)
         try:
@@ -1150,7 +1172,7 @@ async def get_tune_style_report(
                 'Method': 'getStats',
                 'data_start': start_date,
                 'data_end': end_date,
-                'fields[]': ['Stat.clicks', 'Stat.conversions', 'Stat.revenue', 'Stat.offer_id'],
+                'fields[]': ['Stat.clicks', 'Stat.conversions', 'Stat.revenue', 'Stat.payout', 'Stat.offer_id'],
                 'group_by[]': 'Stat.offer_id',
                 'limit': 1000
             }
@@ -1202,40 +1224,91 @@ async def get_tune_style_report(
                                 'name': name,
                                 'property': 'MMM' if property_code == 'mmm' else 'MFF'
                             }
+
+                        # Get REAL impressions from local DB grouped by offer_id within date range
+                        impressions_params = [start_date, end_date]
+                        impressions_filter_sql = ""
+                        if property_code:
+                            impressions_filter_sql += " AND i.property_code = ?"
+                            impressions_params.append(property_code)
+                        if campaign_id:
+                            impressions_filter_sql += " AND c.id = ?"
+                            impressions_params.append(campaign_id)
+
+                        cursor = db_conn.execute(f"""
+                            SELECT c.offer_id, COUNT(*) as impressions
+                            FROM impressions i
+                            JOIN campaigns c ON c.id = i.campaign_id
+                            WHERE DATE(i.timestamp) BETWEEN ? AND ? {impressions_filter_sql}
+                            GROUP BY c.offer_id
+                        """, impressions_params)
+                        impressions_by_offer = {int(row[0]): int(row[1]) for row in cursor.fetchall()}
                         
                         # Close database connection after queries complete
                         db_conn.close()
                         
+                        # Build combined per-offer rows using REAL impressions and TUNE clicks/revenue/payout
+                        seen_offer_ids = set()
                         for campaign in campaigns:
                             stats = campaign.get('Stat', {})
                             offer_id = int(stats.get('offer_id', 0))
+                            seen_offer_ids.add(offer_id)
                             campaign_info = campaign_data.get(offer_id, {'name': f'Offer {offer_id}', 'property': 'Unknown'})
                             name = campaign_info['name']
                             partner = campaign_info['property']
                             clicks = int(stats.get('clicks', 0))
                             conversions = int(stats.get('conversions', 0))
                             revenue = float(stats.get('revenue', 0))
-                            
+                            payout = float(stats.get('payout', 0) or 0)
+
+                            impressions = int(impressions_by_offer.get(offer_id, 0))
+                            ctr = (clicks / impressions * 100.0) if impressions > 0 else 0.0
+                            rpm = (revenue / impressions * 1000.0) if impressions > 0 else 0.0
+                            rpc = (revenue / clicks) if clicks > 0 else 0.0
+                            profit = revenue - payout
+
                             popup_clicks += clicks
                             popup_conversions += conversions
                             popup_revenue += revenue
-                            
-                            if clicks > 0:
-                                active_campaigns.append({
-                                    'offer': name,
-                                    'partner': partner,
-                                    'campaign': name,
-                                    'creative': 'N/A',
-                                    'impressions': clicks * 15,  # Standard estimate
-                                    'clicks': clicks,
-                                    'conversions': conversions,
-                                    'revenue': round(revenue, 2),
-                                    'ctr': 6.67,  # Standard estimate
-                                    'rpm': (revenue / (clicks * 15) * 1000) if clicks > 0 else 0,
-                                    'rpc': (revenue / clicks) if clicks > 0 else 0,
-                                    'payout': 0.0,  # Will need conversion tracking for this
-                                    'profit': round(revenue, 2)  # Same as revenue without payout data
-                                })
+
+                            active_campaigns.append({
+                                'offer': name,
+                                'partner': partner,
+                                'campaign': name,
+                                'creative': 'N/A',
+                                'impressions': impressions,
+                                'clicks': clicks,
+                                'conversions': conversions,
+                                'revenue': round(revenue, 2),
+                                'ctr': round(ctr, 2),
+                                'rpm': round(rpm, 2),
+                                'rpc': round(rpc, 2),
+                                'payout': round(payout, 2),
+                                'profit': round(profit, 2)
+                            })
+
+                        # Include offers with impressions but no clicks in period (if any)
+                        for offer_id, impressions in impressions_by_offer.items():
+                            if offer_id in seen_offer_ids:
+                                continue
+                            campaign_info = campaign_data.get(offer_id, {'name': f'Offer {offer_id}', 'property': 'Unknown'})
+                            name = campaign_info['name']
+                            partner = campaign_info['property']
+                            active_campaigns.append({
+                                'offer': name,
+                                'partner': partner,
+                                'campaign': name,
+                                'creative': 'N/A',
+                                'impressions': int(impressions),
+                                'clicks': 0,
+                                'conversions': 0,
+                                'revenue': 0.0,
+                                'ctr': 0.0,
+                                'rpm': 0.0,
+                                'rpc': 0.0,
+                                'payout': 0.0,
+                                'profit': 0.0
+                            })
                         
                         # Use calculated popup totals and return all active campaigns
                         network_clicks = popup_clicks
@@ -1261,7 +1334,7 @@ async def get_tune_style_report(
                             "data": active_campaigns,
                             "summary": {
                                 'total_campaigns': len(active_campaigns),
-                                'total_impressions': network_clicks * 15,
+                                'total_impressions': sum(row.get('impressions', 0) for row in active_campaigns),
                                 'total_clicks': network_clicks,
                                 'total_conversions': network_conversions,
                                 'total_revenue': network_revenue
@@ -1281,15 +1354,24 @@ async def get_tune_style_report(
                     raise Exception(f"HTTP {response.status}")
                     
         except Exception as api_error:
-            # Fallback to local database
-            fallback_result = await _get_local_tune_style_report(start_date, end_date, preset, property_code, campaign_id)
-            fallback_result["tune_api_error"] = str(api_error)
-            fallback_result["source"] = "Local Database (Direct API failed)"
-            return fallback_result
+            # Do NOT fallback. Return explicit failure so UI can show N/A.
+            return {
+                "success": False,
+                "data": [],
+                "summary": {},
+                "source": "Tune API error",
+                "error": str(api_error)
+            }
             
     except Exception as e:
-        # Final fallback 
-        return await _get_local_tune_style_report(start_date, end_date, preset, property_code, campaign_id)
+        # Final explicit failure
+        return {
+            "success": False,
+            "data": [],
+            "summary": {},
+            "source": "Tune API error",
+            "error": str(e)
+        }
 
 async def _get_local_tune_style_report(start_date: str, end_date: str, preset: str, property_code: str, campaign_id: int):
     """Fallback to local database if Tune API is unavailable"""
@@ -1389,6 +1471,22 @@ async def _get_local_tune_style_report(start_date: str, end_date: str, preset: s
         raise HTTPException(status_code=500, detail=f"Failed to generate report: {str(e)}")
     finally:
         conn.close()
+
+@router.get("/analytics/tune-health")
+async def tune_health():
+    """Minimal connectivity check to Tune/HasOffers API.
+
+    Returns a simple ok boolean with optional error details and a timestamp.
+    """
+    from datetime import datetime as _dt
+    try:
+        # Lightweight reachability check without API token
+        import urllib.request
+        with urllib.request.urlopen("https://currentpublisher.api.hasoffers.com/", timeout=5) as resp:
+            ok = (resp.status == 200)
+        return {"ok": bool(ok), "timestamp": _dt.now().isoformat()}
+    except Exception as e:
+        return {"ok": False, "error": str(e), "timestamp": _dt.now().isoformat()}
 
 
 @router.get("/analytics/performance-metrics")

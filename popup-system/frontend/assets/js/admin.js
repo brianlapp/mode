@@ -154,6 +154,11 @@ class CampaignManager {
                             <label class="block text-sm font-medium text-gray-700 mb-2">
                                 Featured Campaign
                             </label>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span id="featured-status-${propertyCode}" class="text-xs inline-flex items-center px-2 py-0.5 rounded-full ${currentFeaturedId ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}">
+                                    ${currentFeaturedId ? 'Verified' : 'Not set'}
+                                </span>
+                            </div>
                             <select id="featured-${propertyCode}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mode-pink text-sm">
                                 <option value="">No featured campaign</option>
                                 ${this.campaigns.map(campaign => 
@@ -1026,10 +1031,11 @@ class CampaignManager {
                                     <h4 class="font-medium text-gray-900">${this.propertyNames[prop]}</h4>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" class="sr-only peer" 
-                                               id="active_${prop}_${campaign.id}" checked>
+                                               id="active_${prop}_${campaign.id}">
                                         <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-mode-pink/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-mode-pink"></div>
                                     </label>
                                 </div>
+                                <p class="text-xs text-gray-500 mt-1">This Active toggle applies only to ${this.propertyNames[prop]}. Global Deactivate (in campaigns list) hides the campaign everywhere.</p>
                                 <!-- Featured Campaign Toggle -->
                                 <div class="mb-4 p-3 border border-yellow-200 rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50">
                                     <div class="flex items-center justify-between">
@@ -1485,6 +1491,22 @@ class CampaignManager {
                 `✅ Featured campaign for ${this.propertyNames[propertyCode]} set to: ${campaignName}`, 
                 'success'
             );
+
+            // Refresh verification badge from server
+            try {
+                const verifyResp = await fetch(`${this.baseURL}/properties/${propertyCode}/featured`);
+                if (verifyResp.ok) {
+                    const data = await verifyResp.json();
+                    const statusEl = document.getElementById(`featured-status-${propertyCode}`);
+                    if (statusEl) {
+                        const isSet = !!data.featured_campaign_id;
+                        statusEl.textContent = isSet ? 'Verified' : 'Not set';
+                        statusEl.className = `text-xs inline-flex items-center px-2 py-0.5 rounded-full ${isSet ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`;
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to refresh featured verification:', e);
+            }
             
         } catch (error) {
             console.error('❌ Failed to save featured campaign:', error);
@@ -1605,21 +1627,32 @@ class AnalyticsManager {
             // Show loading state
             this.showLoading();
             
-                    // Load attribution analytics and tune-style report in parallel
-        const [attributionResponse, reportResponse] = await Promise.all([
-            fetch(`${this.baseURL}/analytics/attribution?preset=${this.currentPreset}`),
-            fetch(`${this.baseURL}/analytics/tune-style-report?preset=${this.currentPreset}`)
-        ]);
+            // Load attribution analytics and tune-style report in parallel
+            const [attributionResponse, reportResponse] = await Promise.all([
+                fetch(`${this.baseURL}/analytics/attribution?preset=${this.currentPreset}`),
+                fetch(`${this.baseURL}/analytics/tune-style-report?preset=${this.currentPreset}`)
+            ]);
 
-            if (!attributionResponse.ok || !reportResponse.ok) {
-                throw new Error('Failed to fetch analytics data');
-            }
-
-            const attributionData = await attributionResponse.json();
-            const reportData = await reportResponse.json();
+            const attributionData = attributionResponse.ok 
+                ? await attributionResponse.json() 
+                : { success: false, error: `HTTP ${attributionResponse.status}: ${attributionResponse.statusText}` };
+            const reportData = reportResponse.ok 
+                ? await reportResponse.json() 
+                : { success: false, error: `HTTP ${reportResponse.status}: ${reportResponse.statusText}` };
 
             console.log('📊 Attribution data:', attributionData);
             console.log('📊 Report data:', reportData);
+
+            // If either endpoint signals failure, show N/A + error badge + Retry UI
+            if (!attributionData.success || !reportData.success) {
+                this.updatePerformanceMetrics(attributionData);
+                this.updateTuneStyleReport(reportData);
+                const errorMsg = (attributionData && attributionData.error) || (reportData && reportData.error) || 'Unknown Tune API error';
+                this.showAlert(`Tune API error: ${errorMsg}`, 'error');
+                this.hideLoading();
+                this.showAnalyticsError(new Error(errorMsg));
+                return;
+            }
 
             // Update UI with real data
             this.updatePerformanceMetrics(attributionData);
@@ -1637,6 +1670,21 @@ class AnalyticsManager {
     }
 
     updatePerformanceMetrics(data) {
+        // If Tune API failed, show N/A and surface error
+        if (!data || data.success === false) {
+            const na = 'N/A';
+            const impressionsEl = document.getElementById('today-impressions');
+            const clicksEl = document.getElementById('today-clicks');
+            const revenueEl = document.getElementById('today-revenue');
+            const bestEl = document.getElementById('best-campaign');
+            if (impressionsEl) impressionsEl.textContent = na;
+            if (clicksEl) clicksEl.textContent = na;
+            if (revenueEl) revenueEl.textContent = na;
+            if (bestEl) bestEl.textContent = 'No data';
+            this.showAlert(`Tune analytics unavailable: ${data && data.error ? data.error : 'Unknown error'}`, 'error');
+            return;
+        }
+
         // Use attribution data format instead of performance metrics
         const summary = data.summary;
         const bySource = data.by_source;
@@ -1656,8 +1704,6 @@ class AnalyticsManager {
     }
 
     updateTuneStyleReport(data) {
-        if (!data.success) return;
-
         const tableBody = document.getElementById('analytics-table-body');
         const tableContainer = document.getElementById('analytics-table-container');
         
@@ -1665,6 +1711,20 @@ class AnalyticsManager {
 
         // Clear existing data
         tableBody.innerHTML = '';
+
+        // If Tune API failed, show N/A row with error
+        if (!data || data.success === false) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="11" class="px-6 py-8 text-center text-red-600">
+                        Tune API unavailable: ${data && data.error ? data.error : 'Unknown error'} — displaying N/A
+                    </td>
+                </tr>
+            `;
+            tableContainer.classList.remove('hidden');
+            this.showAlert(`${data && data.source ? data.source : 'Tune API error'}`, 'error');
+            return;
+        }
 
         if (!data.data || data.data.length === 0) {
             tableBody.innerHTML = `
@@ -1696,7 +1756,7 @@ class AnalyticsManager {
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">${row.clicks.toLocaleString()}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${(row.ctr || 0).toFixed(2)}%</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">$${(row.revenue || 0).toFixed(2)}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">${(row.rpm || 0).toFixed(2)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600">${(row.rpm || 0).toFixed(2)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-purple-600">$${(row.rpc || 0).toFixed(2)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${(row.payout || 0).toFixed(2)}</td>
                 `;
@@ -1739,17 +1799,26 @@ class AnalyticsManager {
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Analytics Loading Failed</h3>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Tune API Unavailable</h3>
                             <p class="text-sm text-gray-600 mb-4 text-center">
-                                ${error.message || 'Unable to load analytics data. Please check your connection and try again.'}
+                                ${error.message || 'Unable to load analytics data from Tune.'}
                             </p>
-                            <button onclick="window.analyticsManager.loadAnalyticsData()" 
-                                    class="flex items-center gap-2 px-4 py-2 bg-mode-pink text-white rounded-lg hover:bg-mode-pink/80 transition-colors">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z"></path>
-                                </svg>
-                                Try Again
-                            </button>
+                            <div class="flex items-center gap-3">
+                                <button onclick="window.analyticsManager.loadAnalyticsData()" 
+                                        class="flex items-center gap-2 px-4 py-2 bg-mode-pink text-white rounded-lg hover:bg-mode-pink/80 transition-colors">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z"></path>
+                                    </svg>
+                                    Retry
+                                </button>
+                                <button onclick="window.analyticsManager.checkTuneHealth()" 
+                                        class="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 102 0V7z"></path>
+                                    </svg>
+                                    Check Health
+                                </button>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -1758,6 +1827,20 @@ class AnalyticsManager {
         
         // Also show toast notification
         this.showAlert(`Analytics error: ${error.message}`, 'error');
+    }
+
+    async checkTuneHealth() {
+        try {
+            const resp = await fetch(`${this.baseURL}/analytics/tune-health`);
+            const data = await resp.json();
+            if (data.ok) {
+                this.showAlert('Tune health: OK', 'success');
+            } else {
+                this.showAlert(`Tune health: ERROR - ${data.error || 'Unknown error'}`, 'error');
+            }
+        } catch (e) {
+            this.showAlert(`Tune health check failed: ${e.message}`, 'error');
+        }
     }
 
     exportToCSV() {
