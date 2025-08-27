@@ -277,7 +277,9 @@ async def emergency_restore_12_campaigns():
         
         campaigns_data = backup_data['campaigns']
         
-        conn = sqlite3.connect(get_db_path())
+        # IMPORTANT: Use the same connection path used by init_db (DB_PATH)
+        from database import get_db_connection
+        conn = get_db_connection()
         
         # Clear and restore campaigns
         conn.execute("DELETE FROM campaigns")
