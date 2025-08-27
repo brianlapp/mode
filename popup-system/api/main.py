@@ -391,6 +391,26 @@ async def fix_database_schema():
     finally:
         conn.close()
 
+# Force init endpoint to (re)create missing tables and return schema
+@app.post("/api/db/force-init")
+async def db_force_init():
+    try:
+        init_db()
+        from database import get_db_connection
+        conn = get_db_connection()
+        try:
+            tables_cur = conn.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+            tables = [row[0] for row in tables_cur.fetchall()]
+            schema = {}
+            for t in tables:
+                cur = conn.execute(f"PRAGMA table_info({t})")
+                schema[t] = [dict(cid=row[0], name=row[1], type=row[2], notnull=row[3], dflt=row[4], pk=row[5]) for row in cur.fetchall()]
+            return {"success": True, "tables": tables, "schema": schema}
+        finally:
+            conn.close()
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 # Domain configuration fix endpoint
 @app.post("/api/db/fix-domains")
 async def fix_domain_configuration():
