@@ -120,6 +120,16 @@ def init_db():
                     (code, name, domain),
                 )
 
+        # Ensure properties table has required columns
+        try:
+            cursor = conn.execute("PRAGMA table_info(properties)")
+            prop_cols = [row[1] for row in cursor.fetchall()]
+            if 'updated_at' not in prop_cols:
+                conn.execute("ALTER TABLE properties ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+                print("✅ Added updated_at column to properties table")
+        except Exception as e:
+            print(f"⚠️ Failed to ensure updated_at on properties: {e}")
+
         # Add featured_campaign_id column to properties table (for property-specific featured campaigns)
         try:
             conn.execute("ALTER TABLE properties ADD COLUMN featured_campaign_id INTEGER")
