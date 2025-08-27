@@ -1428,6 +1428,25 @@ async def get_tune_style_report(
                             GROUP BY c.offer_id
                         """, impressions_params)
                         impressions_by_offer = {int(row[0]): int(row[1]) for row in cursor.fetchall()}
+
+                        # Get LOCAL clicks from our DB grouped by offer_id within date range (align scope with impressions)
+                        clicks_params = [start_date, end_date]
+                        clicks_filter_sql = ""
+                        if property_code:
+                            clicks_filter_sql += " AND cl.property_code = ?"
+                            clicks_params.append(property_code)
+                        if campaign_id:
+                            clicks_filter_sql += " AND c.id = ?"
+                            clicks_params.append(campaign_id)
+
+                        cursor = db_conn.execute(f"""
+                            SELECT c.offer_id, COUNT(*) as clicks, COALESCE(SUM(cl.revenue_estimate), 0) as local_rev
+                            FROM clicks cl
+                            JOIN campaigns c ON c.id = cl.campaign_id
+                            WHERE DATE(cl.timestamp) BETWEEN ? AND ? {clicks_filter_sql}
+                            GROUP BY c.offer_id
+                        """, clicks_params)
+                        clicks_by_offer = {int(row[0]): {"clicks": int(row[1]), "local_rev": float(row[2] or 0)} for row in cursor.fetchall()}
                         
                         # Close database connection after queries complete
                         db_conn.close()
@@ -1441,7 +1460,9 @@ async def get_tune_style_report(
                             campaign_info = campaign_data.get(offer_id, {'name': f'Offer {offer_id}', 'property': 'Unknown'})
                             name = campaign_info['name']
                             partner = campaign_info['property']
-                            clicks = int(stats.get('clicks', 0))
+                            # Use LOCAL clicks to align with local impressions (Tune clicks are affiliate-wide)
+                            clicks_local_info = clicks_by_offer.get(offer_id, {"clicks": 0, "local_rev": 0.0})
+                            clicks = int(clicks_local_info.get('clicks', 0))
                             conversions = int(stats.get('conversions', 0))
                             revenue = float(stats.get('revenue', 0))
                             payout = float(stats.get('payout', 0) or 0)
@@ -1494,7 +1515,7 @@ async def get_tune_style_report(
                                 'campaign': name,
                                 'creative': 'N/A',
                                 'impressions': int(impressions),
-                                'clicks': 0,
+                                'clicks': int(clicks_by_offer.get(offer_id, {}).get('clicks', 0)),
                                 'conversions': 0,
                                 'revenue': 0.0,
                                 'ctr': 0.0,
