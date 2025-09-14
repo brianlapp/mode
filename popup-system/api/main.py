@@ -305,8 +305,11 @@ async def emergency_restore_12_campaigns():
                 campaign.get('updated_at', '2025-01-28 12:00:00')
             ))
             
-            # Set property assignment
-            property_code = 'mmm' if campaign['aff_id'] == '43045' else 'mff'
+            # Set property assignment (allow explicit property_code or finance affiliates)
+            property_code = campaign.get('property_code')
+            if not property_code:
+                finance_affiliates = {"43045", "43092"}  # include Money.com affiliate
+                property_code = 'mmm' if str(campaign.get('aff_id', '')) in finance_affiliates else 'mff'
             conn.execute('''
                 INSERT INTO campaign_properties (
                     campaign_id, property_code, visibility_percentage, active
