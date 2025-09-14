@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Phase 2 Analytics Dashboard - Mode Tracking System</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .header {
+            background: linear-gradient(135deg, #F7007C 0%, #07C8F7 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .metric-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 4px solid #F7007C;
+        }
+        .metric-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .metric-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        .metric-subtitle {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        .test-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+        .test-btn {
+            background: #7C3AED;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.2s;
+        }
+        .test-btn:hover {
+            background: #6D28D9;
+            transform: translateY(-2px);
+        }
+        .success-msg {
+            background: #D1FAE5;
+            color: #065F46;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            display: none;
+        }
+        .analytics-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .refresh-btn {
+            background: #F7007C;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        .revenue-highlight {
+            color: #059669;
+            font-weight: 700;
+        }
+        .status-badge {
+            background: #FEF3C7;
+            color: #92400E;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-badge.success {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Analytics Dashboard</h1>
+        <p>Source/Subsource Revenue Attribution System</p>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="dashboard-grid">
+        <div class="metric-card">
+            <div class="metric-title">Total Revenue Tracked</div>
+            <div class="metric-value" id="total-revenue">$0.00</div>
+            <div class="metric-subtitle">Last 30 days with attribution</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Active Sources</div>
+            <div class="metric-value" id="total-sources">0</div>
+            <div class="metric-subtitle">Traffic sources identified</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Average CPL</div>
+            <div class="metric-value" id="avg-cpl">$0.00</div>
+            <div class="metric-subtitle">Cost per lead across sources</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-title">Best Performing Source</div>
+            <div class="metric-value" id="best-source">-</div>
+            <div class="metric-subtitle">Highest revenue contributor</div>
+        </div>
+    </div>
+
+    <!-- Live Analytics -->
+    <div class="analytics-section">
+        <h3>Live Analytics Data</h3>
+        <button class="refresh-btn" onclick="loadAnalytics()">Refresh Data</button>
+        
+        <div id="analytics-content">
+            <p>Loading analytics data...</p>
+        </div>
+    </div>
+
+    <!-- Test Traffic Generator -->
+    <div class="test-section">
+        <h3>Test Traffic Generator</h3>
+        <p>Generate sample tracking data to test the system:</p>
+        
+        <button class="test-btn" onclick="testTraffic('email', 'newsletter')">
+            Email Traffic
+        </button>
+        <button class="test-btn" onclick="testTraffic('meta', 'cpc')">
+            Meta Ads
+        </button>
+        <button class="test-btn" onclick="testTraffic('google', 'organic')">
+            Google Organic
+        </button>
+        <button class="test-btn" onclick="testTraffic('seekingalpha', 'article_link')">
+            Referral Traffic
+        </button>
+        
+        <div class="success-msg" id="success-msg"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://mode-dash-production.up.railway.app/api';
+        
+        async function loadAnalytics() {
+            try {
+                document.getElementById('analytics-content').innerHTML = '<p>Loading analytics data...</p>';
+                
+                const response = await fetch(`${API_BASE}/analytics/attribution`);
+                const data = await response.json();
+                
+                // Update metrics
+                document.getElementById('total-revenue').textContent = `$${data.summary.total_revenue.toFixed(2)}`;
+                document.getElementById('total-sources').textContent = data.summary.total_sources;
+                document.getElementById('avg-cpl').textContent = data.summary.total_clicks > 0 ? 
+                    `$${(data.summary.total_revenue / data.summary.total_clicks).toFixed(2)}` : '$0.00';
+                
+                // Find best source
+                const bestSource = data.by_source.length > 0 ? 
+                    data.by_source.reduce((a, b) => a.estimated_revenue > b.estimated_revenue ? a : b) : null;
+                document.getElementById('best-source').textContent = bestSource ? 
+                    `${bestSource.source} ($${bestSource.estimated_revenue})` : '-';
+                
+                // Build analytics table
+                let html = '<h4>Revenue by Source</h4>';
+                html += '<table class="data-table">';
+                html += '<tr><th>Source</th><th>Clicks</th><th>Revenue</th><th>Avg CPL</th></tr>';
+                
+                data.by_source.forEach(source => {
+                    html += `<tr>
+                        <td><strong>${source.source}</strong></td>
+                        <td>${source.clicks}</td>
+                        <td class="revenue-highlight">$${source.estimated_revenue.toFixed(2)}</td>
+                        <td>$${source.avg_cpl.toFixed(2)}</td>
+                    </tr>`;
+                });
+                html += '</table>';
+                
+                html += '<h4>Revenue by Subsource</h4>';
+                html += '<table class="data-table">';
+                html += '<tr><th>Subsource</th><th>Clicks</th><th>Revenue</th><th>Avg CPL</th></tr>';
+                
+                data.by_subsource.forEach(subsource => {
+                    html += `<tr>
+                        <td><strong>${subsource.subsource}</strong></td>
+                        <td>${subsource.clicks}</td>
+                        <td class="revenue-highlight">$${subsource.estimated_revenue.toFixed(2)}</td>
+                        <td>$${subsource.avg_cpl.toFixed(2)}</td>
+                    </tr>`;
+                });
+                html += '</table>';
+                
+                html += '<h4>Campaign Performance</h4>';
+                html += '<table class="data-table">';
+                html += '<tr><th>Campaign</th><th>Source</th><th>Impressions</th><th>Clicks</th><th>CTR</th></tr>';
+                
+                data.by_campaign.forEach(campaign => {
+                    const ctr = campaign.ctr ? `${(campaign.ctr * 100).toFixed(2)}%` : '-';
+                    html += `<tr>
+                        <td><strong>${campaign.campaign_name}</strong></td>
+                        <td>${campaign.source}</td>
+                        <td>${campaign.impressions}</td>
+                        <td>${campaign.clicks}</td>
+                        <td>${ctr}</td>
+                    </tr>`;
+                });
+                html += '</table>';
+                
+                document.getElementById('analytics-content').innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('analytics-content').innerHTML = 
+                    `<p style="color: #DC2626;">Error loading analytics: ${error.message}</p>`;
+            }
+        }
+        
+        async function testTraffic(source, subsource) {
+            try {
+                const sessionId = `test_${source}_${Date.now()}`;
+                
+                // Create impression
+                const impressionData = {
+                    campaign_id: Math.floor(Math.random() * 5) + 1, // Random campaign 1-5
+                    property_code: 'mmm',
+                    session_id: sessionId,
+                    placement: 'thankyou',
+                    source: source,
+                    subsource: subsource,
+                    utm_campaign: `${source}_campaign_v2`,
+                    referrer: source === 'meta' ? 'https://facebook.com' : 
+                             source === 'google' ? 'https://google.com' : 
+                             source === 'email' ? 'https://mailchimp.com' : 'https://seekingalpha.com',
+                    landing_page: `https://modemarketmunchies.com/test?utm_source=${source}&utm_medium=${subsource}`
+                };
+                
+                await fetch(`${API_BASE}/impression`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(impressionData)
+                });
+                
+                // Create click
+                const clickData = {
+                    campaign_id: impressionData.campaign_id,
+                    property_code: 'mmm',
+                    session_id: sessionId,
+                    placement: 'thankyou',
+                    source: source,
+                    subsource: subsource,
+                    utm_campaign: impressionData.utm_campaign,
+                    referrer: impressionData.referrer,
+                    landing_page: impressionData.landing_page
+                };
+                
+                await fetch(`${API_BASE}/click`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(clickData)
+                });
+                
+                // Show success message
+                const successMsg = document.getElementById('success-msg');
+                successMsg.innerHTML = `Generated ${source}/${subsource} traffic with $0.45 revenue!`;
+                successMsg.style.display = 'block';
+                
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                    loadAnalytics(); // Refresh data
+                }, 2000);
+                
+            } catch (error) {
+                alert(`Error generating test traffic: ${error.message}`);
+            }
+        }
+        
+        // Load analytics on page load
+        loadAnalytics();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadAnalytics, 30000);
+    </script>
+</body>
+</html>

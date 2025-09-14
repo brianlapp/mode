@@ -1,0 +1,99 @@
+/* Contain accidental overflows on mobile */
+html, body { overflow-x: hidden !important; }
+
+/* Ensure embeds don’t exceed viewport */
+img, video, iframe { max-width: 100% !important; height: auto; }
+
+/* Guard full-width sections */
+.alignfull,
+.wp-block-cover.alignfull,
+.wp-block-group.alignfull {
+  overflow-x: clip; /* hides tiny sub-pixel overflows better than hidden */
+}
+
+/* Safety net for columns/rows that may nowrap on small screens */
+.wp-block-columns,
+.wp-block-group {
+  max-width: 100% !important;
+}
+
+/* Defensive rule for ad/3P containers that sometimes push beyond width */
+body * { word-break: break-word; }
+
+/* Featured image sizing tweak */
+.wp-block-post-featured-image {
+  max-width: 94%;
+  margin: 0 auto;
+  display: block;
+}
+
+/* =========================
+ 
+   ========================= */
+
+/* Expired: gray ONLY the post image/cover */
+.blog article.category-expired .wp-block-post-featured-image img,
+.archive article.category-expired .wp-block-post-featured-image img,
+.blog .wp-block-post.category-expired .wp-block-post-featured-image img,
+.archive .wp-block-post.category-expired .wp-block-post-featured-image img,
+.blog article.category-expired .wp-block-cover,
+.archive article.category-expired .wp-block-cover,
+.blog .wp-block-post.category-expired .wp-block-cover,
+.archive .wp-block-post.category-expired .wp-block-cover,
+.blog article.category-expired .wp-block-cover__image-background,
+.archive article.category-expired .wp-block-cover__image-background,
+.blog .wp-block-post.category-expired .wp-block-cover__image-background,
+.archive .wp-block-post.category-expired .wp-block-cover__image-background {
+  filter: grayscale(100%) contrast(.9) brightness(.95);
+}
+
+/* Positioning context for the badge */
+.blog article.category-expired,
+.archive article.category-expired,
+.blog .wp-block-post.category-expired,
+.archive .wp-block-post.category-expired {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top-center pill badge */
+.blog article.category-expired::before,
+.archive article.category-expired::before,
+.blog .wp-block-post.category-expired::before,
+.archive .wp-block-post.category-expired::before {
+  content: "Expired";
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  z-index: 10;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+  text-shadow: 0 1px 2px rgba(0,0,0,.25);
+}
+
+/* Disable clicks inside expired posts */
+.blog article.category-expired a,
+.archive article.category-expired a,
+.blog .wp-block-post.category-expired a,
+.archive .wp-block-post.category-expired a {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+
+.blog article.category-expired::before,
+.archive article.category-expired::before,
+.blog .wp-block-post.category-expired::before,
+.archive .wp-block-post.category-expired::before {
+  background: linear-gradient(90deg, #7c3aed, #ec4899);
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+
+
