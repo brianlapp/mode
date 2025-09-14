@@ -16,7 +16,7 @@ import json
 import random
 
 try:
-    from PIL import Image, ImageDraw, ImageFont
+    from PIL import Image, ImageDraw, ImageFont, ImageOps
     PIL_AVAILABLE = True
 except Exception:
     PIL_AVAILABLE = False
@@ -140,37 +140,7 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
     padding = 24
     content_top = padding
 
-    # Brand circle logo (top-left) like popup
-    badge_d = 56
-    logo_url_for_badge = offer.get('logo_url')
-    if logo_url_for_badge:
-        lb = _fetch_image_bytes(_normalize_img_url(logo_url_for_badge) or logo_url_for_badge)
-        if lb:
-            try:
-                badge = Image.open(io.BytesIO(lb)).convert('RGB')
-                badge = ImageOps.fit(badge, (badge_d, badge_d), centering=(0.5, 0.5))
-                # Create circular mask
-                mask = Image.new('L', (badge_d, badge_d), 0)
-                mdraw = ImageDraw.Draw(mask)
-                mdraw.ellipse((0, 0, badge_d, badge_d), fill=255)
-                # Draw subtle white ring
-                ring_rect = (padding - 2, padding - 2, padding - 2 + badge_d + 4, padding - 2 + badge_d + 4)
-                ImageDraw.Draw(img).ellipse(ring_rect, fill=(255, 255, 255, 255))
-                # Paste circle
-                img.paste(badge, (padding, padding), mask)
-            except Exception:
-                pass
-
-    # Title (centered, larger like popup)
-    title = offer.get('name') or offer.get('title') or 'Sponsored'
-    tw = draw.textlength(title[:80], font=title_font)
-    draw.text(((width - tw) // 2, content_top + 6), title[:80], font=title_font, fill=title_color)
-    content_top += 60
-
-    # Image area: hero style within padding (no distortion, no crop)
-    image_area_h = int(height * 0.48)
-    image_rect = [padding, content_top, width - padding, content_top + image_area_h]
-
+    # Helper functions (declare before any use)
     def _normalize_img_url(raw: Optional[str]) -> Optional[str]:
         if not raw:
             return None
@@ -204,6 +174,37 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
             return None
         except Exception:
             return None
+
+    # Brand circle logo (top-left) like popup
+    badge_d = 56
+    logo_url_for_badge = offer.get('logo_url')
+    if logo_url_for_badge:
+        lb = _fetch_image_bytes(_normalize_img_url(logo_url_for_badge) or logo_url_for_badge)
+        if lb:
+            try:
+                badge = Image.open(io.BytesIO(lb)).convert('RGB')
+                badge = ImageOps.fit(badge, (badge_d, badge_d), centering=(0.5, 0.5))
+                # Create circular mask
+                mask = Image.new('L', (badge_d, badge_d), 0)
+                mdraw = ImageDraw.Draw(mask)
+                mdraw.ellipse((0, 0, badge_d, badge_d), fill=255)
+                # Subtle white ring
+                ring_rect = (padding - 2, padding - 2, padding - 2 + badge_d + 4, padding - 2 + badge_d + 4)
+                ImageDraw.Draw(img).ellipse(ring_rect, fill=(255, 255, 255, 255))
+                # Paste circle
+                img.paste(badge, (padding, padding), mask)
+            except Exception:
+                pass
+
+    # Title (centered, larger like popup)
+    title = offer.get('name') or offer.get('title') or 'Sponsored'
+    tw = draw.textlength(title[:80], font=title_font)
+    draw.text(((width - tw) // 2, content_top + 6), title[:80], font=title_font, fill=title_color)
+    content_top += 60
+
+    # Image area: hero style within padding (no distortion, no crop)
+    image_area_h = int(height * 0.48)
+    image_rect = [padding, content_top, width - padding, content_top + image_area_h]
 
     primary_url = _normalize_img_url(offer.get('main_image_url') or offer.get('image_url'))
     fallback_url = _normalize_img_url(offer.get('logo_url'))
