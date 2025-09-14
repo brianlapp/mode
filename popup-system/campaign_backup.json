@@ -1,6 +1,6 @@
 {
   "timestamp": "2025-01-28T00:00:00Z",
-  "total_campaigns": 12,
+  "total_campaigns": 13,
   "campaigns": [
     {
       "id": 11,
@@ -169,6 +169,20 @@
       "active": true,
       "created_at": "2025-07-31 14:30:20",
       "updated_at": "2025-07-31 14:30:25"
+    },
+    {
+      "id": 14,
+      "name": "Money.com - Online Stock Brokers",
+      "tune_url": "https://track.modemobile.com/aff_c?offer_id=8192&aff_id=43092",
+      "logo_url": "https://imgur.com/TN8QBXf.jpg",
+      "main_image_url": "https://imgur.com/Jx2v9lD.jpg",
+      "description": "Start Trading Today!",
+      "cta_text": "View Offer",
+      "offer_id": "8192",
+      "aff_id": "43092",
+      "active": true,
+      "created_at": "2025-09-11 14:47:51",
+      "updated_at": "2025-09-11 14:47:51"
     }
   ]
 }

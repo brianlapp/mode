@@ -14,6 +14,7 @@ from pathlib import Path
 # Import our route modules (will create these next)
 from routes.campaigns import router as campaigns_router
 from routes.properties import router as properties_router
+from routes.email import router as email_router
 from database import init_db
 
 # Create FastAPI app
@@ -255,6 +256,7 @@ async def property_colors_test():
 # Include API routes
 app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
 app.include_router(properties_router, prefix="/api", tags=["properties"])
+app.include_router(email_router, prefix="/api", tags=["email"])
 
 # Emergency restoration endpoint for Railway deployment fixes
 @app.post("/api/emergency-restore-12-campaigns")
