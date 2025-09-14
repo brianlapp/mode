@@ -140,14 +140,35 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
     padding = 24
     content_top = padding
 
+    # Brand circle logo (top-left) like popup
+    badge_d = 56
+    logo_url_for_badge = offer.get('logo_url')
+    if logo_url_for_badge:
+        lb = _fetch_image_bytes(_normalize_img_url(logo_url_for_badge) or logo_url_for_badge)
+        if lb:
+            try:
+                badge = Image.open(io.BytesIO(lb)).convert('RGB')
+                badge = ImageOps.fit(badge, (badge_d, badge_d), centering=(0.5, 0.5))
+                # Create circular mask
+                mask = Image.new('L', (badge_d, badge_d), 0)
+                mdraw = ImageDraw.Draw(mask)
+                mdraw.ellipse((0, 0, badge_d, badge_d), fill=255)
+                # Draw subtle white ring
+                ring_rect = (padding - 2, padding - 2, padding - 2 + badge_d + 4, padding - 2 + badge_d + 4)
+                ImageDraw.Draw(img).ellipse(ring_rect, fill=(255, 255, 255, 255))
+                # Paste circle
+                img.paste(badge, (padding, padding), mask)
+            except Exception:
+                pass
+
     # Title (centered, larger like popup)
     title = offer.get('name') or offer.get('title') or 'Sponsored'
     tw = draw.textlength(title[:80], font=title_font)
-    draw.text(((width - tw) // 2, content_top), title[:80], font=title_font, fill=title_color)
-    content_top += 54
+    draw.text(((width - tw) // 2, content_top + 6), title[:80], font=title_font, fill=title_color)
+    content_top += 60
 
-    # Image area: hero style (full-width within padding), use cover to avoid letterboxing
-    image_area_h = int(height * 0.50)
+    # Image area: hero style within padding (no distortion, no crop)
+    image_area_h = int(height * 0.48)
     image_rect = [padding, content_top, width - padding, content_top + image_area_h]
 
     def _normalize_img_url(raw: Optional[str]) -> Optional[str]:
@@ -199,9 +220,11 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
             ci = Image.open(io.BytesIO(chosen_bytes)).convert('RGB')
             target_w = image_rect[2] - image_rect[0]
             target_h = image_rect[3] - image_rect[1]
-            # Use cover (crop) to fill the hero area like popup art
-            ci = ImageOps.fit(ci, (target_w, target_h), method=Image.BICUBIC, centering=(0.5, 0.5))
-            img.paste(ci, (image_rect[0], image_rect[1]))
+            # Preserve aspect (no crop), center with padding
+            ci = ImageOps.contain(ci, (target_w, target_h), method=Image.BICUBIC)
+            paste_x = image_rect[0] + (target_w - ci.width) // 2
+            paste_y = image_rect[1] + (target_h - ci.height) // 2
+            img.paste(ci, (paste_x, paste_y))
         except Exception:
             draw.text((padding + 10, content_top + 10), "img", font=body_font, fill=text_color)
     else:
