@@ -108,12 +108,12 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
         # If PIL not available, return 1x1 png
         return b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDAT\x08\x1dc``\x00\x00\x00\x02\x00\x01\xe2!\xbc3\x00\x00\x00\x00IEND\xaeB`\x82"
 
-    # Colors and fonts
+    # Colors and fonts (match popup visual hierarchy)
     bg_color = (255, 255, 255, 255)
-    border_color = (229, 231, 235, 255)  # gray-200
+    border_color = (229, 231, 235, 255)  # light border
     title_color = (17, 24, 39, 255)      # gray-900
     text_color = (75, 85, 99, 255)       # gray-600
-    cta_bg = (247, 0, 124, 255)          # Mode Pink
+    cta_bg = (109, 40, 217, 255)         # MMM purple
     cta_color = (255, 255, 255, 255)
 
     img = Image.new('RGBA', (width, height), bg_color)
@@ -122,28 +122,33 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
     # Border + radius approximation
     draw.rounded_rectangle([(0, 0), (width - 1, height - 1)], radius=20, outline=border_color, width=2, fill=bg_color)
 
-    # Load fonts (fallback to default if not available)
+    # Load fonts (fallback chain for production containers)
     try:
-        title_font = ImageFont.truetype("arial.ttf", 28)
-        body_font = ImageFont.truetype("arial.ttf", 16)
-        cta_font = ImageFont.truetype("arial.ttf", 18)
+        title_font = ImageFont.truetype("DejaVuSans-Bold.ttf", 36)
+        body_font = ImageFont.truetype("DejaVuSans.ttf", 18)
+        cta_font = ImageFont.truetype("DejaVuSans-Bold.ttf", 22)
     except Exception:
-        title_font = ImageFont.load_default()
-        body_font = ImageFont.load_default()
-        cta_font = ImageFont.load_default()
+        try:
+            title_font = ImageFont.truetype("arial.ttf", 36)
+            body_font = ImageFont.truetype("arial.ttf", 18)
+            cta_font = ImageFont.truetype("arial.ttf", 22)
+        except Exception:
+            title_font = ImageFont.load_default()
+            body_font = ImageFont.load_default()
+            cta_font = ImageFont.load_default()
 
     padding = 24
     content_top = padding
 
-    # Title
+    # Title (centered, larger like popup)
     title = offer.get('name') or offer.get('title') or 'Sponsored'
-    draw.text((padding, content_top), title[:80], font=title_font, fill=title_color)
-    content_top += 40
+    tw = draw.textlength(title[:80], font=title_font)
+    draw.text(((width - tw) // 2, content_top), title[:80], font=title_font, fill=title_color)
+    content_top += 54
 
-    # Image area: try to fetch and embed campaign image
-    image_area_h = int(height * 0.45)
+    # Image area: hero style (full-width within padding), use cover to avoid letterboxing
+    image_area_h = int(height * 0.50)
     image_rect = [padding, content_top, width - padding, content_top + image_area_h]
-    draw.rounded_rectangle(image_rect, radius=12, fill=(243, 244, 246, 255))
 
     def _normalize_img_url(raw: Optional[str]) -> Optional[str]:
         if not raw:
@@ -192,14 +197,11 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
         from PIL import ImageOps
         try:
             ci = Image.open(io.BytesIO(chosen_bytes)).convert('RGB')
-            # Fit into the image_rect with padding
             target_w = image_rect[2] - image_rect[0]
             target_h = image_rect[3] - image_rect[1]
-            ci = ImageOps.contain(ci, (target_w, target_h))
-            # Paste centered
-            paste_x = image_rect[0] + (target_w - ci.width) // 2
-            paste_y = image_rect[1] + (target_h - ci.height) // 2
-            img.paste(ci, (paste_x, paste_y))
+            # Use cover (crop) to fill the hero area like popup art
+            ci = ImageOps.fit(ci, (target_w, target_h), method=Image.BICUBIC, centering=(0.5, 0.5))
+            img.paste(ci, (image_rect[0], image_rect[1]))
         except Exception:
             draw.text((padding + 10, content_top + 10), "img", font=body_font, fill=text_color)
     else:
@@ -207,11 +209,13 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
         draw.text((padding + 10, content_top + 10), "img", font=body_font, fill=text_color)
     content_top += image_area_h + 16
 
-    # Description
-    desc = offer.get('description') or ''
+    # Description (centered)
+    desc = (offer.get('description') or '').strip()
     if desc:
-        draw.text((padding, content_top), desc[:120], font=body_font, fill=text_color)
-        content_top += 28
+        line = desc[:120]
+        lw = draw.textlength(line, font=body_font)
+        draw.text(((width - lw) // 2, content_top), line, font=body_font, fill=text_color)
+        content_top += 32
 
     # CTA button
     cta_text = offer.get('cta_text') or 'View Offer'
