@@ -240,6 +240,63 @@ async def debug_table():
     finally:
         conn.close()
 
+@router.post("/campaigns/ensure-money")
+async def ensure_money_campaign_post():
+    return await ensure_money_campaign()
+
+@router.get("/campaigns/ensure-money")
+async def ensure_money_campaign():
+    """Upsert the Money.com campaign and assign it to MMM (finance)."""
+    conn = get_db_connection()
+    try:
+        cur = conn.execute(
+            "SELECT id FROM campaigns WHERE id = 14 OR offer_id = '8192' OR name LIKE '%Money.com%'"
+        )
+        row = cur.fetchone()
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        if not row:
+            conn.execute(
+                """
+                INSERT INTO campaigns (
+                    id, name, tune_url, logo_url, main_image_url, description,
+                    cta_text, offer_id, aff_id, active, featured, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
+                """,
+                (
+                    14,
+                    "Money.com - Online Stock Brokers",
+                    "https://track.modemobile.com/aff_c?offer_id=8192&aff_id=43092",
+                    "https://imgur.com/TN8QBXf.jpg",
+                    "https://imgur.com/Jx2v9lD.jpg",
+                    "Start Trading Today!",
+                    "View Offer",
+                    "8192",
+                    "43092",
+                    now,
+                    now,
+                ),
+            )
+        cur = conn.execute(
+            "SELECT 1 FROM campaign_properties WHERE campaign_id = 14 AND property_code = 'mmm'"
+        )
+        if not cur.fetchone():
+            conn.execute(
+                """
+                INSERT INTO campaign_properties (
+                    campaign_id, property_code, visibility_percentage, active
+                ) VALUES (14, 'mmm', 100, 1)
+                """
+            )
+        conn.commit()
+        # Return current count for verification
+        cnt = conn.execute("SELECT COUNT(*) FROM campaigns WHERE active = 1").fetchone()[0]
+        return {"success": True, "message": "Money.com ensured", "active_campaigns": int(cnt)}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
 @router.get("/test-tune-api")
 async def test_tune_api():
     """Test if Tune API is accessible from Railway"""
