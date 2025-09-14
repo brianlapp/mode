@@ -128,5 +128,26 @@
     "tracking": "URL parameter passing, custom scripts",
     "optimization_tool": "Revmatics.ai (testing)",
     "future_integration": "Meta API + Tune API + AI dashboard"
+  },
+  "runbooks": {
+    "restore_money_com": {
+      "summary": "Ensure Money.com campaign exists and is assigned to MMM",
+      "endpoint": "/api/campaigns/ensure-money",
+      "method": "GET or POST",
+      "details": [
+        "Upserts campaign id=14, offer_id=8192, aff_id=43092",
+        "Assigns property_code=mmm in campaign_properties",
+        "Returns current active campaign count"
+      ]
+    },
+    "email_ad_renderer": {
+      "summary": "Server-side PNG card renderer",
+      "endpoint": "/api/email/ad.png",
+      "notes": [
+        "Requires Pillow installed",
+        "Fetches image with retries; falls back to logo",
+        "Cache-control private; pass unique query for cache busting"
+      ]
+    }
   }
 }
