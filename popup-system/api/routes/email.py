@@ -16,7 +16,7 @@ import json
 import random
 
 try:
-    from PIL import Image, ImageDraw, ImageFont, ImageOps
+    from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageFilter
     PIL_AVAILABLE = True
 except Exception:
     PIL_AVAILABLE = False
@@ -122,16 +122,21 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
     # Border + radius approximation
     draw.rounded_rectangle([(0, 0), (width - 1, height - 1)], radius=20, outline=border_color, width=2, fill=bg_color)
 
+    # Dynamic sizing based on canvas height to mirror popup proportions
+    title_px = max(34, int(height * 0.12))
+    body_px = max(16, int(height * 0.05))
+    cta_px = max(18, int(height * 0.055))
+
     # Load fonts (fallback chain for production containers)
     try:
-        title_font = ImageFont.truetype("DejaVuSans-Bold.ttf", 36)
-        body_font = ImageFont.truetype("DejaVuSans.ttf", 18)
-        cta_font = ImageFont.truetype("DejaVuSans-Bold.ttf", 22)
+        title_font = ImageFont.truetype("DejaVuSans-Bold.ttf", title_px)
+        body_font = ImageFont.truetype("DejaVuSans.ttf", body_px)
+        cta_font = ImageFont.truetype("DejaVuSans-Bold.ttf", cta_px)
     except Exception:
         try:
-            title_font = ImageFont.truetype("arial.ttf", 36)
-            body_font = ImageFont.truetype("arial.ttf", 18)
-            cta_font = ImageFont.truetype("arial.ttf", 22)
+            title_font = ImageFont.truetype("arial.ttf", title_px)
+            body_font = ImageFont.truetype("arial.ttf", body_px)
+            cta_font = ImageFont.truetype("arial.ttf", cta_px)
         except Exception:
             title_font = ImageFont.load_default()
             body_font = ImageFont.load_default()
@@ -199,11 +204,11 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
     # Title (centered, larger like popup)
     title = offer.get('name') or offer.get('title') or 'Sponsored'
     tw = draw.textlength(title[:80], font=title_font)
-    draw.text(((width - tw) // 2, content_top + 6), title[:80], font=title_font, fill=title_color)
-    content_top += 60
+    draw.text(((width - tw) // 2, content_top + 2), title[:80], font=title_font, fill=title_color)
+    content_top += int(title_px * 1.4)
 
     # Image area: hero style within padding (no distortion, no crop)
-    image_area_h = int(height * 0.48)
+    image_area_h = int(height * 0.50)
     image_rect = [padding, content_top, width - padding, content_top + image_area_h]
 
     primary_url = _normalize_img_url(offer.get('main_image_url') or offer.get('image_url'))
@@ -226,6 +231,13 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
             paste_x = image_rect[0] + (target_w - ci.width) // 2
             paste_y = image_rect[1] + (target_h - ci.height) // 2
             img.paste(ci, (paste_x, paste_y))
+            # Soft drop shadow ellipse underneath hero, like popup
+            shadow_margin = int(target_w * 0.1)
+            ell_rect = [image_rect[0] + shadow_margin, image_rect[3] - 18, image_rect[2] - shadow_margin, image_rect[3] + 10]
+            shadow = Image.new('RGBA', img.size, (0, 0, 0, 0))
+            ImageDraw.Draw(shadow).ellipse(ell_rect, fill=(0, 0, 0, 70))
+            shadow = shadow.filter(ImageFilter.GaussianBlur(6))
+            img = Image.alpha_composite(img, shadow)
         except Exception:
             draw.text((padding + 10, content_top + 10), "img", font=body_font, fill=text_color)
     else:
@@ -239,12 +251,13 @@ def _draw_card_png(offer: dict, width: int, height: int) -> bytes:
         line = desc[:120]
         lw = draw.textlength(line, font=body_font)
         draw.text(((width - lw) // 2, content_top), line, font=body_font, fill=text_color)
-        content_top += 32
+        content_top += int(body_px * 1.6)
 
     # CTA button
     cta_text = offer.get('cta_text') or 'View Offer'
-    btn_h = 44
-    btn_rect = [padding, height - padding - btn_h, width - padding, height - padding]
+    btn_h = max(44, int(height * 0.13))
+    side = max(40, int(width * 0.08))
+    btn_rect = [padding + side, height - padding - btn_h, width - padding - side, height - padding]
     draw.rounded_rectangle(btn_rect, radius=12, fill=cta_bg)
     # center text
     tw, th = draw.textlength(cta_text, font=cta_font), cta_font.size
