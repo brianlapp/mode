@@ -546,7 +546,7 @@ async def local_offer_counts(preset: str = "last_7_days"):
         return {"success": False, "error": str(e)}
 
 @router.get("/campaigns/by-host-optimized", response_model=List[dict])
-async def get_campaigns_by_host_optimized(request: Request, host: str | None = None, property: str | None = None):
+async def get_campaigns_by_host_optimized(request: Request, host: Optional[str] = None, property: Optional[str] = None):
     """Get campaigns for property with Mike's optimization: Featured first, then RPM-ordered"""
     # Use explicit property parameter if provided, otherwise detect from hostname
     if property and property in ['mff', 'mmm', 'mcad', 'mmd']:
@@ -627,7 +627,7 @@ async def get_campaigns_by_host_optimized(request: Request, host: str | None = N
         conn.close()
 
 @router.get("/campaigns/by-host", response_model=List[dict])
-async def get_campaigns_by_host(request: Request, host: str | None = None):
+async def get_campaigns_by_host(request: Request, host: Optional[str] = None):
     """Get active campaigns for the property resolved from the request host (multi-domain)."""
     hostname = (host or "").strip().lower()
     if not hostname:

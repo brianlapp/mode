@@ -6,7 +6,7 @@ and resolve property by host for multi-domain support.
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 from database import get_db_connection, detect_property_code_from_host
 import sqlite3
 
@@ -19,14 +19,14 @@ class PropertySetting(BaseModel):
     property_code: str
     visibility_percentage: int = 100  # 0-100%
     active: bool = True
-    impression_cap_daily: int | None = None
-    click_cap_daily: int | None = None
+    impression_cap_daily: Optional[int] = None
+    click_cap_daily: Optional[int] = None
 
 class PropertySettingUpdate(BaseModel):
-    visibility_percentage: int | None = None
-    active: bool | None = None
-    impression_cap_daily: int | None = None
-    click_cap_daily: int | None = None
+    visibility_percentage: Optional[int] = None
+    active: Optional[bool] = None
+    impression_cap_daily: Optional[int] = None
+    click_cap_daily: Optional[int] = None
 
 @router.get("/campaigns/{campaign_id}/properties", response_model=List[PropertySetting])
 async def get_campaign_property_settings(campaign_id: int):
@@ -165,7 +165,7 @@ async def get_valid_properties():
     return VALID_PROPERTIES
 
 @router.get("/properties/resolve", response_model=dict)
-async def resolve_property(request: Request, host: str | None = None):
+async def resolve_property(request: Request, host: Optional[str] = None):
     """Resolve property details by host header or explicit host param."""
     # Prefer explicit query param, else try forwarded/host headers
     hostname = (host or "").strip().lower()

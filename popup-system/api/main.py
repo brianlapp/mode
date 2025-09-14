@@ -65,7 +65,7 @@ async def health_check():
     return {"status": "healthy", "service": "Mode Popup Management API"}
 
 @app.get("/debug/property-test")
-async def debug_property_test(property: str | None = None, host: str | None = None):
+async def debug_property_test(property: str = None, host: str = None):
     """Debug endpoint to test property parameter parsing"""
     from database import detect_property_code_from_host
     
