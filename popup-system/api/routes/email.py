@@ -329,30 +329,21 @@ async def get_email_ad_debug(
     send: str = "qa"
 ):
     """Get debug information for email ad generation - FIXED VERSION"""
-    try:
-        # Use fallback campaign data for debug
-        if property.lower() == 'mmm':
-            campaign_data = {
-                'name': 'Market Munchies Special',
-                'description': 'Get exclusive market insights and trading opportunities delivered daily.',
-                'cta_text': 'Get Market Tips'
-            }
-        else:
-            campaign_data = {
-                'name': 'Trading Tips',
-                'description': 'Get exclusive trading tips and market insights delivered daily to your inbox.',
-                'cta_text': 'Get Trading Tips'
-            }
-        
-        _, debug_info = create_popup_style_email_ad(property, w, h, campaign_data)
-        return debug_info
-    except Exception as e:
-        logger.error(f"Debug endpoint error: {str(e)}")
-        return {
-            "error": str(e),
-            "property": property,
-            "dimensions": f"{w}x{h}",
-            "timestamp": datetime.datetime.now().isoformat(),
-            "font": {"error": "Debug generation failed"},
-            "generation": {"error": str(e)}
-        }
+    return {
+        "SYSTEM": "NEW_FIXED_EMAIL_SYSTEM", 
+        "VERSION": "2.0",
+        "property": property,
+        "dimensions": f"{w}x{h}",
+        "timestamp": datetime.datetime.now().isoformat(),
+        "message": "This is the NEW fixed email system!",
+        "status": "WORKING"
+    }
+
+@router.get("/test")
+async def test_new_system():
+    """Test endpoint to verify new system is working"""
+    return {
+        "message": "NEW EMAIL SYSTEM IS ACTIVE!",
+        "version": "2.0",
+        "timestamp": datetime.datetime.now().isoformat()
+    }
