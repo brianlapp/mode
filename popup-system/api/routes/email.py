@@ -248,6 +248,44 @@ def _draw_card_png(offer: dict, width: int, height: int, debug: bool = False, le
             except Exception:
                 return u
 
+        def _fetch_via_proxy_cache(raw_url: Optional[str]) -> Optional[bytes]:
+            """Fetch external image with UA+retries and local disk cache (no self-HTTP)."""
+            if not raw_url:
+                return None
+            try:
+                import requests
+                from requests.adapters import HTTPAdapter
+                from urllib3.util.retry import Retry
+                import hashlib
+
+                url = str(raw_url)
+                # Disk cache by original URL
+                h = hashlib.sha1(url.encode('utf-8')).hexdigest()
+                cache_path = _image_cache_dir() / f"{h}.bin"
+                if cache_path.exists():
+                    try:
+                        return cache_path.read_bytes()
+                    except Exception:
+                        pass
+
+                session = requests.Session()
+                session.headers.update({'User-Agent': 'Mozilla/5.0 (compatible; ModeImageProxy/1.0)'})
+                retries = Retry(total=4, backoff_factor=0.6, status_forcelist=[429, 500, 502, 503, 504])
+                adapter = HTTPAdapter(max_retries=retries)
+                session.mount('http://', adapter)
+                session.mount('https://', adapter)
+
+                resp = session.get(url, timeout=12)
+                if resp.status_code == 200 and resp.content:
+                    try:
+                        cache_path.write_bytes(resp.content)
+                    except Exception:
+                        pass
+                    return resp.content
+            except Exception:
+                return None
+            return None
+
         def _fetch_image_bytes(url: Optional[str]) -> Optional[bytes]:
             if not url:
                 return None
@@ -259,7 +297,7 @@ def _draw_card_png(offer: dict, width: int, height: int, debug: bool = False, le
 
                 session = requests.Session()
                 session.headers.update({'User-Agent': 'Mozilla/5.0 (compatible; ModeEmailRenderer/1.0)'})
-                retries = Retry(total=2, backoff_factor=0.3, status_forcelist=[429, 500, 502, 503, 504])
+                retries = Retry(total=4, backoff_factor=0.6, status_forcelist=[429, 500, 502, 503, 504])
                 adapter = HTTPAdapter(max_retries=retries)
                 session.mount('http://', adapter)
                 session.mount('https://', adapter)
@@ -271,10 +309,14 @@ def _draw_card_png(offer: dict, width: int, height: int, debug: bool = False, le
                         return cache_path.read_bytes()
                     except Exception:
                         pass
-                # Try proxied first (shared cache and avoids 429s)
+                # In-process proxy/cache fetch first (no self-HTTP)
+                maybe = _fetch_via_proxy_cache(url)
+                if maybe:
+                    return maybe
+                # Fallback: try public proxy endpoint
                 try:
                     proxied = _proxied_url(url)
-                    resp = session.get(proxied, timeout=8)
+                    resp = session.get(proxied, timeout=12)
                     if resp.status_code == 200 and resp.content:
                         try:
                             cache_path.write_bytes(resp.content)
@@ -283,8 +325,8 @@ def _draw_card_png(offer: dict, width: int, height: int, debug: bool = False, le
                         return resp.content
                 except Exception:
                     pass
-                # Fallback to direct fetch
-                resp = session.get(url, timeout=8)
+                # Final fallback: direct fetch
+                resp = session.get(url, timeout=12)
                 if resp.status_code == 200 and resp.content:
                     try:
                         cache_path.write_bytes(resp.content)
@@ -767,9 +809,7 @@ async def email_ad_debug(property: Optional[str] = None, send: Optional[str] = N
         # Proxied checks (through our internal image proxy)
         def _internal_api_base_dbg() -> str:
             import os
-            # Prefer localhost:PORT to avoid external egress
-            port = os.environ.get("PORT", "8000")
-            return f"http://127.0.0.1:{port}"
+            return os.environ.get("PUBLIC_BASE_URL") or "https://mode-dash-production.up.railway.app"
 
         def _proxied(u: Optional[str]) -> Optional[str]:
             if not u:

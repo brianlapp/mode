@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "mode": "minimal",
+  "categories": {
+    "basic": true,
+    "rag": false,
+    "memory": false,
+    "agentManagement": false,
+    "taskManagement": false,
+    "fileManagement": false,
+    "agentCommunication": false,
+    "sessionState": false,
+    "assistanceRequest": false,
+    "backgroundAgents": false
+  },
+  "lastModified": "2025-09-15T02:26:22.147Z"
+}
