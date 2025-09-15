@@ -271,7 +271,7 @@ def _draw_card_png(offer: dict, width: int, height: int, debug: bool = False, le
                         return cache_path.read_bytes()
                     except Exception:
                         pass
-                # Try proxied first (shared cache and retry on the proxy)
+                # Try proxied first (shared cache and avoids 429s)
                 try:
                     proxied = _proxied_url(url)
                     resp = session.get(proxied, timeout=8)
