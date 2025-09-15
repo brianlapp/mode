@@ -2,6 +2,9 @@
 builder = "NIXPACKS"
 buildCommand = "cd popup-system && echo 'Building from popup-system directory'"
 
+# Ensure Python is used (Playwright install changed default to Node)
+buildImage = "python:3.12-bullseye"
+
 [deploy]
 startCommand = "cd popup-system/api && uvicorn main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"

@@ -1,0 +1,32 @@
+{
+  "success": true,
+  "message": "Domain configuration fixed",
+  "results": [
+    "✅ Added missing property mff: modefreefinds.com",
+    "✅ Added missing property mmm: modemarketmunchies.com",
+    "✅ Added missing property mcad: modeclassactionsdaily.com",
+    "✅ Added missing property mmd: modemobiledaily.com"
+  ],
+  "properties": [
+    {
+      "code": "mcad",
+      "name": "ModeClassActionsDaily",
+      "domain": "modeclassactionsdaily.com"
+    },
+    {
+      "code": "mff",
+      "name": "ModeFreeFinds",
+      "domain": "modefreefinds.com"
+    },
+    {
+      "code": "mmd",
+      "name": "ModeMobileDaily",
+      "domain": "modemobiledaily.com"
+    },
+    {
+      "code": "mmm",
+      "name": "ModeMarketMunchies",
+      "domain": "modemarketmunchies.com"
+    }
+  ]
+}

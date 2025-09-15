@@ -9,20 +9,26 @@ from pathlib import Path
 
 # Database file path - use persistent volume in production
 def get_db_path():
-    """Get database path with persistent volume support"""
-    # Try persistent volume first (Railway production)
+    """Get database path with persistent volume support.
+    Always prefer the mounted volume path and create it if missing.
+    """
+    # Preferred persistent volume (Railway)
     volume_path = "/app/popup-system/api/data"
-    if os.path.exists(volume_path):
+    try:
         os.makedirs(volume_path, exist_ok=True)
         return os.path.join(volume_path, "popup_campaigns.db")
+    except Exception:
+        pass
     
-    # Secondary fallback for Railway
+    # Secondary fallback for Railway images
     fallback_path = "/app/api/data"
-    if os.path.exists(fallback_path):
+    try:
         os.makedirs(fallback_path, exist_ok=True)
         return os.path.join(fallback_path, "popup_campaigns.db")
+    except Exception:
+        pass
     
-    # Fallback to local path (development)
+    # Local development fallback (repo root)
     return "popup_campaigns.db"
 
 DB_PATH = get_db_path()
