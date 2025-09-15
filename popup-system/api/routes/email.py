@@ -764,16 +764,45 @@ async def email_ad_debug(property: Optional[str] = None, send: Optional[str] = N
             except Exception as e:
                 return {"url": url, "ok": False, "status": None, "error": str(e)}
 
+        # Proxied checks (through our internal image proxy)
+        def _internal_api_base_dbg() -> str:
+            import os
+            # Prefer localhost:PORT to avoid external egress
+            port = os.environ.get("PORT", "8000")
+            return f"http://127.0.0.1:{port}"
+
+        def _proxied(u: Optional[str]) -> Optional[str]:
+            if not u:
+                return None
+            try:
+                return f"{_internal_api_base_dbg()}/api/proxy/img?u={quote(u, safe='')}"
+            except Exception:
+                return None
+
+        def _check_proxy(url: Optional[str]):
+            p = _proxied(url)
+            if not p:
+                return {"url": None, "ok": False, "status": None, "error": "empty"}
+            try:
+                import requests
+                r = requests.get(p, timeout=6)
+                return {"url": p, "ok": (r.status_code == 200 and bool(r.content)), "status": r.status_code, "len": len(r.content) if r.content else 0}
+            except Exception as e:
+                return {"url": p, "ok": False, "status": None, "error": str(e)}
+
         primary = _normalize(offer.get('main_image_url') or offer.get('image_url'))
         fallback = _normalize(offer.get('logo_url'))
         primary_chk = _check(primary)
         fallback_chk = _check(fallback)
+        primary_proxy_chk = _check_proxy(primary)
+        fallback_proxy_chk = _check_proxy(fallback)
 
         return {
             "size": {"requested": [w, h], "actual": [target_w, target_h], "fixed_layout": fixed},
             "campaign": {"id": offer.get('id'), "name": offer.get('name') or offer.get('title'), "logo_url": offer.get('logo_url'), "main_image_url": offer.get('main_image_url') or offer.get('image_url')},
             "fonts": {"dir": str(fdir), "inter_extrabold_exists": ttf_title.exists(), "inter_regular_exists": ttf_body.exists()},
-            "images": {"primary": primary_chk, "fallback": fallback_chk}
+            "images": {"primary": primary_chk, "fallback": fallback_chk},
+            "proxy": {"primary": primary_proxy_chk, "fallback": fallback_proxy_chk}
         }
     except HTTPException:
         raise
