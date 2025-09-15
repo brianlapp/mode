@@ -269,6 +269,67 @@ async def emergency_restore_12_campaigns():
     try:
         print("🚨 EMERGENCY RESTORATION: Restoring 12 campaigns")
         
+        # Ensure schema exists (idempotent) to avoid missing table errors
+        try:
+            init_db()
+            from database import get_db_connection
+            conn = get_db_connection()
+            # Explicitly create required tables if missing
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS campaigns (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    tune_url TEXT NOT NULL,
+                    logo_url TEXT NOT NULL,
+                    main_image_url TEXT NOT NULL,
+                    description TEXT,
+                    cta_text TEXT DEFAULT 'View Offer',
+                    active BOOLEAN DEFAULT 1,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    offer_id TEXT,
+                    aff_id TEXT,
+                    featured BOOLEAN DEFAULT 0
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS campaign_properties (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    campaign_id INTEGER NOT NULL,
+                    property_code TEXT NOT NULL,
+                    visibility_percentage INTEGER DEFAULT 100,
+                    active BOOLEAN DEFAULT 1,
+                    impression_cap_daily INTEGER NULL,
+                    click_cap_daily INTEGER NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+                    UNIQUE(campaign_id, property_code)
+                )
+                """
+            )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS properties (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    code TEXT UNIQUE NOT NULL,
+                    name TEXT NOT NULL,
+                    domain TEXT,
+                    active BOOLEAN DEFAULT 1,
+                    popup_enabled BOOLEAN DEFAULT 1,
+                    popup_frequency TEXT DEFAULT 'session',
+                    popup_placement TEXT DEFAULT 'thankyou',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """
+            )
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"⚠️ Schema ensure failed (will attempt restore anyway): {e}")
+
         # Load from backup file
         backup_path = Path(__file__).parent.parent / "campaign_backup.json"
         if not backup_path.exists():
@@ -284,8 +345,27 @@ async def emergency_restore_12_campaigns():
         conn = get_db_connection()
         
         # Clear and restore campaigns
+        try:
+            conn.execute("DELETE FROM campaign_properties")
+        except Exception:
+            # If table somehow missing, create and continue
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS campaign_properties (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    campaign_id INTEGER NOT NULL,
+                    property_code TEXT NOT NULL,
+                    visibility_percentage INTEGER DEFAULT 100,
+                    active BOOLEAN DEFAULT 1,
+                    impression_cap_daily INTEGER NULL,
+                    click_cap_daily INTEGER NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+                    UNIQUE(campaign_id, property_code)
+                )
+                """
+            )
         conn.execute("DELETE FROM campaigns")
-        conn.execute("DELETE FROM campaign_properties")
         
         for campaign in campaigns_data:
             # Fix offer_id mismatch for campaign 12
