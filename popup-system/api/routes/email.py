@@ -797,12 +797,43 @@ async def email_ad_debug(property: Optional[str] = None, send: Optional[str] = N
         primary_proxy_chk = _check_proxy(primary)
         fallback_proxy_chk = _check_proxy(fallback)
 
+        # Cache insight: mirror renderer/proxy cache path logic
+        def _image_cache_dir_dbg() -> Path:
+            candidates = [
+                Path("/app/popup-system/api/cache"),
+                Path("/app/api/cache"),
+                Path(__file__).resolve().parents[3] / "cache",
+            ]
+            for p in candidates:
+                try:
+                    p.mkdir(parents=True, exist_ok=True)
+                    return p
+                except Exception:
+                    continue
+            return candidates[-1]
+
+        def _cache_info(url: Optional[str]):
+            if not url:
+                return {"url": None}
+            import hashlib
+            h = hashlib.sha1(url.encode("utf-8")).hexdigest()
+            path = _image_cache_dir_dbg() / f"{h}.bin"
+            exists = path.exists()
+            size = path.stat().st_size if exists else 0
+            return {"url": url, "path": str(path), "exists": exists, "size": size}
+
+        cache = {
+            "primary": _cache_info(primary),
+            "fallback": _cache_info(fallback),
+        }
+
         return {
             "size": {"requested": [w, h], "actual": [target_w, target_h], "fixed_layout": fixed},
             "campaign": {"id": offer.get('id'), "name": offer.get('name') or offer.get('title'), "logo_url": offer.get('logo_url'), "main_image_url": offer.get('main_image_url') or offer.get('image_url')},
             "fonts": {"dir": str(fdir), "inter_extrabold_exists": ttf_title.exists(), "inter_regular_exists": ttf_body.exists()},
             "images": {"primary": primary_chk, "fallback": fallback_chk},
-            "proxy": {"primary": primary_proxy_chk, "fallback": fallback_proxy_chk}
+            "proxy": {"primary": primary_proxy_chk, "fallback": fallback_proxy_chk},
+            "cache": cache
         }
     except HTTPException:
         raise
