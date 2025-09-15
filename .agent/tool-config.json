@@ -1,17 +1,17 @@
 {
   "version": "1.0",
-  "mode": "minimal",
+  "mode": "full",
   "categories": {
     "basic": true,
-    "rag": false,
-    "memory": false,
-    "agentManagement": false,
-    "taskManagement": false,
-    "fileManagement": false,
-    "agentCommunication": false,
-    "sessionState": false,
-    "assistanceRequest": false,
-    "backgroundAgents": false
+    "rag": true,
+    "memory": true,
+    "agentManagement": true,
+    "taskManagement": true,
+    "fileManagement": true,
+    "agentCommunication": true,
+    "sessionState": true,
+    "assistanceRequest": true,
+    "backgroundAgents": true
   },
-  "lastModified": "2025-09-15T02:26:22.147Z"
+  "lastModified": "2025-09-15T02:34:17.044Z"
 }

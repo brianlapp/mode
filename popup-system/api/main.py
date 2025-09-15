@@ -258,6 +258,30 @@ app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
 app.include_router(properties_router, prefix="/api", tags=["properties"])
 app.include_router(email_router, prefix="/api", tags=["email"])
 
+# Simple cache warmer for campaign images used by email renderer
+@app.post("/api/email/warm-cache")
+async def warm_email_image_cache():
+    try:
+        from database import get_db_connection
+        conn = get_db_connection()
+        cur = conn.execute("SELECT logo_url, main_image_url FROM campaigns WHERE active = 1")
+        rows = cur.fetchall()
+        conn.close()
+        warmed = []
+        import requests
+        for row in rows:
+            for url in [row[0], row[1]]:
+                if not url:
+                    continue
+                try:
+                    r = requests.get(f"https://mode-dash-production.up.railway.app/api/proxy/img?u={url}", timeout=5)
+                    warmed.append({"url": url, "status": r.status_code, "len": len(r.content) if r.content else 0})
+                except Exception as e:
+                    warmed.append({"url": url, "error": str(e)})
+        return {"success": True, "warmed": warmed[:20], "count": len(warmed)}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 # Emergency restoration endpoint for Railway deployment fixes
 @app.post("/api/emergency-restore-12-campaigns")
 async def emergency_restore_12_campaigns():

@@ -270,12 +270,12 @@ def _draw_card_png(offer: dict, width: int, height: int, debug: bool = False, le
 
                 session = requests.Session()
                 session.headers.update({'User-Agent': 'Mozilla/5.0 (compatible; ModeImageProxy/1.0)'})
-                retries = Retry(total=4, backoff_factor=0.6, status_forcelist=[429, 500, 502, 503, 504])
+                retries = Retry(total=2, backoff_factor=0.4, status_forcelist=[429, 500, 502, 503, 504])
                 adapter = HTTPAdapter(max_retries=retries)
                 session.mount('http://', adapter)
                 session.mount('https://', adapter)
 
-                resp = session.get(url, timeout=12)
+                resp = session.get(url, timeout=4)
                 if resp.status_code == 200 and resp.content:
                     try:
                         cache_path.write_bytes(resp.content)
@@ -297,7 +297,7 @@ def _draw_card_png(offer: dict, width: int, height: int, debug: bool = False, le
 
                 session = requests.Session()
                 session.headers.update({'User-Agent': 'Mozilla/5.0 (compatible; ModeEmailRenderer/1.0)'})
-                retries = Retry(total=4, backoff_factor=0.6, status_forcelist=[429, 500, 502, 503, 504])
+                retries = Retry(total=2, backoff_factor=0.4, status_forcelist=[429, 500, 502, 503, 504])
                 adapter = HTTPAdapter(max_retries=retries)
                 session.mount('http://', adapter)
                 session.mount('https://', adapter)
@@ -316,7 +316,7 @@ def _draw_card_png(offer: dict, width: int, height: int, debug: bool = False, le
                 # Fallback: try public proxy endpoint
                 try:
                     proxied = _proxied_url(url)
-                    resp = session.get(proxied, timeout=12)
+                    resp = session.get(proxied, timeout=4)
                     if resp.status_code == 200 and resp.content:
                         try:
                             cache_path.write_bytes(resp.content)
@@ -326,7 +326,7 @@ def _draw_card_png(offer: dict, width: int, height: int, debug: bool = False, le
                 except Exception:
                     pass
                 # Final fallback: direct fetch
-                resp = session.get(url, timeout=12)
+                resp = session.get(url, timeout=4)
                 if resp.status_code == 200 and resp.content:
                     try:
                         cache_path.write_bytes(resp.content)
