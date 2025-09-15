@@ -8,10 +8,17 @@ import hashlib
 from pathlib import Path
 from typing import Optional, Dict, Any
 from io import BytesIO
-from PIL import Image, ImageDraw, ImageFont
 from fastapi import APIRouter, HTTPException, Response
 import logging
 import datetime
+
+# Try to import PIL, fallback if not available
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
+    Image = ImageDraw = ImageFont = None
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -37,7 +44,7 @@ PROPERTY_CONFIG = {
     }
 }
 
-def load_font_with_fallbacks(font_name: str, size: int) -> tuple[ImageFont.FreeTypeFont, dict]:
+def load_font_with_fallbacks(font_name: str, size: int):
     """Load font with comprehensive fallback strategy - WORKING VERSION"""
     debug_info = {
         "family": font_name,
@@ -88,15 +95,20 @@ def load_font_with_fallbacks(font_name: str, size: int) -> tuple[ImageFont.FreeT
         debug_info["error"] = error_msg
         raise HTTPException(status_code=500, detail=error_msg)
 
-def create_popup_style_email_ad(property_name: str, width: int, height: int, campaign_data: dict) -> tuple[bytes, dict]:
+def create_popup_style_email_ad(property_name: str, width: int, height: int, campaign_data: dict):
     """Create email ad matching popup design - WORKING VERSION"""
     debug_info = {
         "property": property_name,
         "dimensions": f"{width}x{height}",
         "font": {},
         "generation": {},
-        "errors": []
+        "errors": [],
+        "pil_available": PIL_AVAILABLE
     }
+    
+    if not PIL_AVAILABLE:
+        debug_info["errors"].append("PIL not available")
+        return b"PIL not available", debug_info
     
     try:
         # Get property config
@@ -259,6 +271,13 @@ async def get_email_ad_png(
     send: str = "qa"
 ):
     """Generate email ad PNG - FIXED VERSION"""
+    if not PIL_AVAILABLE:
+        return Response(
+            content=b"PIL not available",
+            media_type="text/plain",
+            status_code=500
+        )
+        
     try:
         # Get campaign data from database with fallback
         try:
@@ -313,13 +332,11 @@ async def get_email_ad_png(
         )
     except Exception as e:
         logger.error(f"PNG endpoint error: {str(e)}")
-        # Return a basic error image
-        img = Image.new('RGB', (w, h), color='#ff0000')
-        draw = ImageDraw.Draw(img)
-        draw.text((20, h//2), f"ERROR: {str(e)[:50]}", fill="white")
-        buffer = BytesIO()
-        img.save(buffer, format='PNG')
-        return Response(content=buffer.getvalue(), media_type="image/png")
+        return Response(
+            content=f"ERROR: {str(e)}".encode(),
+            media_type="text/plain",
+            status_code=500
+        )
 
 @router.get("/ad.debug")
 async def get_email_ad_debug(
