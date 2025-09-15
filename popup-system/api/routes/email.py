@@ -54,7 +54,7 @@ def _select_offer_for_send(property_code: str, send_id: Optional[str]) -> Option
 
         # Pull campaigns with RPM calculation (prefer property-specific join)
         try:
-        cur = conn.execute(
+            cur = conn.execute(
             """
             SELECT 
                 c.id,
@@ -237,10 +237,9 @@ def _draw_card_png(offer: dict, width: int, height: int, debug: bool = False, le
             return candidates[-1]
 
         def _internal_api_base() -> str:
-            # Internal base URL for calling our own proxy within the same container
+            # Prefer public base to avoid self-call deadlocks; fallback to localhost for dev
             import os
-            port = os.environ.get("PORT", "8000")
-            return f"http://127.0.0.1:{port}"
+            return os.environ.get("PUBLIC_BASE_URL") or "https://mode-dash-production.up.railway.app"
 
         def _proxied_url(u: str) -> str:
             # Route external images through our cached proxy to avoid rate limits
@@ -500,8 +499,7 @@ def _draw_card_png(offer: dict, width: int, height: int, debug: bool = False, le
 
     def _internal_api_base() -> str:
         import os
-        port = os.environ.get("PORT", "8000")
-        return f"http://127.0.0.1:{port}"
+        return os.environ.get("PUBLIC_BASE_URL") or "https://mode-dash-production.up.railway.app"
 
     def _proxied_url(u: str) -> str:
         try:
