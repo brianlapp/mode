@@ -71,39 +71,87 @@ async def startup():
         except Exception as restore_error:
             print(f"❌ All restore methods failed: {restore_error}")
 
-async def auto_restore_campaigns():
-    """Auto-restore the 12 good campaigns when database is empty"""
+async def auto_restore_campaigns_on_startup():
+    """Auto-restore campaigns if database is empty or corrupted - CRITICAL for Railway deployments"""
+    import sqlite3
+    from database import get_db_path
+    
     try:
-        print("🔄 AUTO-RESTORING 12 CAMPAIGNS...")
+        print("🔍 CHECKING CAMPAIGN DATABASE...")
         
-        # The 12 GOOD campaigns (NO PRIZIES)
-        good_campaigns = [
-            # MMM Finance campaigns (5 total)
-            {"id": 1, "name": "Trading Tips", "tune_url": "https://track.modemobile.com/aff_c?offer_id=6998&aff_id=43045", "logo_url": "https://i.imgur.com/lHn301q.png", "main_image_url": "https://i.imgur.com/ZVGOktR.png", "description": "Get exclusive trading tips and market insights delivered daily to your inbox.", "cta_text": "Get Trading Tips", "offer_id": "6998", "aff_id": "43045", "property": "mmm"},
-            {"id": 2, "name": "Behind The Markets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7521&aff_id=43045", "logo_url": "https://i.imgur.com/O3iEVP7.jpeg", "main_image_url": "https://i.imgur.com/NA0o7iJ.png", "description": "Discover what's really happening behind the financial markets with expert analysis.", "cta_text": "Learn More", "offer_id": "7521", "aff_id": "43045", "property": "mmm"},
-            {"id": 3, "name": "Brownstone Research", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7389&aff_id=43045", "logo_url": "https://i.imgur.com/3KVDcV7.jpeg", "main_image_url": "https://i.imgur.com/vzoiVpd.png", "description": "Advanced technology and investment research from Brownstone Research experts.", "cta_text": "View Research", "offer_id": "7389", "aff_id": "43045", "property": "mmm"},
-            {"id": 4, "name": "Hotsheets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7385&aff_id=43045", "logo_url": "https://i.imgur.com/4JoGdZr.png", "main_image_url": "https://i.imgur.com/O81cPQJ.jpeg", "description": "Daily market hotsheets with the most profitable trading opportunities.", "cta_text": "Get Hotsheets", "offer_id": "7385", "aff_id": "43045", "property": "mmm"},
-            {"id": 5, "name": "Best Gold", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7390&aff_id=43045", "logo_url": "https://i.imgur.com/5Yb0LJn.png", "main_image_url": "https://i.imgur.com/EEOyDuZ.jpeg", "description": "Premium gold investment insights and recommendations from industry experts.", "cta_text": "Learn About Gold", "offer_id": "7390", "aff_id": "43045", "property": "mmm"},
+        # Check if campaigns exist
+        conn = sqlite3.connect(get_db_path())
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("SELECT COUNT(*) FROM campaigns WHERE active = 1")
+            campaign_count = cursor.fetchone()[0]
+            print(f"📊 Found {campaign_count} active campaigns")
             
-            # MFF Lifestyle campaigns (7 total)
-            {"id": 6, "name": "Daily Goodie Box", "tune_url": "https://track.modemobile.com/aff_c?offer_id=6571&aff_id=42946", "logo_url": "https://i.imgur.com/DH7Tp4A.jpeg", "main_image_url": "https://i.imgur.com/JpKD9AX.png", "description": "Get your daily goodie box filled with amazing free samples and deals.", "cta_text": "Claim Now!", "offer_id": "6571", "aff_id": "42946", "property": "mff"},
-            {"id": 7, "name": "Free Samples Guide", "tune_url": "https://track.modemobile.com/aff_c?offer_id=3907&aff_id=42946", "logo_url": "https://resources.rndsystems.com/images/promo_pages/free-sample-icon.png", "main_image_url": "https://i.imgur.com/vbgSfMi.jpeg", "description": "Get your comprehensive free samples guide with exclusive offers.", "cta_text": "Claim Now!", "offer_id": "3907", "aff_id": "42946", "property": "mff"},
-            {"id": 8, "name": "UpLevel - Amazon Mystery Box", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Grab an Amazon Mystery Box!", "cta_text": "Get Box!", "offer_id": "4689", "aff_id": "42946", "property": "mff"},
-            {"id": 9, "name": "Hulu - Hit Movies, TV and More!", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5555&aff_id=42946", "logo_url": "https://imgur.com/RHRuCvk.jpg", "main_image_url": "https://imgur.com/SEu1NtW.jpg", "description": "Exclusive Offers from Hulu!", "cta_text": "Get Hulu!", "offer_id": "5555", "aff_id": "42946", "property": "mff"},
-            {"id": 10, "name": "Paramount", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5172&aff_id=42946", "logo_url": "https://imgur.com/2IpSLaY.jpg", "main_image_url": "https://imgur.com/p8o0YSR.jpg", "description": "Exclusive Offers from Paramount+!", "cta_text": "Get Paramount+!", "offer_id": "5172", "aff_id": "42946", "property": "mff"},
-            {"id": 11, "name": "Trend'n Daily", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Grab an Amazon Mystery Box!", "cta_text": "Get Box!", "offer_id": "4689", "aff_id": "42946", "property": "mff"},
-            {"id": 14, "name": "Money.com - Online Stock Brokers", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7521&aff_id=43092", "logo_url": "https://i.imgur.com/O3iEVP7.jpeg", "main_image_url": "https://i.imgur.com/NA0o7iJ.png", "description": "Compare online stock brokers and find the best platform for your trading needs.", "cta_text": "View Offer", "offer_id": "7521", "aff_id": "43092", "property": "mmm"}
-        ]
+            # Also check for Prizies contamination
+            cursor.execute("SELECT COUNT(*) FROM campaigns WHERE name = 'Prizies'")
+            prizies_count = cursor.fetchone()[0]
+            
+            if prizies_count > 0:
+                print(f"🗑️ PRIZIES CONTAMINATION DETECTED: {prizies_count} Prizies campaigns found")
+                # Clear Prizies immediately
+                cursor.execute("DELETE FROM campaigns WHERE name = 'Prizies'")
+                cursor.execute("DELETE FROM campaign_properties WHERE campaign_id IN (SELECT id FROM campaigns WHERE name = 'Prizies')")
+                conn.commit()
+                print("✅ Prizies eliminated")
+                
+                # Recount after cleanup
+                cursor.execute("SELECT COUNT(*) FROM campaigns WHERE active = 1")
+                campaign_count = cursor.fetchone()[0]
+            
+            # Auto-restore if empty or corrupted (should have exactly 12 campaigns)
+            if campaign_count < 12:
+                print(f"⚠️ INSUFFICIENT CAMPAIGNS: Found {campaign_count}, need 12. Auto-restoring...")
+                await restore_12_clean_campaigns(conn)
+            else:
+                print(f"✅ Database healthy with {campaign_count} campaigns")
+                
+        except Exception as e:
+            print(f"❌ Database check failed: {e}")
+            print("🔄 Forcing emergency restore...")
+            await restore_12_clean_campaigns(conn)
         
-        from database import get_db_connection
-        conn = get_db_connection()
+        finally:
+            conn.close()
+            
+    except Exception as e:
+        print(f"❌ Startup auto-restore failed: {e}")
+
+async def restore_12_clean_campaigns(conn):
+    """Restore exactly 12 clean campaigns - NO PRIZIES"""
+    try:
+        print("🔄 RESTORING 12 CLEAN CAMPAIGNS...")
+        
+        # The 12 GOOD campaigns (NO PRIZIES) - Based on Mike's backup assignments
+        clean_campaigns = [
+            # MMM Finance campaigns (5 total) - aff_id 43045
+            {"id": 1, "name": "Trading Tips", "tune_url": "https://track.modemobile.com/aff_c?offer_id=6998&aff_id=43045&aff_sub5=popup_tradingTips", "logo_url": "https://i.imgur.com/lHn301q.png", "main_image_url": "https://i.imgur.com/ZVGOktR.png", "description": "Get exclusive trading tips and market insights delivered daily to your inbox.", "cta_text": "Get Trading Tips", "offer_id": "6998", "aff_id": "43045", "property": "mmm"},
+            {"id": 2, "name": "Behind The Markets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7521&aff_id=43045&aff_sub5=popup_behindMarkets", "logo_url": "https://i.imgur.com/O3iEVP7.jpeg", "main_image_url": "https://i.imgur.com/NA0o7iJ.png", "description": "Discover what's really happening behind the financial markets with expert analysis.", "cta_text": "Learn More", "offer_id": "7521", "aff_id": "43045", "property": "mmm"},
+            {"id": 3, "name": "Brownstone Research", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7389&aff_id=43045&aff_sub5=popup_brownstone", "logo_url": "https://i.imgur.com/3KVDcV7.jpeg", "main_image_url": "https://i.imgur.com/vzoiVpd.png", "description": "Advanced technology and investment research from Brownstone Research experts.", "cta_text": "View Research", "offer_id": "7389", "aff_id": "43045", "property": "mmm"},
+            {"id": 4, "name": "Hotsheets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7385&aff_id=43045&aff_sub5=popup_hotsheets", "logo_url": "https://i.imgur.com/4JoGdZr.png", "main_image_url": "https://i.imgur.com/O81cPQJ.jpeg", "description": "Daily market hotsheets with the most profitable trading opportunities.", "cta_text": "Get Hotsheets", "offer_id": "7385", "aff_id": "43045", "property": "mmm"},
+            {"id": 5, "name": "Best Gold", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7390&aff_id=43045&aff_sub5=popup_bestGold", "logo_url": "https://i.imgur.com/5Yb0LJn.png", "main_image_url": "https://i.imgur.com/EEOyDuZ.jpeg", "description": "Premium gold investment insights and recommendations from industry experts.", "cta_text": "Learn About Gold", "offer_id": "7390", "aff_id": "43045", "property": "mmm"},
+            
+            # MFF Lifestyle campaigns (7 total) - aff_id 42946 (NO PRIZIES!)
+            {"id": 6, "name": "Daily Goodie Box", "tune_url": "https://track.modemobile.com/aff_c?offer_id=6571&aff_id=42946&aff_sub2=perks", "logo_url": "https://i.imgur.com/DH7Tp4A.jpeg", "main_image_url": "https://i.imgur.com/JpKD9AX.png", "description": "Get your daily goodie box filled with amazing free samples and deals.", "cta_text": "Claim Now!", "offer_id": "6571", "aff_id": "42946", "property": "mff"},
+            {"id": 7, "name": "Free Samples Guide", "tune_url": "https://track.modemobile.com/aff_c?offer_id=3907&aff_id=42946&aff_sub2=perks", "logo_url": "https://resources.rndsystems.com/images/promo_pages/free-sample-icon.png", "main_image_url": "https://i.imgur.com/vbgSfMi.jpeg", "description": "Get your comprehensive free samples guide with exclusive offers.", "cta_text": "Claim Now!", "offer_id": "3907", "aff_id": "42946", "property": "mff"},
+            {"id": 8, "name": "UpLevel - Amazon Mystery Box", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946&aff_sub2=perks", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Grab an Amazon Mystery Box!", "cta_text": "Get Box!", "offer_id": "4689", "aff_id": "42946", "property": "mff"},
+            {"id": 9, "name": "Hulu - Hit Movies, TV and More!", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5555&aff_id=42946&aff_sub2=perks", "logo_url": "https://imgur.com/RHRuCvk.jpg", "main_image_url": "https://imgur.com/SEu1NtW.jpg", "description": "Exclusive Offers from Hulu!", "cta_text": "Get Hulu!", "offer_id": "5555", "aff_id": "42946", "property": "mff"},
+            {"id": 10, "name": "Paramount", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5172&aff_id=42946&aff_sub2=perks", "logo_url": "https://imgur.com/2IpSLaY.jpg", "main_image_url": "https://imgur.com/p8o0YSR.jpg", "description": "Exclusive Offers from Paramount+!", "cta_text": "Get Paramount+!", "offer_id": "5172", "aff_id": "42946", "property": "mff"},
+            {"id": 11, "name": "Trend'n Daily", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946&aff_sub2=perks", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Daily trending offers and deals!", "cta_text": "Get Deals!", "offer_id": "4689", "aff_id": "42946", "property": "mff"},
+            {"id": 12, "name": "UpLevelRewards", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946&aff_sub2=perks", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Level up your rewards with exclusive offers!", "cta_text": "Level Up!", "offer_id": "4689", "aff_id": "42946", "property": "mff"}
+        ]
         
         # Clear existing campaigns and properties
         conn.execute("DELETE FROM campaign_properties")
         conn.execute("DELETE FROM campaigns")
         
         # Restore the 12 good campaigns
-        for campaign in good_campaigns:
+        for campaign in clean_campaigns:
             conn.execute('''
                 INSERT INTO campaigns (
                     id, name, tune_url, logo_url, main_image_url, description,
@@ -125,13 +173,13 @@ async def auto_restore_campaigns():
             ''', (campaign['id'], property_code))
         
         conn.commit()
-        conn.close()
         
-        print("✅ AUTO-RESTORE COMPLETE: 12 campaigns restored (5 MMM + 7 MFF)")
+        print("✅ CLEAN RESTORE COMPLETE: 12 campaigns restored (5 MMM + 7 MFF)")
+        print("🗑️ NO PRIZIES - Database is now clean!")
         return True
         
     except Exception as e:
-        print(f"❌ Auto-restore failed: {e}")
+        print(f"❌ Clean restore failed: {e}")
         return False
 
 # Health check endpoint
@@ -663,6 +711,330 @@ app.include_router(properties_router, prefix="/api", tags=["properties"])
 # app.include_router(email_router, prefix="/api", tags=["email"])  # Disabled due to import issues
 
 # WORKING EMAIL GENERATION - SIMPLE TEXT FORMAT
+@app.get("/api/email/popup-capture.html")
+async def popup_capture_html(property: str = "mff"):
+    """Return HTML page that shows the working popup for manual screenshot"""
+    
+    popup_html = f'''<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Popup Capture - {property.upper()}</title>
+    <style>
+        body {{ 
+            margin: 0; 
+            padding: 20px; 
+            background: #f0f0f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }}
+        
+        .capture-container {{
+            width: 320px;
+            height: 480px;
+            margin: 0 auto;
+            background: white;
+            border: 2px solid #333;
+            position: relative;
+            overflow: hidden;
+        }}
+        
+        .instructions {{
+            text-align: center;
+            margin: 20px 0;
+            color: #333;
+        }}
+        
+        /* Force popup to show properly */
+        .mode-popup {{
+            position: relative !important;
+            transform: none !important;
+            opacity: 1 !important;
+            display: block !important;
+            margin: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+        }}
+        
+        .mode-popup-overlay {{
+            display: none !important;
+        }}
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>📸 Screenshot This Popup</h2>
+        <p>Use browser screenshot tools to capture just the popup area below</p>
+        <p>Property: <strong>{property.upper()}</strong></p>
+    </div>
+    
+    <div class="capture-container" id="popup-target">
+        <div style="text-align: center; padding: 50px; color: #666;">
+            Loading popup...
+        </div>
+    </div>
+    
+    <!-- Load the WORKING popup script -->
+    <script>
+        // Set the property
+        window.MODE_PROPERTY = '{property}';
+        
+        // Load popup script
+        const script = document.createElement('script');
+        script.src = '/popup.js';
+        script.onload = function() {{
+            console.log('Popup script loaded');
+            
+            // Wait a bit then force popup to show
+            setTimeout(() => {{
+                // Try to trigger popup
+                if (window.showModePopup) {{
+                    window.showModePopup('{property}');
+                }}
+                
+                // Force any popup to be visible
+                setTimeout(() => {{
+                    const popup = document.querySelector('.mode-popup');
+                    const overlay = document.querySelector('.mode-popup-overlay');
+                    const target = document.getElementById('popup-target');
+                    
+                    console.log('Popup element:', popup);
+                    
+                    if (popup) {{
+                        // Move popup to our container
+                        target.innerHTML = '';
+                        target.appendChild(popup);
+                        
+                        popup.style.position = 'relative';
+                        popup.style.transform = 'none';
+                        popup.style.opacity = '1';
+                        popup.style.display = 'block';
+                        popup.style.margin = '0';
+                        popup.style.width = '100%';
+                        popup.style.height = '100%';
+                    }}
+                    
+                    if (overlay) {{
+                        overlay.style.display = 'none';
+                    }}
+                    
+                    // Log what we found
+                    console.log('Popup setup complete');
+                }}, 2000);
+            }}, 1000);
+        }};
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>'''
+    
+    return Response(
+        content=popup_html,
+        media_type="text/html",
+        headers={
+            "Cache-Control": "no-cache",
+            "Content-Disposition": f"inline; filename=popup_capture_{property}.html"
+        }
+    )
+
+@app.get("/api/email/fixed.png")
+async def generate_fixed_email_png(property: str = "mff", width: int = 320, height: int = 480):
+    """Generate email PNG with PROPER popup dimensions - no stretching!"""
+    
+    try:
+        # Get campaign data
+        conn = get_db_connection()
+        cursor = conn.execute('''
+            SELECT c.*, cp.property_code 
+            FROM campaigns c
+            LEFT JOIN campaign_properties cp ON c.id = cp.campaign_id
+            WHERE cp.property_code = ? AND c.active = 1
+            ORDER BY RANDOM() LIMIT 1
+        ''', (property,))
+        
+        campaign = cursor.fetchone()
+        conn.close()
+        
+        if not campaign:
+            raise HTTPException(status_code=404, detail="No campaigns found")
+        
+        # Create image with PROPER popup dimensions
+        img = Image.new('RGB', (width, height), color='white')
+        draw = ImageDraw.Draw(img)
+        
+        # Popup styling (matching the working popup exactly)
+        padding = 24
+        content_width = width - (padding * 2)
+        current_y = padding
+        
+        # Property tagline (pink pill)
+        tagline = f"Thanks for Reading - You've unlocked bonus offers"
+        tagline_bg = '#F7007C'  # Mode pink
+        tagline_height = 32
+        
+        draw.rectangle([padding, current_y, width - padding, current_y + tagline_height], 
+                      fill=tagline_bg)
+        
+        # Use default font (which works!)
+        font = ImageFont.load_default()
+        
+        # Tagline text (centered, white on pink)
+        tagline_bbox = draw.textbbox((0, 0), tagline, font=font)
+        tagline_width = tagline_bbox[2] - tagline_bbox[0]
+        tagline_x = (width - tagline_width) // 2
+        draw.text((tagline_x, current_y + 8), tagline, fill='white', font=font)
+        
+        current_y += tagline_height + 20
+        
+        # Campaign title (bold, centered)
+        title = campaign['name']
+        title_bbox = draw.textbbox((0, 0), title, font=font)
+        title_width = title_bbox[2] - title_bbox[0]
+        
+        # Wrap title if too long
+        if title_width > content_width:
+            words = title.split()
+            title_line1 = ""
+            title_line2 = ""
+            
+            for word in words:
+                test_line = title_line1 + (" " if title_line1 else "") + word
+                test_bbox = draw.textbbox((0, 0), test_line, font=font)
+                if test_bbox[2] - test_bbox[0] <= content_width:
+                    title_line1 = test_line
+                else:
+                    title_line2 = word
+                    break
+            
+            # Draw title lines
+            if title_line1:
+                line1_bbox = draw.textbbox((0, 0), title_line1, font=font)
+                line1_width = line1_bbox[2] - line1_bbox[0]
+                line1_x = padding + (content_width - line1_width) // 2
+                draw.text((line1_x, current_y), title_line1, fill='#111827', font=font)
+                current_y += 25
+                
+            if title_line2:
+                line2_bbox = draw.textbbox((0, 0), title_line2, font=font)
+                line2_width = line2_bbox[2] - line2_bbox[0]
+                line2_x = padding + (content_width - line2_width) // 2
+                draw.text((line2_x, current_y), title_line2, fill='#111827', font=font)
+                current_y += 25
+        else:
+            # Single line title
+            title_x = padding + (content_width - title_width) // 2
+            draw.text((title_x, current_y), title, fill='#111827', font=font)
+            current_y += 30
+        
+        current_y += 10
+        
+        # Campaign image (proper aspect ratio, no stretching)
+        image_height = 160
+        image_width = content_width - 20
+        image_x = padding + 10
+        
+        # Try to load actual campaign image
+        try:
+            image_url = campaign['main_image_url']
+            if image_url and image_url.startswith('http'):
+                response = requests.get(image_url, timeout=5)
+                if response.status_code == 200:
+                    campaign_img = Image.open(BytesIO(response.content))
+                    
+                    # Resize maintaining aspect ratio (NO STRETCHING!)
+                    campaign_img.thumbnail((image_width, image_height), Image.Resampling.LANCZOS)
+                    
+                    # Center the image
+                    img_w, img_h = campaign_img.size
+                    paste_x = image_x + (image_width - img_w) // 2
+                    paste_y = current_y + (image_height - img_h) // 2
+                    
+                    img.paste(campaign_img, (paste_x, paste_y))
+                else:
+                    raise Exception("Failed to load image")
+            else:
+                raise Exception("No valid image URL")
+                
+        except Exception as e:
+            # Fallback image placeholder
+            draw.rectangle([image_x, current_y, image_x + image_width, current_y + image_height], 
+                          fill='#f8f9fa', outline='#e9ecef', width=2)
+            
+            placeholder_text = "Campaign Image"
+            placeholder_bbox = draw.textbbox((0, 0), placeholder_text, font=font)
+            placeholder_width = placeholder_bbox[2] - placeholder_bbox[0]
+            placeholder_x = image_x + (image_width - placeholder_width) // 2
+            placeholder_y = current_y + (image_height - 15) // 2
+            draw.text((placeholder_x, placeholder_y), placeholder_text, fill='#6c757d', font=font)
+        
+        current_y += image_height + 20
+        
+        # Description (wrapped, centered)
+        description = campaign['description'][:100] + "..." if len(campaign['description']) > 100 else campaign['description']
+        
+        # Simple text wrapping
+        words = description.split()
+        desc_lines = []
+        current_line = ""
+        
+        for word in words:
+            test_line = current_line + (" " if current_line else "") + word
+            test_bbox = draw.textbbox((0, 0), test_line, font=font)
+            if test_bbox[2] - test_bbox[0] <= content_width - 20:
+                current_line = test_line
+            else:
+                if current_line:
+                    desc_lines.append(current_line)
+                current_line = word
+        
+        if current_line:
+            desc_lines.append(current_line)
+        
+        # Draw description lines (max 2 lines)
+        for line in desc_lines[:2]:
+            line_bbox = draw.textbbox((0, 0), line, font=font)
+            line_width = line_bbox[2] - line_bbox[0]
+            line_x = padding + (content_width - line_width) // 2
+            draw.text((line_x, current_y), line, fill='#4b5563', font=font)
+            current_y += 20
+        
+        current_y += 15
+        
+        # CTA Button (purple, centered)
+        cta_text = campaign['cta_text']
+        button_height = 40
+        button_width = min(content_width - 40, 200)
+        button_x = padding + (content_width - button_width) // 2
+        button_color = '#8b5cf6'  # Purple like popup
+        
+        # Draw button
+        draw.rectangle([button_x, current_y, button_x + button_width, current_y + button_height], 
+                      fill=button_color)
+        
+        # Button text (centered)
+        cta_bbox = draw.textbbox((0, 0), cta_text, font=font)
+        cta_width = cta_bbox[2] - cta_bbox[0]
+        cta_x = button_x + (button_width - cta_width) // 2
+        cta_y = current_y + (button_height - 15) // 2
+        draw.text((cta_x, cta_y), cta_text, fill='white', font=font)
+        
+        # Convert to PNG bytes
+        buffer = BytesIO()
+        img.save(buffer, format='PNG', quality=95)
+        png_bytes = buffer.getvalue()
+        
+        return Response(
+            content=png_bytes,
+            media_type="image/png",
+            headers={
+                "Cache-Control": "public, max-age=3600",
+                "Content-Disposition": f"inline; filename=email_{property}_{width}x{height}.png"
+            }
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
+
 @app.get("/api/email/ad.png")
 async def working_email_ad_png(property: str = "mff", w: int = 600, h: int = 400, send: str = "qa"):
     """Working email ad generation - returns campaign text"""
