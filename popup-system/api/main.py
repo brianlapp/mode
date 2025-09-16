@@ -649,7 +649,7 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         
         # Add footer text like popup
         current_y += button_height + 15
-        footer_text = f"Grab an {campaign_title}!"
+        footer_text = "T&Cs Apply | Powered by Thanks • Privacy Policy"
         bbox = draw.textbbox((0, 0), footer_text, font=desc_font)
         footer_width = bbox[2] - bbox[0]
         footer_x = padding + (content_width - footer_width) // 2
@@ -1494,8 +1494,8 @@ async def emergency_restore_12_campaigns():
             {"id": 8, "name": "UpLevel - Amazon Mystery Box", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Grab an Amazon Mystery Box!", "cta_text": "Get Box!", "offer_id": "4689", "aff_id": "42946", "active": True},
             {"id": 9, "name": "Hulu - Hit Movies, TV and More!", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5555&aff_id=42946", "logo_url": "https://imgur.com/RHRuCvk.jpg", "main_image_url": "https://imgur.com/SEu1NtW.jpg", "description": "Exclusive Offers from Hulu!", "cta_text": "Get Hulu!", "offer_id": "5555", "aff_id": "42946", "active": True},
             {"id": 10, "name": "Paramount", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5172&aff_id=42946", "logo_url": "https://imgur.com/2IpSLaY.jpg", "main_image_url": "https://imgur.com/p8o0YSR.jpg", "description": "Exclusive Offers from Paramount+!", "cta_text": "Get Paramount+!", "offer_id": "5172", "aff_id": "42946", "active": True},
-            {"id": 11, "name": "Trend'n Daily", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Grab an Amazon Mystery Box!", "cta_text": "Get Box!", "offer_id": "4689", "aff_id": "42946", "active": True},
-            {"id": 14, "name": "Money.com - Online Stock Brokers", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7521&aff_id=43092", "logo_url": "https://i.imgur.com/O3iEVP7.jpeg", "main_image_url": "https://i.imgur.com/NA0o7iJ.png", "description": "Compare online stock brokers and find the best platform for your trading needs.", "cta_text": "View Offer", "offer_id": "7521", "aff_id": "43092", "active": True}
+            {"id": 11, "name": "Trend'n Daily", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Daily trending offers and deals!", "cta_text": "Get Deals!", "offer_id": "4689", "aff_id": "42946", "active": True},
+            {"id": 12, "name": "UpLevelRewards", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Level up your rewards with exclusive offers!", "cta_text": "Level Up!", "offer_id": "4689", "aff_id": "42946", "active": True}
         ]
         
         # IMPORTANT: Use the same connection path used by init_db (DB_PATH)
