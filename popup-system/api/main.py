@@ -409,19 +409,27 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         img = Image.new('RGB', (width, height), color=prop_config['secondary_color'])
         draw = ImageDraw.Draw(img)
         
-        # Load fonts
-        title_font, font_debug = load_font_with_fallbacks("title-bold", 24)
+        # Determine if mobile layout (narrower than 400px)
+        is_mobile = width <= 400
+        
+        # Adjust font sizes for mobile
+        title_size = 20 if is_mobile else 24
+        desc_size = 12 if is_mobile else 14
+        cta_size = 16 if is_mobile else 18
+        
+        # Load fonts with adjusted sizes
+        title_font, font_debug = load_font_with_fallbacks("title-bold", title_size)
         debug_info["font"] = font_debug
-        desc_font, _ = load_font_with_fallbacks("desc", 14)
-        cta_font, _ = load_font_with_fallbacks("cta-bold", 18)
+        desc_font, _ = load_font_with_fallbacks("desc", desc_size)
+        cta_font, _ = load_font_with_fallbacks("cta-bold", cta_size)
         
         # Layout
         padding = 24  # Match popup padding
         content_width = width - (padding * 2)
         
-        # CRITICAL: Add circle logo in top-left corner (56px, matching popup design)
-        logo_size = 56
-        logo_margin = 24
+        # CRITICAL: Add circle logo in top-left corner (adjust size for mobile)
+        logo_size = 48 if is_mobile else 56
+        logo_margin = 16 if is_mobile else 24
         logo_url = campaign_data.get('logo_url')
         
         if logo_url:
@@ -487,17 +495,30 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         # Adjust content start position to account for logo
         current_y = logo_margin + logo_size + 20
         
-        # Header with tagline pill (like popup)
+        # Header with tagline pill (like popup) - NOT full width!
         pill_text = prop_config['tagline']
-        pill_width = content_width
-        pill_height = 30
-        draw.rectangle([padding, current_y, padding + pill_width, current_y + pill_height], 
-                      fill=prop_config['primary_color'])
+        pill_padding = 12
         
-        # Center the tagline text
+        # Calculate pill size based on text
         bbox = draw.textbbox((0, 0), pill_text, font=desc_font)
         text_width = bbox[2] - bbox[0]
-        text_x = padding + (pill_width - text_width) // 2
+        pill_width = text_width + (pill_padding * 2)
+        pill_height = 30
+        
+        # Center the pill horizontally
+        pill_x = padding + (content_width - pill_width) // 2
+        
+        # Draw rounded pill (not full width rectangle!)
+        # Use rounded rectangle for pill shape
+        pill_radius = pill_height // 2
+        draw.rounded_rectangle(
+            [pill_x, current_y, pill_x + pill_width, current_y + pill_height], 
+            radius=pill_radius,
+            fill=prop_config['primary_color']
+        )
+        
+        # Center the tagline text in the pill
+        text_x = pill_x + pill_padding
         draw.text((text_x, current_y + 8), pill_text, fill='white', font=desc_font)
         current_y += pill_height + 15
         
@@ -510,9 +531,15 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
                  fill=prop_config['accent_color'], font=title_font)
         current_y += 45
         
-        # Campaign image (280x120px matching popup proportions)
-        target_image_width = 280
-        target_image_height = 120
+        # Campaign image (adjust size for mobile)
+        if is_mobile:
+            # Mobile: smaller image that fits better
+            target_image_width = min(280, content_width - 20)
+            target_image_height = int(target_image_width * 0.43)  # Maintain aspect ratio
+        else:
+            # Desktop: 280x120px matching popup proportions
+            target_image_width = 280
+            target_image_height = 120
         image_x = padding + (content_width - target_image_width) // 2  # Center the image
         
         # Try to load the actual campaign image
@@ -1248,10 +1275,23 @@ async def generate_fixed_email_png(property: str = "mff", width: int = 320, heig
         raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
 
 @app.get("/api/email/ad.png")
-async def working_email_ad_png(property: str = "mff", w: int = 600, h: int = 400, send: str = "qa"):
+async def working_email_ad_png(
+    property: str = "mff", 
+    w: int = None, 
+    h: int = None, 
+    variant: str = "desktop",
+    send: str = "qa"
+):
     """Working email ad generation - returns campaign text"""
     try:
         from database import get_db_connection
+        
+        # Set dimensions based on variant if not explicitly provided
+        if w is None or h is None:
+            if variant == "mobile":
+                w, h = 320, 480
+            else:  # desktop
+                w, h = 600, 400
         
         # Get a random active campaign
         conn = get_db_connection()
