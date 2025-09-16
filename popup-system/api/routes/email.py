@@ -152,23 +152,69 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
                  fill=prop_config['accent_color'], font=title_font)
         current_y += 45
         
-        # Campaign image placeholder (styled like popup)
+        # Campaign image (actual image loading)
         image_height = 120
         image_padding = 40
         image_width = content_width - (image_padding * 2)
+        image_x = padding + image_padding
         
-        # Draw image background
-        draw.rectangle([padding + image_padding, current_y, 
-                       padding + image_padding + image_width, current_y + image_height], 
-                     fill='#f8f9fa', outline='#e9ecef', width=2)
+        # Try to load the actual campaign image
+        campaign_image = None
+        image_url = campaign_data.get('main_image_url')
         
-        # Image placeholder text
-        placeholder_text = "Campaign Image"
-        bbox = draw.textbbox((0, 0), placeholder_text, font=desc_font)
-        placeholder_width = bbox[2] - bbox[0]
-        placeholder_x = padding + image_padding + (image_width - placeholder_width) // 2
-        placeholder_y = current_y + (image_height - 20) // 2
-        draw.text((placeholder_x, placeholder_y), placeholder_text, fill='#6c757d', font=desc_font)
+        if image_url:
+            try:
+                # Direct image loading without external imports
+                import urllib.request
+                import urllib.error
+                from io import BytesIO
+                
+                # Fix common imgur URL issues
+                fixed_url = image_url
+                if "imgur.com/" in fixed_url:
+                    if not fixed_url.startswith("https://i.imgur.com/"):
+                        fixed_url = fixed_url.replace("imgur.com/", "i.imgur.com/")
+                    if not fixed_url.endswith(('.jpg', '.png', '.gif', '.jpeg')):
+                        fixed_url += '.jpg'
+                
+                # Fetch image with proper headers
+                req = urllib.request.Request(fixed_url)
+                req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+                req.add_header('Accept', 'image/webp,image/apng,image/*,*/*;q=0.8')
+                req.add_header('Referer', 'https://imgur.com/')
+                
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    if response.status == 200:
+                        image_data = response.read()
+                        # Load and resize image
+                        campaign_image = Image.open(BytesIO(image_data))
+                        if campaign_image.mode in ('RGBA', 'P'):
+                            campaign_image = campaign_image.convert('RGB')
+                        campaign_image = campaign_image.resize((image_width, image_height), Image.Resampling.LANCZOS)
+                        debug_info["image_loading"] = f"Successfully loaded: {fixed_url} ({len(image_data)} bytes)"
+                    else:
+                        debug_info["image_loading"] = f"HTTP {response.status} for {fixed_url}"
+                        
+            except Exception as e:
+                debug_info["image_loading"] = f"Failed to load {image_url}: {str(e)}"
+                campaign_image = None
+        
+        if campaign_image:
+            # Paste the actual campaign image
+            img.paste(campaign_image, (image_x, current_y))
+        else:
+            # Draw fallback with border
+            draw.rectangle([image_x, current_y, 
+                           image_x + image_width, current_y + image_height], 
+                         fill='#f8f9fa', outline='#e9ecef', width=2)
+            
+            # Fallback text
+            placeholder_text = "IMAGE MISSING" if image_url else "No Image URL"
+            bbox = draw.textbbox((0, 0), placeholder_text, font=desc_font)
+            placeholder_width = bbox[2] - bbox[0]
+            placeholder_x = image_x + (image_width - placeholder_width) // 2
+            placeholder_y = current_y + (image_height - 20) // 2
+            draw.text((placeholder_x, placeholder_y), placeholder_text, fill='#dc3545', font=desc_font)
         
         current_y += image_height + 20
         
