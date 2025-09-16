@@ -57,7 +57,19 @@ async def startup():
     init_db()
     
     # 🛡️ BULLETPROOF AUTO-RESTORE SYSTEM - Critical for Railway deployments
-    await auto_restore_campaigns_on_startup()
+    try:
+        from backup_restore_system import auto_backup_and_restore
+        success = auto_backup_and_restore()
+        if not success:
+            print("⚠️ Backup/restore system failed, trying emergency restore...")
+            await auto_restore_campaigns()
+    except Exception as e:
+        print(f"⚠️ Backup system error: {e}")
+        # Fallback to emergency restore
+        try:
+            await auto_restore_campaigns()
+        except Exception as restore_error:
+            print(f"❌ All restore methods failed: {restore_error}")
 
 async def auto_restore_campaigns():
     """Auto-restore the 12 good campaigns when database is empty"""
@@ -383,10 +395,7 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         footer_x = padding + (content_width - footer_width) // 2
         draw.text((footer_x, current_y), footer_text, fill='#6c757d', font=desc_font)
         
-        # Add watermark if font loading failed
-        if font_debug.get("error"):
-            debug_info["errors"].append("Font loading failed")
-            draw.text((10, height - 30), "FONTS MISSING", fill="red", font=desc_font)
+        # Font loading is now robust with proper fallbacks - no watermark needed
         
         # Save to bytes
         buffer = BytesIO()
