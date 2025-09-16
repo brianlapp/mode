@@ -509,13 +509,21 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         pill_x = padding + (content_width - pill_width) // 2
         
         # Draw rounded pill (not full width rectangle!)
-        # Use rounded rectangle for pill shape
+        # Manual rounded rectangle for compatibility with older Pillow
         pill_radius = pill_height // 2
-        draw.rounded_rectangle(
-            [pill_x, current_y, pill_x + pill_width, current_y + pill_height], 
-            radius=pill_radius,
-            fill=prop_config['primary_color']
-        )
+        
+        # Draw the pill shape manually
+        # Left circle
+        draw.ellipse([pill_x, current_y, pill_x + pill_height, current_y + pill_height], 
+                    fill=prop_config['primary_color'])
+        # Right circle  
+        draw.ellipse([pill_x + pill_width - pill_height, current_y, 
+                     pill_x + pill_width, current_y + pill_height], 
+                    fill=prop_config['primary_color'])
+        # Center rectangle
+        draw.rectangle([pill_x + pill_radius, current_y, 
+                       pill_x + pill_width - pill_radius, current_y + pill_height], 
+                      fill=prop_config['primary_color'])
         
         # Center the tagline text in the pill
         text_x = pill_x + pill_padding
@@ -675,12 +683,17 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         draw.text((text_x, text_y), cta_text, fill="white", font=cta_font)
         
         # Add footer text like popup
-        current_y += button_height + 15
+        current_y += button_height + 10
+        
+        # Smaller font for footer
+        footer_font_size = 10 if is_mobile else 11
+        footer_font, _ = load_font_with_fallbacks("footer", footer_font_size)
+        
         footer_text = "T&Cs Apply | Powered by Thanks • Privacy Policy"
-        bbox = draw.textbbox((0, 0), footer_text, font=desc_font)
+        bbox = draw.textbbox((0, 0), footer_text, font=footer_font)
         footer_width = bbox[2] - bbox[0]
         footer_x = padding + (content_width - footer_width) // 2
-        draw.text((footer_x, current_y), footer_text, fill='#6c757d', font=desc_font)
+        draw.text((footer_x, current_y), footer_text, fill='#9ca3af', font=footer_font)
         
         # Font loading is now robust with proper fallbacks - no watermark needed
         
