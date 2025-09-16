@@ -81,13 +81,13 @@ MIKES_REAL_CAMPAIGNS = [
     },
     # 🎯 MISSING MFF CAMPAIGNS - RESTORED FROM BACKUP
     {
-        "name": "Prizies",
-        "tune_url": "https://track.modemobile.com/aff_c?offer_id=7774&aff_id=42946&aff_sub2=perks",
-        "logo_url": "https://imgur.com/QEt3znb.jpg",
-        "main_image_url": "https://imgur.com/KCp0xqn.jpg",
-        "description": "Win $1,000 Cashapp!",
-        "cta_text": "Win Now!",
-        "offer_id": "7774",
+        "name": "UpLevel - Amazon Mystery Box",
+        "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946&aff_sub2=perks",
+        "logo_url": "https://imgur.com/Xmb1P8t.jpg",
+        "main_image_url": "https://imgur.com/tA8fYBO.jpg",
+        "description": "Grab an Amazon Mystery Box!",
+        "cta_text": "Get Box!",
+        "offer_id": "4689",
         "aff_id": "42946"
     },
     {
@@ -120,16 +120,6 @@ MIKES_REAL_CAMPAIGNS = [
         "offer_id": "4689",
         "aff_id": "42946"
     },
-    {
-        "name": "Prizies",
-        "tune_url": "https://track.modemobile.com/aff_c?offer_id=3752&aff_id=42946&aff_sub2=perks",
-        "logo_url": "https://imgur.com/QEt3znb.jpg",
-        "main_image_url": "https://imgur.com/KCp0xqn.jpg",
-        "description": "Win $1,000 Cashapp!",
-        "cta_text": "Win!",
-        "offer_id": "3752",
-        "aff_id": "42946"
-    }
 ]
 
 def is_legitimate_campaign(campaign_data):

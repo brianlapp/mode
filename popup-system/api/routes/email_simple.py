@@ -1,6 +1,6 @@
 """
-Email Ad PNG Generation Routes - FIXED VERSION
-Handles generation of PNG email ads with proper font loading and popup-style design
+Email Ad PNG Generation Routes - Simplified for Railway deployment
+Handles generation of PNG email ads with proper font loading and basic image handling
 """
 
 import os
@@ -8,17 +8,9 @@ import hashlib
 from pathlib import Path
 from typing import Optional, Dict, Any
 from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont
 from fastapi import APIRouter, HTTPException, Response
 import logging
-import datetime
-
-# Try to import PIL, fallback if not available
-try:
-    from PIL import Image, ImageDraw, ImageFont
-    PIL_AVAILABLE = True
-except ImportError:
-    PIL_AVAILABLE = False
-    Image = ImageDraw = ImageFont = None
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Property configurations - FIXED
+# Property configurations
 PROPERTY_CONFIG = {
     'mff': {
         'name': 'ModeFreeFinds',
@@ -44,8 +36,8 @@ PROPERTY_CONFIG = {
     }
 }
 
-def load_font_with_fallbacks(font_name: str, size: int):
-    """Load font with comprehensive fallback strategy - WORKING VERSION"""
+def load_font_with_fallbacks(font_name: str, size: int) -> tuple[ImageFont.FreeTypeFont, dict]:
+    """Load font with comprehensive fallback strategy"""
     debug_info = {
         "family": font_name,
         "size": size,
@@ -53,20 +45,18 @@ def load_font_with_fallbacks(font_name: str, size: int):
         "error": None
     }
     
-    # Font candidates in order of preference (Railway/Linux compatible)
+    # Font candidates in order of preference
     if "bold" in font_name.lower() or "extra" in font_name.lower():
         font_candidates = [
-            "/System/Library/Fonts/Helvetica.ttc",  # macOS
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",  # Linux
-            "/usr/share/fonts/TTF/arial.ttf",  # Some Linux
+            "/System/Library/Fonts/Helvetica.ttc",
+            "/System/Library/Fonts/Arial Bold.ttf",
             "arial.ttf",
             "DejaVuSans-Bold.ttf"
         ]
     else:
         font_candidates = [
-            "/System/Library/Fonts/Helvetica.ttc",  # macOS
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  # Linux
-            "/usr/share/fonts/TTF/arial.ttf",  # Some Linux
+            "/System/Library/Fonts/Helvetica.ttc",
+            "/System/Library/Fonts/Arial.ttf", 
             "arial.ttf",
             "DejaVuSans.ttf"
         ]
@@ -95,20 +85,15 @@ def load_font_with_fallbacks(font_name: str, size: int):
         debug_info["error"] = error_msg
         raise HTTPException(status_code=500, detail=error_msg)
 
-def create_popup_style_email_ad(property_name: str, width: int, height: int, campaign_data: dict):
-    """Create email ad matching popup design - WORKING VERSION"""
+def create_popup_style_email_ad(property_name: str, width: int, height: int, campaign_data: dict) -> tuple[bytes, dict]:
+    """Create email ad matching popup design"""
     debug_info = {
         "property": property_name,
         "dimensions": f"{width}x{height}",
         "font": {},
         "generation": {},
-        "errors": [],
-        "pil_available": PIL_AVAILABLE
+        "errors": []
     }
-    
-    if not PIL_AVAILABLE:
-        debug_info["errors"].append("PIL not available")
-        return b"PIL not available", debug_info
     
     try:
         # Get property config
@@ -162,8 +147,12 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
                        padding + image_padding + image_width, current_y + image_height], 
                      fill='#f8f9fa', outline='#e9ecef', width=2)
         
-        # Image placeholder text
-        placeholder_text = "Campaign Image"
+        # Image placeholder text or actual image indication
+        if campaign_data.get('main_image_url'):
+            placeholder_text = "Campaign Image (URL provided)"
+        else:
+            placeholder_text = "Campaign Image"
+            
         bbox = draw.textbbox((0, 0), placeholder_text, font=desc_font)
         placeholder_width = bbox[2] - bbox[0]
         placeholder_x = padding + image_padding + (image_width - placeholder_width) // 2
@@ -240,6 +229,8 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         
         debug_info["generation"]["success"] = True
         debug_info["generation"]["png_size"] = len(png_bytes)
+        
+        import datetime
         debug_info["timestamp"] = datetime.datetime.now().isoformat()
         
         logger.info(f"Successfully generated {width}x{height} PNG for {property_name}")
@@ -254,11 +245,7 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         # Return error placeholder
         img = Image.new('RGB', (width, height), color='#ff0000')
         draw = ImageDraw.Draw(img)
-        try:
-            error_font, _ = load_font_with_fallbacks("error", 16)
-            draw.text((20, height//2), "GENERATION ERROR", fill="white", font=error_font)
-        except:
-            draw.text((20, height//2), "GENERATION ERROR", fill="white")
+        draw.text((20, height//2), "GENERATION ERROR", fill="white")
         buffer = BytesIO()
         img.save(buffer, format='PNG')
         return buffer.getvalue(), debug_info
@@ -270,16 +257,9 @@ async def get_email_ad_png(
     h: int = 400,
     send: str = "qa"
 ):
-    """Generate email ad PNG - FIXED VERSION"""
-    if not PIL_AVAILABLE:
-        return Response(
-            content=b"PIL not available",
-            media_type="text/plain",
-            status_code=500
-        )
-        
+    """Generate email ad PNG"""
     try:
-        # Get campaign data from database with fallback
+        # Get campaign data from database
         try:
             from database import get_db_connection
             conn = get_db_connection()
@@ -302,23 +282,18 @@ async def get_email_ad_png(
                     'cta_text': campaign[4]
                 }
             else:
-                raise ValueError("No campaigns found")
-                
-        except Exception as e:
-            logger.warning(f"Database error, using fallback: {e}")
-            # Use property-specific fallback data
-            if property.lower() == 'mmm':
-                campaign_data = {
-                    'name': 'Market Munchies Special',
-                    'description': 'Get exclusive market insights and trading opportunities delivered daily.',
-                    'cta_text': 'Get Market Tips'
-                }
-            else:
                 campaign_data = {
                     'name': 'Trading Tips',
                     'description': 'Get exclusive trading tips and market insights delivered daily to your inbox.',
                     'cta_text': 'Get Trading Tips'
                 }
+        except Exception as e:
+            logger.warning(f"Database error, using fallback: {e}")
+            campaign_data = {
+                'name': 'Trading Tips',
+                'description': 'Get exclusive trading tips and market insights delivered daily to your inbox.',
+                'cta_text': 'Get Trading Tips'
+            }
         
         png_bytes, debug_info = create_popup_style_email_ad(property, w, h, campaign_data)
         
@@ -332,11 +307,7 @@ async def get_email_ad_png(
         )
     except Exception as e:
         logger.error(f"PNG endpoint error: {str(e)}")
-        return Response(
-            content=f"ERROR: {str(e)}".encode(),
-            media_type="text/plain",
-            status_code=500
-        )
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/ad.debug")
 async def get_email_ad_debug(
@@ -345,22 +316,24 @@ async def get_email_ad_debug(
     h: int = 400,
     send: str = "qa"
 ):
-    """Get debug information for email ad generation - FIXED VERSION"""
-    return {
-        "SYSTEM": "NEW_FIXED_EMAIL_SYSTEM", 
-        "VERSION": "2.0",
-        "property": property,
-        "dimensions": f"{w}x{h}",
-        "timestamp": datetime.datetime.now().isoformat(),
-        "message": "This is the NEW fixed email system!",
-        "status": "WORKING"
-    }
-
-@router.get("/test")
-async def test_new_system():
-    """Test endpoint to verify new system is working"""
-    return {
-        "message": "NEW EMAIL SYSTEM IS ACTIVE!",
-        "version": "2.0",
-        "timestamp": datetime.datetime.now().isoformat()
-    }
+    """Get debug information for email ad generation"""
+    try:
+        # Use fallback campaign data for debug
+        campaign_data = {
+            'name': 'Trading Tips',
+            'description': 'Get exclusive trading tips and market insights delivered daily to your inbox.',
+            'cta_text': 'Get Trading Tips'
+        }
+        
+        _, debug_info = create_popup_style_email_ad(property, w, h, campaign_data)
+        return debug_info
+    except Exception as e:
+        logger.error(f"Debug endpoint error: {str(e)}")
+        return {
+            "error": str(e),
+            "property": property,
+            "dimensions": f"{w}x{h}",
+            "timestamp": "",
+            "font": {"error": "Debug generation failed"},
+            "generation": {"error": str(e)}
+        }
