@@ -492,11 +492,16 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
             draw.ellipse([logo_margin, logo_margin, logo_margin + logo_size, logo_margin + logo_size], 
                        fill='#e9ecef', outline='#dee2e6', width=2)
         
-        # Adjust content start position to account for logo
-        current_y = logo_margin + logo_size + 20
+        # Header with tagline pill
+        if is_mobile:
+            # Mobile: pill next to logo on same row
+            pill_text = "Bonus Offers"  # Very short for mobile
+            current_y = logo_margin + (logo_size - 30) // 2  # Vertically center with logo
+        else:
+            # Desktop: pill below logo
+            current_y = logo_margin + logo_size + 20
+            pill_text = prop_config['tagline']  # Full text for desktop
         
-        # Header with tagline pill (like popup) - NOT full width!
-        pill_text = prop_config['tagline']
         pill_padding = 12
         
         # Calculate pill size based on text
@@ -505,8 +510,13 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         pill_width = text_width + (pill_padding * 2)
         pill_height = 30
         
-        # Center the pill horizontally
-        pill_x = padding + (content_width - pill_width) // 2
+        # Position pill
+        if is_mobile:
+            # Mobile: position to the right of logo
+            pill_x = logo_margin + logo_size + 10
+        else:
+            # Desktop: center horizontally
+            pill_x = padding + (content_width - pill_width) // 2
         
         # Draw rounded pill (not full width rectangle!)
         # Manual rounded rectangle for compatibility with older Pillow
@@ -528,7 +538,14 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         # Center the tagline text in the pill
         text_x = pill_x + pill_padding
         draw.text((text_x, current_y + 8), pill_text, fill='white', font=desc_font)
-        current_y += pill_height + 15
+        
+        # Adjust vertical position for next content
+        if is_mobile:
+            # Mobile: move below the logo/pill row
+            current_y = logo_margin + logo_size + 15
+        else:
+            # Desktop: standard spacing
+            current_y += pill_height + 15
         
         # Campaign title (larger, centered)
         campaign_title = campaign_data.get('name', 'Exclusive Offer')
