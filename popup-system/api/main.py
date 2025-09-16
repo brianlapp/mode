@@ -286,36 +286,42 @@ async def direct_email_ad_png(property: str = "mff", w: int = 600, h: int = 400,
         # Try to create image with PIL, fallback to text
         try:
             from PIL import Image, ImageDraw, ImageFont
+            from io import BytesIO
             
             # Create simple branded image
             img = Image.new('RGB', (w, h), color='white')
             draw = ImageDraw.Draw(img)
             
             # Use default font
-            font = ImageFont.load_default()
+            try:
+                font = ImageFont.load_default()
+            except:
+                font = None
             
             # Property colors
             color = '#F7007C' if property.lower() == 'mff' else '#00FF7F'
             
             # Draw header
             draw.rectangle([10, 10, w-10, 50], fill=color)
-            draw.text((20, 20), f"Thanks for Reading - You've unlocked bonus offers", fill='white', font=font)
+            if font:
+                draw.text((20, 20), "Thanks for Reading - You've unlocked bonus offers", fill='white', font=font)
             
             # Campaign title
-            draw.text((20, 70), campaign_name or "Exclusive Offer", fill='black', font=font)
+            if font:
+                draw.text((20, 70), campaign_name or "Exclusive Offer", fill='black', font=font)
             
             # Description
-            if description:
+            if description and font:
                 words = description.split()[:10]  # First 10 words
                 desc_text = ' '.join(words) + ('...' if len(description.split()) > 10 else '')
                 draw.text((20, 100), desc_text, fill='black', font=font)
             
             # CTA button
             draw.rectangle([20, h-60, w-20, h-20], fill='#7C3AED')
-            draw.text((30, h-45), cta_text or "Learn More", fill='white', font=font)
+            if font:
+                draw.text((30, h-45), cta_text or "Learn More", fill='white', font=font)
             
             # Save to bytes
-            from io import BytesIO
             buffer = BytesIO()
             img.save(buffer, format='PNG')
             
@@ -327,7 +333,7 @@ async def direct_email_ad_png(property: str = "mff", w: int = 600, h: int = 400,
             
         except ImportError:
             # PIL not available, return text response
-            response_text = f"Campaign: {campaign_name}\\nDescription: {description}\\nCTA: {cta_text}"
+            response_text = f"Campaign: {campaign_name}\nDescription: {description}\nCTA: {cta_text}"
             return Response(content=response_text.encode(), media_type="text/plain")
             
     except Exception as e:
