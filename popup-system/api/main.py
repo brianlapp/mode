@@ -1242,5 +1242,5 @@ if __name__ == "__main__":
         host="0.0.0.0", 
         port=8000, 
         reload=True
-    ) # Force deployment trigger v2 - Campaign Data Manager fixes
+    ) # Force deployment trigger v3 - Updated emergency restore with clean data
  
