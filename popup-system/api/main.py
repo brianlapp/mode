@@ -53,31 +53,11 @@ if frontend_path.exists():
 async def startup():
     print("🚀 STARTING MODE POPUP SYSTEM...")
     
-    # 🛡️ ENSURE RAILWAY VOLUME MOUNT - Critical for data persistence
-    try:
-        from ensure_volume import ensure_railway_volume
-        if not ensure_railway_volume():
-            print("🚨 CRITICAL: Volume mount failed - data will not persist!")
-    except Exception as e:
-        print(f"⚠️ Warning: Volume check failed: {e}")
-    
     # Initialize database first
     init_db()
     
-    # 🛡️ BULLETPROOF AUTO-RESTORE SYSTEM
-    try:
-        from backup_restore_system import auto_backup_and_restore
-        success = auto_backup_and_restore()
-        if not success:
-            print("⚠️ Backup/restore system failed, trying emergency restore...")
-            await auto_restore_campaigns()
-    except Exception as e:
-        print(f"⚠️ Backup system error: {e}")
-        # Fallback to emergency restore
-        try:
-            await auto_restore_campaigns()
-        except Exception as restore_error:
-            print(f"❌ All restore methods failed: {restore_error}")
+    # 🛡️ BULLETPROOF AUTO-RESTORE SYSTEM - Critical for Railway deployments
+    await auto_restore_campaigns_on_startup()
 
 async def auto_restore_campaigns():
     """Auto-restore the 12 good campaigns when database is empty"""
@@ -293,16 +273,40 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         
         if image_url:
             try:
-                # Import our image loader
-                import sys
-                import os
-                sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
-                from image_loader import load_campaign_image, create_fallback_image
+                # Direct image loading without external imports
+                import urllib.request
+                import urllib.error
+                from io import BytesIO
                 
-                campaign_image = load_campaign_image(image_url, (image_width, image_height))
-                debug_info["image_loading"] = f"Successfully loaded: {image_url}"
+                # Fix common imgur URL issues
+                fixed_url = image_url
+                if "imgur.com/" in fixed_url:
+                    if not fixed_url.startswith("https://i.imgur.com/"):
+                        fixed_url = fixed_url.replace("imgur.com/", "i.imgur.com/")
+                    if not fixed_url.endswith(('.jpg', '.png', '.gif', '.jpeg')):
+                        fixed_url += '.jpg'
+                
+                # Fetch image with proper headers
+                req = urllib.request.Request(fixed_url)
+                req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+                req.add_header('Accept', 'image/webp,image/apng,image/*,*/*;q=0.8')
+                req.add_header('Referer', 'https://imgur.com/')
+                
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    if response.status == 200:
+                        image_data = response.read()
+                        # Load and resize image
+                        campaign_image = Image.open(BytesIO(image_data))
+                        if campaign_image.mode in ('RGBA', 'P'):
+                            campaign_image = campaign_image.convert('RGB')
+                        campaign_image = campaign_image.resize((image_width, image_height), Image.Resampling.LANCZOS)
+                        debug_info["image_loading"] = f"Successfully loaded: {fixed_url} ({len(image_data)} bytes)"
+                    else:
+                        debug_info["image_loading"] = f"HTTP {response.status} for {fixed_url}"
+                        
             except Exception as e:
                 debug_info["image_loading"] = f"Failed to load {image_url}: {str(e)}"
+                campaign_image = None
         
         if campaign_image:
             # Paste the actual campaign image
@@ -420,14 +424,14 @@ async def font_diagnostic():
     base_dir = Path(__file__).parent
     font_dir = base_dir / "assets" / "fonts"
     
-    # Test font loading
+    # Test font loading with actual bundled fonts
     test_results = []
     font_candidates = [
-        str(font_dir / "Inter-ExtraBold.ttf"),
-        str(font_dir / "Inter-Regular.ttf"),
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/System/Library/Fonts/Helvetica.ttc",
+        str(font_dir / "DejaVuSans-Bold.ttf"),      # Bundled bold
+        str(font_dir / "DejaVuSans.ttf"),           # Bundled regular
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",  # System fallback
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",       # System fallback
+        "/System/Library/Fonts/Helvetica.ttc",     # macOS fallback
     ]
     
     for font_path in font_candidates:
