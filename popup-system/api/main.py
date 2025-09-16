@@ -57,19 +57,27 @@ async def startup():
     init_db()
     
     # 🛡️ BULLETPROOF AUTO-RESTORE SYSTEM - Critical for Railway deployments
+    print("🔍 CHECKING DATABASE STATUS ON STARTUP...")
+    
+    # ALWAYS run our startup check regardless of backup system
     try:
-        from backup_restore_system import auto_backup_and_restore
-        success = auto_backup_and_restore()
-        if not success:
-            print("⚠️ Backup/restore system failed, trying emergency restore...")
-            await auto_restore_campaigns()
-    except Exception as e:
-        print(f"⚠️ Backup system error: {e}")
-        # Fallback to emergency restore
+        await auto_restore_campaigns_on_startup()
+        print("✅ Startup database check completed")
+    except Exception as startup_error:
+        print(f"❌ Startup restore failed: {startup_error}")
+        
+        # Try backup system as fallback
         try:
-            await auto_restore_campaigns()
-        except Exception as restore_error:
-            print(f"❌ All restore methods failed: {restore_error}")
+            print("🔄 Trying backup system as fallback...")
+            from backup_restore_system import auto_backup_and_restore
+            success = auto_backup_and_restore()
+            if success:
+                print("✅ Backup system restored campaigns")
+            else:
+                print("❌ Backup system also failed")
+        except Exception as backup_error:
+            print(f"❌ Backup system error: {backup_error}")
+            print("🚨 ALL RESTORE METHODS FAILED - Manual intervention required")
 
 async def auto_restore_campaigns_on_startup():
     """Auto-restore campaigns if database is empty or corrupted - CRITICAL for Railway deployments"""
