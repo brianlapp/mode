@@ -416,9 +416,76 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         cta_font, _ = load_font_with_fallbacks("cta-bold", 18)
         
         # Layout
-        padding = 20
+        padding = 24  # Match popup padding
         content_width = width - (padding * 2)
-        current_y = padding
+        
+        # CRITICAL: Add circle logo in top-left corner (56px, matching popup design)
+        logo_size = 56
+        logo_margin = 24
+        logo_url = campaign_data.get('logo_url')
+        
+        if logo_url:
+            try:
+                import urllib.request
+                import urllib.error
+                from io import BytesIO
+                
+                # Fix common imgur URL issues
+                fixed_logo_url = logo_url
+                if "imgur.com/" in fixed_logo_url:
+                    if not fixed_logo_url.startswith("https://i.imgur.com/"):
+                        fixed_logo_url = fixed_logo_url.replace("imgur.com/", "i.imgur.com/")
+                    if not fixed_logo_url.endswith(('.jpg', '.png', '.gif', '.jpeg')):
+                        fixed_logo_url += '.jpg'
+                
+                # Fetch logo with proper headers
+                req = urllib.request.Request(fixed_logo_url)
+                req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+                req.add_header('Accept', 'image/webp,image/apng,image/*,*/*;q=0.8')
+                req.add_header('Referer', 'https://imgur.com/')
+                
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    if response.status == 200:
+                        logo_data = response.read()
+                        # Load logo image
+                        logo_image = Image.open(BytesIO(logo_data))
+                        if logo_image.mode in ('RGBA', 'P'):
+                            # Convert to RGB with white background for transparency
+                            bg = Image.new('RGB', logo_image.size, (255, 255, 255))
+                            if logo_image.mode == 'RGBA':
+                                bg.paste(logo_image, mask=logo_image.split()[3])
+                            else:
+                                bg.paste(logo_image)
+                            logo_image = bg
+                        
+                        # Resize to 56x56 circle
+                        logo_image = logo_image.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
+                        
+                        # Create circular mask
+                        mask = Image.new('L', (logo_size, logo_size), 0)
+                        mask_draw = ImageDraw.Draw(mask)
+                        mask_draw.ellipse((0, 0, logo_size-1, logo_size-1), fill=255)
+                        
+                        # Apply circular mask to logo
+                        output = Image.new('RGBA', (logo_size, logo_size), (0, 0, 0, 0))
+                        output.paste(logo_image, (0, 0))
+                        output.putalpha(mask)
+                        
+                        # Paste onto main image
+                        img.paste(output, (logo_margin, logo_margin), output)
+                        debug_info["logo_loading"] = f"Successfully loaded logo: {fixed_logo_url}"
+            except Exception as e:
+                debug_info["logo_loading"] = f"Failed to load logo {logo_url}: {str(e)}"
+                # Draw fallback circle
+                draw.ellipse([logo_margin, logo_margin, logo_margin + logo_size, logo_margin + logo_size], 
+                           fill='#e9ecef', outline='#dee2e6', width=2)
+        else:
+            # Draw fallback circle if no logo URL
+            draw.ellipse([logo_margin, logo_margin, logo_margin + logo_size, logo_margin + logo_size], 
+                       fill='#e9ecef', outline='#dee2e6', width=2)
+        
+        # Adjust content start position to account for logo
+        current_y = logo_margin + logo_size + 20
         
         # Header with tagline pill (like popup)
         pill_text = prop_config['tagline']
@@ -443,11 +510,10 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
                  fill=prop_config['accent_color'], font=title_font)
         current_y += 45
         
-        # Campaign image (actual image loading)
-        image_height = 120
-        image_padding = 40
-        image_width = content_width - (image_padding * 2)
-        image_x = padding + image_padding
+        # Campaign image (280x120px matching popup proportions)
+        target_image_width = 280
+        target_image_height = 120
+        image_x = padding + (content_width - target_image_width) // 2  # Center the image
         
         # Try to load the actual campaign image
         campaign_image = None
@@ -477,12 +543,36 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
                 with urllib.request.urlopen(req, timeout=10) as response:
                     if response.status == 200:
                         image_data = response.read()
-                        # Load and resize image
+                        # Load image
                         campaign_image = Image.open(BytesIO(image_data))
                         if campaign_image.mode in ('RGBA', 'P'):
                             campaign_image = campaign_image.convert('RGB')
-                        campaign_image = campaign_image.resize((image_width, image_height), Image.Resampling.LANCZOS)
-                        debug_info["image_loading"] = f"Successfully loaded: {fixed_url} ({len(image_data)} bytes)"
+                        
+                        # Calculate aspect ratio and resize to fit within bounds while maintaining aspect
+                        orig_width, orig_height = campaign_image.size
+                        aspect_ratio = orig_width / orig_height
+                        
+                        # Determine the best fit within target dimensions
+                        if aspect_ratio > target_image_width / target_image_height:
+                            # Image is wider than target ratio
+                            new_width = target_image_width
+                            new_height = int(target_image_width / aspect_ratio)
+                        else:
+                            # Image is taller than target ratio
+                            new_height = target_image_height
+                            new_width = int(target_image_height * aspect_ratio)
+                        
+                        # Resize with high quality
+                        campaign_image = campaign_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                        
+                        # Create a container at target size with padding if needed
+                        container = Image.new('RGB', (target_image_width, target_image_height), color='#f8f9fa')
+                        paste_x = (target_image_width - new_width) // 2
+                        paste_y = (target_image_height - new_height) // 2
+                        container.paste(campaign_image, (paste_x, paste_y))
+                        campaign_image = container
+                        
+                        debug_info["image_loading"] = f"Successfully loaded: {fixed_url} ({len(image_data)} bytes, resized from {orig_width}x{orig_height} to {new_width}x{new_height})"
                     else:
                         debug_info["image_loading"] = f"HTTP {response.status} for {fixed_url}"
                         
@@ -494,20 +584,20 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
             # Paste the actual campaign image
             img.paste(campaign_image, (image_x, current_y))
         else:
-            # Draw fallback with border
+            # Draw fallback with border using correct dimensions
             draw.rectangle([image_x, current_y, 
-                           image_x + image_width, current_y + image_height], 
+                           image_x + target_image_width, current_y + target_image_height], 
                          fill='#f8f9fa', outline='#e9ecef', width=2)
             
             # Fallback text
             placeholder_text = "IMAGE MISSING" if image_url else "No Image URL"
             bbox = draw.textbbox((0, 0), placeholder_text, font=desc_font)
             placeholder_width = bbox[2] - bbox[0]
-            placeholder_x = image_x + (image_width - placeholder_width) // 2
-            placeholder_y = current_y + (image_height - 20) // 2
+            placeholder_x = image_x + (target_image_width - placeholder_width) // 2
+            placeholder_y = current_y + (target_image_height - 20) // 2
             draw.text((placeholder_x, placeholder_y), placeholder_text, fill='#dc3545', font=desc_font)
         
-        current_y += image_height + 20
+        current_y += target_image_height + 20
         
         # Description (centered, multiple lines)
         description = campaign_data.get('description', 'Exclusive opportunity - limited time offer.')

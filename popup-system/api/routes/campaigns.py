@@ -418,7 +418,7 @@ class CampaignForPopup(BaseModel):
 
 @router.get("/campaigns", response_model=List[Campaign])
 async def get_all_campaigns():
-    """Get all campaigns for admin dashboard"""
+    """Get all campaigns for admin dashboard - WITH AUTO-RESTORE"""
     conn = get_db_connection()
     try:
         cursor = conn.execute("""
@@ -426,6 +426,25 @@ async def get_all_campaigns():
             ORDER BY created_at DESC
         """)
         campaigns = [dict(row) for row in cursor.fetchall()]
+        
+        # BULLETPROOF: Auto-restore if empty
+        if len(campaigns) < 12:
+            print(f"🚨 CAMPAIGNS ENDPOINT: Found {len(campaigns)} campaigns, need 12. Auto-restoring...")
+            conn.close()  # Close current connection
+            
+            # Import and run restore
+            from main import auto_restore_campaigns_on_startup
+            await auto_restore_campaigns_on_startup()
+            
+            # Reconnect and get campaigns again
+            conn = get_db_connection()
+            cursor = conn.execute("""
+                SELECT * FROM campaigns 
+                ORDER BY created_at DESC
+            """)
+            campaigns = [dict(row) for row in cursor.fetchall()]
+            print(f"✅ After auto-restore: {len(campaigns)} campaigns")
+        
         return campaigns
     finally:
         conn.close()

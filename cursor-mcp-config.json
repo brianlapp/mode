@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "agent-coordinator": {
+      "url": "http://127.0.0.1:8001/sse",
+      "name": "Mode Agent Coordinator",
+      "description": "Coordinates Font Fixer, Image Loader, Database Persistence, and Quality Assurance agents"
+    }
+  }
+}

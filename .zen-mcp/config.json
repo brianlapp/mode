@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "coordinator": {
+      "command": "zen-mcp-server",
+      "args": ["--model", "claude-3-5-sonnet-20241022"],
+      "env": {
+        "API_KEY": "YOUR_API_KEY_HERE"
+      }
+    }
+  }
+}

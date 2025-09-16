@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>What the REAL popup looks like</title>
+    <style>
+        body { margin: 0; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 400px; margin: 0 auto; }
+        h1 { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>REAL Mode Popup</h1>
+        <p>This should show the actual working popup so I can see what I need to recreate:</p>
+        
+        <!-- This will load the actual popup -->
+        <div id="popup-area"></div>
+        
+        <script src="https://mode-dash-production.up.railway.app/popup.js"></script>
+        <script>
+            // Wait for script to load
+            setTimeout(() => {
+                console.log('Popup script loaded, checking for functions...');
+                console.log('Window object keys:', Object.keys(window).filter(k => k.toLowerCase().includes('popup')));
+                
+                // Try different ways to trigger the popup
+                if (window.ModePopup) {
+                    console.log('Found ModePopup object');
+                    window.ModePopup.init({ property: 'mff' });
+                }
+                
+                // Check for other popup-related functions
+                if (window.showModePopup) {
+                    console.log('Found showModePopup function');
+                    window.showModePopup('mff');
+                }
+                
+                // Force show any hidden popups after delay
+                setTimeout(() => {
+                    const popups = document.querySelectorAll('[class*="popup"], [id*="popup"]');
+                    console.log('Found popup elements:', popups.length);
+                    
+                    popups.forEach((popup, i) => {
+                        console.log(`Popup ${i}:`, popup.className, popup.id);
+                        popup.style.position = 'relative';
+                        popup.style.display = 'block';
+                        popup.style.opacity = '1';
+                        popup.style.transform = 'none';
+                    });
+                }, 3000);
+            }, 1000);
+        </script>
+    </div>
+</body>
+</html>
