@@ -405,9 +405,9 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         # Get property config
         prop_config = PROPERTY_CONFIG.get(property_name.lower(), PROPERTY_CONFIG['mff'])
         
-        # Create base image
+        # Create base image with better quality
         img = Image.new('RGB', (width, height), color=prop_config['secondary_color'])
-        draw = ImageDraw.Draw(img)
+        draw = ImageDraw.Draw(img, 'RGBA')
         
         # Determine if mobile layout (narrower than 400px)
         is_mobile = width <= 400
@@ -466,7 +466,10 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
                                 bg.paste(logo_image)
                             logo_image = bg
                         
-                        # Resize to 56x56 circle
+                        # Resize to 56x56 circle with high quality
+                        # Use 2x size for better quality on retina displays
+                        temp_size = logo_size * 2
+                        logo_image = logo_image.resize((temp_size, temp_size), Image.Resampling.LANCZOS)
                         logo_image = logo_image.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
                         
                         # Create circular mask
@@ -558,9 +561,9 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         
         # Campaign image (adjust size for mobile)
         if is_mobile:
-            # Mobile: smaller image that fits better
-            target_image_width = min(280, content_width - 20)
-            target_image_height = int(target_image_width * 0.43)  # Maintain aspect ratio
+            # Mobile: use more of the available width
+            target_image_width = content_width - 10  # Almost full width with small margin
+            target_image_height = int(target_image_width * 0.5)  # Better aspect ratio for mobile
         else:
             # Desktop: 280x120px matching popup proportions
             target_image_width = 280
@@ -617,12 +620,19 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
                         # Resize with high quality
                         campaign_image = campaign_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
                         
-                        # Create a container at target size with padding if needed
-                        container = Image.new('RGB', (target_image_width, target_image_height), color='#f8f9fa')
-                        paste_x = (target_image_width - new_width) // 2
-                        paste_y = (target_image_height - new_height) // 2
-                        container.paste(campaign_image, (paste_x, paste_y))
-                        campaign_image = container
+                        # For mobile, just use the resized image without container
+                        if is_mobile and (new_width < target_image_width or new_height < target_image_height):
+                            # Don't add gray padding on mobile - just use the actual image size
+                            campaign_image = campaign_image
+                            target_image_width = new_width
+                            target_image_height = new_height
+                        else:
+                            # Desktop: Create a container at target size with white background
+                            container = Image.new('RGB', (target_image_width, target_image_height), color='#ffffff')
+                            paste_x = (target_image_width - new_width) // 2
+                            paste_y = (target_image_height - new_height) // 2
+                            container.paste(campaign_image, (paste_x, paste_y))
+                            campaign_image = container
                         
                         debug_info["image_loading"] = f"Successfully loaded: {fixed_url} ({len(image_data)} bytes, resized from {orig_width}x{orig_height} to {new_width}x{new_height})"
                     else:
@@ -699,18 +709,7 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         
         draw.text((text_x, text_y), cta_text, fill="white", font=cta_font)
         
-        # Add footer text like popup
-        current_y += button_height + 10
-        
-        # Smaller font for footer
-        footer_font_size = 10 if is_mobile else 11
-        footer_font, _ = load_font_with_fallbacks("footer", footer_font_size)
-        
-        footer_text = "T&Cs Apply | Powered by Thanks • Privacy Policy"
-        bbox = draw.textbbox((0, 0), footer_text, font=footer_font)
-        footer_width = bbox[2] - bbox[0]
-        footer_x = padding + (content_width - footer_width) // 2
-        draw.text((footer_x, current_y), footer_text, fill='#9ca3af', font=footer_font)
+        # Footer removed - no non-functional links needed for email
         
         # Font loading is now robust with proper fallbacks - no watermark needed
         
