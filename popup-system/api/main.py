@@ -188,30 +188,40 @@ async def restore_12_clean_campaigns(conn):
         ]
         
         # Clear existing campaigns and properties
+        print("🗑️ Clearing existing data...")
         conn.execute("DELETE FROM campaign_properties")
         conn.execute("DELETE FROM campaigns")
+        print("✅ Existing data cleared")
         
         # Restore the 12 good campaigns
-        for campaign in clean_campaigns:
-            conn.execute('''
-                INSERT INTO campaigns (
-                    id, name, tune_url, logo_url, main_image_url, description,
-                    cta_text, offer_id, aff_id, active, featured, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
-            ''', (
-                campaign['id'], campaign['name'], campaign['tune_url'],
-                campaign['logo_url'], campaign['main_image_url'], campaign['description'],
-                campaign['cta_text'], campaign['offer_id'], campaign['aff_id'],
-                '2025-01-28 12:00:00', '2025-01-28 12:00:00'
-            ))
-            
-            # Set property assignment
-            property_code = campaign.get('property', 'mff')  # Default to mff if not specified
-            conn.execute('''
-                INSERT INTO campaign_properties (
-                    campaign_id, property_code, visibility_percentage, active
-                ) VALUES (?, ?, 100, 1)
-            ''', (campaign['id'], property_code))
+        print(f"📊 Restoring {len(clean_campaigns)} campaigns...")
+        for i, campaign in enumerate(clean_campaigns, 1):
+            try:
+                print(f"   {i:2}. Inserting {campaign['name']}...")
+                conn.execute('''
+                    INSERT INTO campaigns (
+                        id, name, tune_url, logo_url, main_image_url, description,
+                        cta_text, offer_id, aff_id, active, featured, created_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0, ?, ?)
+                ''', (
+                    campaign['id'], campaign['name'], campaign['tune_url'],
+                    campaign['logo_url'], campaign['main_image_url'], campaign['description'],
+                    campaign['cta_text'], campaign['offer_id'], campaign['aff_id'],
+                    '2025-01-28 12:00:00', '2025-01-28 12:00:00'
+                ))
+                
+                # Set property assignment
+                property_code = campaign.get('property', 'mff')  # Default to mff if not specified
+                conn.execute('''
+                    INSERT INTO campaign_properties (
+                        campaign_id, property_code, visibility_percentage, active
+                    ) VALUES (?, ?, 100, 1)
+                ''', (campaign['id'], property_code))
+                
+                print(f"   ✅ {campaign['name']} → {property_code.upper()}")
+                
+            except Exception as campaign_error:
+                print(f"   ❌ Failed to insert {campaign['name']}: {campaign_error}")
         
         conn.commit()
         
