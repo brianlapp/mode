@@ -176,9 +176,15 @@ def load_font_with_fallbacks(font_name: str, size: int):
         "error": None
     }
     
-    # Font candidates in order of preference (Railway/Linux compatible)
+    # Get bundled font directory path
+    base_dir = Path(__file__).parent
+    font_dir = base_dir / "assets" / "fonts"
+    
+    # Font candidates in order of preference (bundled fonts first!)
     if "bold" in font_name.lower() or "extra" in font_name.lower():
         font_candidates = [
+            str(font_dir / "Inter-ExtraBold.ttf"),  # Bundled - WILL WORK!
+            str(font_dir / "DejaVuSans-Bold.ttf"),  # Bundled fallback
             "/System/Library/Fonts/Helvetica.ttc",  # macOS
             "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",  # Linux
             "/usr/share/fonts/TTF/arial.ttf",  # Some Linux
@@ -187,6 +193,8 @@ def load_font_with_fallbacks(font_name: str, size: int):
         ]
     else:
         font_candidates = [
+            str(font_dir / "Inter-Regular.ttf"),  # Bundled - WILL WORK!
+            str(font_dir / "DejaVuSans.ttf"),  # Bundled fallback
             "/System/Library/Fonts/Helvetica.ttc",  # macOS
             "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",  # Linux
             "/usr/share/fonts/TTF/arial.ttf",  # Some Linux
@@ -273,23 +281,45 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
                  fill=prop_config['accent_color'], font=title_font)
         current_y += 45
         
-        # Campaign image placeholder (styled like popup)
+        # Campaign image (actual image loading)
         image_height = 120
         image_padding = 40
         image_width = content_width - (image_padding * 2)
+        image_x = padding + image_padding
         
-        # Draw image background
-        draw.rectangle([padding + image_padding, current_y, 
-                       padding + image_padding + image_width, current_y + image_height], 
-                     fill='#f8f9fa', outline='#e9ecef', width=2)
+        # Try to load the actual campaign image
+        campaign_image = None
+        image_url = campaign_data.get('main_image_url')
         
-        # Image placeholder text
-        placeholder_text = "Campaign Image"
-        bbox = draw.textbbox((0, 0), placeholder_text, font=desc_font)
-        placeholder_width = bbox[2] - bbox[0]
-        placeholder_x = padding + image_padding + (image_width - placeholder_width) // 2
-        placeholder_y = current_y + (image_height - 20) // 2
-        draw.text((placeholder_x, placeholder_y), placeholder_text, fill='#6c757d', font=desc_font)
+        if image_url:
+            try:
+                # Import our image loader
+                import sys
+                import os
+                sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
+                from image_loader import load_campaign_image, create_fallback_image
+                
+                campaign_image = load_campaign_image(image_url, (image_width, image_height))
+                debug_info["image_loading"] = f"Successfully loaded: {image_url}"
+            except Exception as e:
+                debug_info["image_loading"] = f"Failed to load {image_url}: {str(e)}"
+        
+        if campaign_image:
+            # Paste the actual campaign image
+            img.paste(campaign_image, (image_x, current_y))
+        else:
+            # Draw fallback with border
+            draw.rectangle([image_x, current_y, 
+                           image_x + image_width, current_y + image_height], 
+                         fill='#f8f9fa', outline='#e9ecef', width=2)
+            
+            # Fallback text
+            placeholder_text = "IMAGE MISSING" if image_url else "No Image URL"
+            bbox = draw.textbbox((0, 0), placeholder_text, font=desc_font)
+            placeholder_width = bbox[2] - bbox[0]
+            placeholder_x = image_x + (image_width - placeholder_width) // 2
+            placeholder_y = current_y + (image_height - 20) // 2
+            draw.text((placeholder_x, placeholder_y), placeholder_text, fill='#dc3545', font=desc_font)
         
         current_y += image_height + 20
         
@@ -381,6 +411,41 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         buffer = BytesIO()
         img.save(buffer, format='PNG')
         return buffer.getvalue(), debug_info
+
+@app.get("/api/fonts/diagnostic")
+async def font_diagnostic():
+    """Diagnostic endpoint to check font availability on Railway"""
+    import glob
+    
+    base_dir = Path(__file__).parent
+    font_dir = base_dir / "assets" / "fonts"
+    
+    # Test font loading
+    test_results = []
+    font_candidates = [
+        str(font_dir / "Inter-ExtraBold.ttf"),
+        str(font_dir / "Inter-Regular.ttf"),
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+    ]
+    
+    for font_path in font_candidates:
+        try:
+            font = ImageFont.truetype(font_path, 24)
+            test_results.append({"path": font_path, "status": "SUCCESS", "error": None})
+        except Exception as e:
+            test_results.append({"path": font_path, "status": "FAILED", "error": str(e)})
+    
+    return {
+        "working_directory": str(Path.cwd()),
+        "font_directory": str(font_dir),
+        "font_dir_exists": font_dir.exists(),
+        "bundled_fonts": list(font_dir.glob("*.ttf")) if font_dir.exists() else [],
+        "system_fonts_sample": glob.glob("/usr/share/fonts/**/*.ttf", recursive=True)[:10],
+        "font_loading_tests": test_results,
+        "pil_available": PIL_AVAILABLE
+    }
 
 @app.get("/debug/property-test")
 async def debug_property_test(property: str = None, host: str = None):
