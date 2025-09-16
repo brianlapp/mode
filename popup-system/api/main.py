@@ -258,9 +258,9 @@ app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
 app.include_router(properties_router, prefix="/api", tags=["properties"])
 # app.include_router(email_router, prefix="/api", tags=["email"])  # Disabled due to import issues
 
-# DIRECT EMAIL GENERATION - BYPASS ROUTING ISSUES
-@app.get("/api/email/ad.png")
-async def direct_email_ad_png(property: str = "mff", w: int = 600, h: int = 400, send: str = "qa"):
+# NEW EMAIL PNG GENERATION - DIFFERENT PATH TO BYPASS CONFLICTS
+@app.get("/api/email/new-ad.png")
+async def new_email_ad_png(property: str = "mff", w: int = 600, h: int = 400, send: str = "qa"):
     """Direct email ad PNG generation - bypassing routing issues"""
     try:
         from database import get_db_connection
