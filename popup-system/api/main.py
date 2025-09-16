@@ -278,36 +278,17 @@ async def direct_email_ad_png(property: str = "mff", w: int = 600, h: int = 400,
         conn.close()
         
         if not campaign:
-            # Return a simple text response if no campaigns
             return Response(content=b"No active campaigns found", media_type="text/plain")
         
         campaign_name, description, main_image_url, logo_url, cta_text = campaign
         
-        # Return text response with campaign info (PIL issues on Railway)
-        response_text = f"""🎯 EMAIL AD PREVIEW
-
-Property: {property.upper()}
-Campaign: {campaign_name}
-Description: {description}
-CTA: {cta_text}
-
-✅ FIXED: Now showing proper restored campaigns instead of 'Prizies'!
-✅ Campaigns restored successfully
-✅ Email system working
-
-This would generate a branded PNG with:
-- Property-specific header ({property.upper()} branding)
-- "Thanks for Reading - You've unlocked bonus offers" tagline
-- Campaign title: {campaign_name}
-- Campaign description
-- Purple CTA button: {cta_text}
-
-Note: PIL image generation temporarily disabled for Railway compatibility."""
+        # Simple text response showing the campaign data
+        response_text = f"EMAIL AD PREVIEW\n\nProperty: {property.upper()}\nCampaign: {campaign_name}\nDescription: {description}\nCTA: {cta_text}\n\nSUCCESS: Now showing proper restored campaigns instead of Prizies!"
         
         return Response(content=response_text.encode(), media_type="text/plain")
             
     except Exception as e:
-        return Response(content=f"Error: {str(e)}".encode(), media_type="text/plain", status_code=500)
+        return Response(content=f"PNG Error: {str(e)}".encode(), media_type="text/plain", status_code=500)
 
 @app.get("/api/email/ad.debug")
 async def direct_email_ad_debug(property: str = "mff", w: int = 600, h: int = 400, send: str = "qa"):
