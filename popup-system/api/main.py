@@ -87,6 +87,32 @@ async def startup():
 # Global flag to track startup completion
 startup_completed = False
 
+# Auto-restore middleware - runs on every request to ensure campaigns exist
+@app.middleware("http")
+async def ensure_campaigns_middleware(request, call_next):
+    """Ensure campaigns exist on every request - BULLETPROOF protection"""
+    
+    # Only check for campaign-related endpoints
+    if "/api/campaigns" in str(request.url) or "/api/email" in str(request.url):
+        try:
+            from database import get_db_connection
+            conn = get_db_connection()
+            cursor = conn.execute("SELECT COUNT(*) FROM campaigns WHERE active = 1")
+            campaign_count = cursor.fetchone()[0]
+            conn.close()
+            
+            # Auto-restore if empty
+            if campaign_count < 12:
+                print(f"🚨 MIDDLEWARE DETECTED EMPTY DATABASE: {campaign_count} campaigns")
+                print("🔄 Auto-restoring via middleware...")
+                await auto_restore_campaigns_on_startup()
+                
+        except Exception as e:
+            print(f"⚠️ Middleware auto-restore error: {e}")
+    
+    response = await call_next(request)
+    return response
+
 @app.get("/api/startup-status")
 async def startup_status():
     """Check if startup auto-restore ran successfully"""
@@ -110,6 +136,51 @@ async def startup_status():
             "campaign_count": 0,
             "status": "error",
             "message": f"Error: {str(e)}"
+        }
+
+@app.post("/api/test-restore-now")
+async def test_restore_now():
+    """Test the restore function right now to see what fails"""
+    import sqlite3
+    from database import get_db_path
+    
+    restore_log = []
+    
+    try:
+        restore_log.append("🔍 TESTING RESTORE FUNCTION...")
+        
+        # Check current state
+        conn = sqlite3.connect(get_db_path())
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT COUNT(*) FROM campaigns WHERE active = 1")
+        current_count = cursor.fetchone()[0]
+        restore_log.append(f"📊 Current campaigns: {current_count}")
+        
+        # Run the restore function
+        restore_log.append("🔄 Running auto_restore_campaigns_on_startup()...")
+        await auto_restore_campaigns_on_startup()
+        
+        # Check final state
+        cursor.execute("SELECT COUNT(*) FROM campaigns WHERE active = 1")
+        final_count = cursor.fetchone()[0]
+        restore_log.append(f"📊 Final campaigns: {final_count}")
+        
+        conn.close()
+        
+        return {
+            "success": True,
+            "initial_count": current_count,
+            "final_count": final_count,
+            "log": restore_log
+        }
+        
+    except Exception as e:
+        restore_log.append(f"❌ ERROR: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "log": restore_log
         }
 
 async def auto_restore_campaigns_on_startup():
