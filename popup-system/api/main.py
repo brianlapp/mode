@@ -51,6 +51,7 @@ if frontend_path.exists():
 # Initialize database on startup
 @app.on_event("startup")
 async def startup():
+    global startup_completed
     print("🚀 STARTING MODE POPUP SYSTEM...")
     
     # Initialize database first
@@ -63,6 +64,7 @@ async def startup():
     try:
         await auto_restore_campaigns_on_startup()
         print("✅ Startup database check completed")
+        startup_completed = True
     except Exception as startup_error:
         print(f"❌ Startup restore failed: {startup_error}")
         
@@ -73,11 +75,42 @@ async def startup():
             success = auto_backup_and_restore()
             if success:
                 print("✅ Backup system restored campaigns")
+                startup_completed = True
             else:
                 print("❌ Backup system also failed")
+                startup_completed = False
         except Exception as backup_error:
             print(f"❌ Backup system error: {backup_error}")
             print("🚨 ALL RESTORE METHODS FAILED - Manual intervention required")
+            startup_completed = False
+
+# Global flag to track startup completion
+startup_completed = False
+
+@app.get("/api/startup-status")
+async def startup_status():
+    """Check if startup auto-restore ran successfully"""
+    from database import get_db_connection
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.execute("SELECT COUNT(*) FROM campaigns WHERE active = 1")
+        campaign_count = cursor.fetchone()[0]
+        conn.close()
+        
+        return {
+            "startup_completed": startup_completed,
+            "campaign_count": campaign_count,
+            "status": "healthy" if campaign_count >= 12 else "needs_restore",
+            "message": f"Startup completed: {startup_completed}, Campaigns: {campaign_count}"
+        }
+    except Exception as e:
+        return {
+            "startup_completed": startup_completed,
+            "campaign_count": 0,
+            "status": "error",
+            "message": f"Error: {str(e)}"
+        }
 
 async def auto_restore_campaigns_on_startup():
     """Auto-restore campaigns if database is empty or corrupted - CRITICAL for Railway deployments"""
