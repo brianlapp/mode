@@ -7,14 +7,14 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel, HttpUrl
 from typing import List, Optional
 from datetime import datetime, timedelta
-from database import (
+from database_postgres import (
     get_db_connection, 
-    insert_campaign, 
-    get_active_campaigns_for_property,
-    track_impression
+    get_campaigns_for_property,
+    track_impression,
+    track_click,
+    execute_query
 )
-from database import detect_property_code_from_host
-import sqlite3
+import psycopg2
 from datetime import datetime
 
 # EMBEDDED Tune API client to avoid import issues on Railway

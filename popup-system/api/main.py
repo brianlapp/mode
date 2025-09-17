@@ -25,7 +25,7 @@ except ImportError:
 from routes.campaigns import router as campaigns_router
 from routes.properties import router as properties_router
 from routes.email import router as email_router
-from database import init_db
+from database_postgres import init_db
 
 # Create FastAPI app
 app = FastAPI(
