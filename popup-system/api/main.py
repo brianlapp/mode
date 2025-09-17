@@ -412,10 +412,10 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         # Determine if mobile layout (narrower than 400px)
         is_mobile = width <= 400
         
-        # Adjust font sizes for mobile
-        title_size = 20 if is_mobile else 24
-        desc_size = 12 if is_mobile else 14
-        cta_size = 16 if is_mobile else 18
+        # Adjust font sizes for mobile - smaller to match popup
+        title_size = 18 if is_mobile else 20
+        desc_size = 11 if is_mobile else 13
+        cta_size = 14 if is_mobile else 16
         
         # Load fonts with adjusted sizes
         title_font, font_debug = load_font_with_fallbacks("title-bold", title_size)
@@ -428,8 +428,8 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         content_width = width - (padding * 2)
         
         # CRITICAL: Add circle logo in top-left corner (adjust size for mobile)
-        logo_size = 48 if is_mobile else 56
-        logo_margin = 16 if is_mobile else 24
+        logo_size = 40 if is_mobile else 48  # Smaller to match popup proportions
+        logo_margin = 20 if is_mobile else 24
         logo_url = campaign_data.get('logo_url')
         
         if logo_url:
@@ -466,10 +466,7 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
                                 bg.paste(logo_image)
                             logo_image = bg
                         
-                        # Resize to 56x56 circle with high quality
-                        # Use 2x size for better quality on retina displays
-                        temp_size = logo_size * 2
-                        logo_image = logo_image.resize((temp_size, temp_size), Image.Resampling.LANCZOS)
+                        # Resize directly to target size with high quality
                         logo_image = logo_image.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
                         
                         # Create circular mask
@@ -557,17 +554,17 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         title_x = padding + (content_width - title_width) // 2
         draw.text((title_x, current_y), campaign_title, 
                  fill=prop_config['accent_color'], font=title_font)
-        current_y += 45
+        current_y += 30  # Less spacing
         
         # Campaign image (adjust size for mobile)
         if is_mobile:
-            # Mobile: use more of the available width
-            target_image_width = content_width - 10  # Almost full width with small margin
-            target_image_height = int(target_image_width * 0.5)  # Better aspect ratio for mobile
+            # Mobile: proportional to popup
+            target_image_width = content_width - 40  # More margin like popup
+            target_image_height = int(target_image_width * 0.45)  # Better aspect ratio
         else:
-            # Desktop: 280x120px matching popup proportions
-            target_image_width = 280
-            target_image_height = 120
+            # Desktop: smaller to match popup proportions
+            target_image_width = 240
+            target_image_height = 100
         image_x = padding + (content_width - target_image_width) // 2  # Center the image
         
         # Try to load the actual campaign image
@@ -693,7 +690,7 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         current_y += 15
         
         # CTA Button (styled like popup)
-        button_height = 50
+        button_height = 44 if is_mobile else 48  # Smaller to match popup
         button_color = '#7C3AED'  # Purple like in popup
         
         # Draw button
@@ -709,7 +706,8 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         
         draw.text((text_x, text_y), cta_text, fill="white", font=cta_font)
         
-        # Footer removed - no non-functional links needed for email
+        # Add bottom padding to ensure button isn't cut off
+        current_y += button_height + 20
         
         # Font loading is now robust with proper fallbacks - no watermark needed
         
