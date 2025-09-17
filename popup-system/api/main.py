@@ -3,11 +3,10 @@ Mode Popup Management System - Main API
 Simple campaign management dashboard + embeddable popup script
 """
 
-from fastapi import FastAPI, HTTPException, Depends, Response, Security
+from fastapi import FastAPI, HTTPException, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse
-from fastapi.security import APIKeyHeader
 import uvicorn
 import os
 from pathlib import Path
@@ -309,42 +308,6 @@ async def restore_12_clean_campaigns(conn):
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "Mode Popup Management API"}
-
-# TEMPORARY: Backup endpoint for database migration
-API_KEY_NAME = "X-Backup-Token"
-BACKUP_TOKEN = os.getenv("DB_BACKUP_TOKEN", "temp-backup-key-12345")
-DB_PATH = "/app/api/data/popup_system.db"  # Railway deployment path
-
-api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
-
-async def get_backup_api_key(api_key_header: str = Security(api_key_header)):
-    if api_key_header != BACKUP_TOKEN:
-        raise HTTPException(status_code=403, detail="Invalid backup token")
-    return api_key_header
-
-@app.get("/admin/backup-database", dependencies=[Depends(get_backup_api_key)])
-async def backup_database():
-    """Temporary endpoint to download SQLite database for migration"""
-    if not os.path.exists(DB_PATH):
-        # Try alternative paths
-        alt_paths = [
-            "./api/data/popup_system.db",
-            "./data/popup_system.db", 
-            "/app/data/popup_system.db",
-            "popup_system.db"
-        ]
-        for alt_path in alt_paths:
-            if os.path.exists(alt_path):
-                DB_PATH = alt_path
-                break
-        else:
-            raise HTTPException(status_code=404, detail=f"Database file not found. Checked: {DB_PATH} and {alt_paths}")
-    
-    return FileResponse(
-        path=DB_PATH, 
-        filename="production.sqlite3", 
-        media_type='application/octet-stream'
-    )
 
 # ========== EMAIL PNG GENERATION FUNCTIONS ==========
 
