@@ -1321,15 +1321,16 @@ async def working_email_ad_png(
             else:  # desktop
                 w, h = 600, 400
         
-        # Get a random active campaign
+        # Get a random active campaign for the specified property
         conn = get_db_connection()
         cur = conn.execute("""
-            SELECT name, description, main_image_url, logo_url, cta_text 
-            FROM campaigns 
-            WHERE active = 1 AND name != 'Prizies'
+            SELECT c.name, c.description, c.main_image_url, c.logo_url, c.cta_text 
+            FROM campaigns c
+            JOIN campaign_properties cp ON c.id = cp.campaign_id
+            WHERE c.active = 1 AND c.name != 'Prizies' AND cp.property_code = ? AND cp.active = 1
             ORDER BY RANDOM() 
             LIMIT 1
-        """)
+        """, (property,))
         campaign = cur.fetchone()
         conn.close()
         
@@ -1547,11 +1548,13 @@ async def emergency_restore_12_campaigns():
         except Exception as e:
             print(f"⚠️ Schema ensure failed (will attempt restore anyway): {e}")
 
-        # Use clean campaign data (NO PRIZIES)
+        # Use clean campaign data (with Money.com first)
         campaigns_data = [
-            # MMM Finance campaigns (5 total)
-            {"id": 1, "name": "Trading Tips", "tune_url": "https://track.modemobile.com/aff_c?offer_id=6998&aff_id=43045", "logo_url": "https://i.imgur.com/lHn301q.png", "main_image_url": "https://i.imgur.com/ZVGOktR.png", "description": "Get exclusive trading tips and market insights delivered daily to your inbox.", "cta_text": "Get Trading Tips", "offer_id": "6998", "aff_id": "43045", "active": True},
-            {"id": 2, "name": "Behind The Markets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7521&aff_id=43045", "logo_url": "https://i.imgur.com/O3iEVP7.jpeg", "main_image_url": "https://i.imgur.com/NA0o7iJ.png", "description": "Discover what's really happening behind the financial markets with expert analysis.", "cta_text": "Learn More", "offer_id": "7521", "aff_id": "43045", "active": True},
+            # Money.com FIRST as requested
+            {"id": 1, "name": "Money.com - Online Stock Brokers", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7521&aff_id=43092", "logo_url": "https://i.imgur.com/O3iEVP7.jpeg", "main_image_url": "https://i.imgur.com/NA0o7iJ.png", "description": "Compare online stock brokers and find the best platform for your trading needs.", "cta_text": "View Offer", "offer_id": "7521", "aff_id": "43092", "active": True},
+            # MMM Finance campaigns (4 more)
+            {"id": 2, "name": "Trading Tips", "tune_url": "https://track.modemobile.com/aff_c?offer_id=6998&aff_id=43045", "logo_url": "https://i.imgur.com/lHn301q.png", "main_image_url": "https://i.imgur.com/ZVGOktR.png", "description": "Get exclusive trading tips and market insights delivered daily to your inbox.", "cta_text": "Get Trading Tips", "offer_id": "6998", "aff_id": "43045", "active": True},
+            {"id": 3, "name": "Behind The Markets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7521&aff_id=43045", "logo_url": "https://i.imgur.com/O3iEVP7.jpeg", "main_image_url": "https://i.imgur.com/NA0o7iJ.png", "description": "Discover what's really happening behind the financial markets with expert analysis.", "cta_text": "Learn More", "offer_id": "7521", "aff_id": "43045", "active": True},
             {"id": 3, "name": "Brownstone Research", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7389&aff_id=43045", "logo_url": "https://i.imgur.com/3KVDcV7.jpeg", "main_image_url": "https://i.imgur.com/vzoiVpd.png", "description": "Advanced technology and investment research from Brownstone Research experts.", "cta_text": "View Research", "offer_id": "7389", "aff_id": "43045", "active": True},
             {"id": 4, "name": "Hotsheets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7385&aff_id=43045", "logo_url": "https://i.imgur.com/4JoGdZr.png", "main_image_url": "https://i.imgur.com/O81cPQJ.jpeg", "description": "Daily market hotsheets with the most profitable trading opportunities.", "cta_text": "Get Hotsheets", "offer_id": "7385", "aff_id": "43045", "active": True},
             {"id": 5, "name": "Best Gold", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7390&aff_id=43045", "logo_url": "https://i.imgur.com/5Yb0LJn.png", "main_image_url": "https://i.imgur.com/EEOyDuZ.jpeg", "description": "Premium gold investment insights and recommendations from industry experts.", "cta_text": "Learn About Gold", "offer_id": "7390", "aff_id": "43045", "active": True},
