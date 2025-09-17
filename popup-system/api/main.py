@@ -558,13 +558,13 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         
         # Campaign image (adjust size for mobile)
         if is_mobile:
-            # Mobile: proportional to popup
-            target_image_width = content_width - 40  # More margin like popup
-            target_image_height = int(target_image_width * 0.45)  # Better aspect ratio
+            # Mobile: larger and better centered
+            target_image_width = content_width - 20  # Less margin
+            target_image_height = int(target_image_width * 0.5)  # Better aspect ratio
         else:
-            # Desktop: smaller to match popup proportions
-            target_image_width = 240
-            target_image_height = 100
+            # Desktop: larger to match popup proportions
+            target_image_width = 280
+            target_image_height = 120
         image_x = padding + (content_width - target_image_width) // 2  # Center the image
         
         # Try to load the actual campaign image
@@ -697,12 +697,13 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
         draw.rectangle([padding, current_y, padding + content_width, current_y + button_height], 
                      fill=button_color)
         
-        # Button text
+        # Button text (properly centered)
         cta_text = campaign_data.get('cta_text', 'CONTINUE >')
         bbox = draw.textbbox((0, 0), cta_text, font=cta_font)
         text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
         text_x = padding + (content_width - text_width) // 2
-        text_y = current_y + (button_height - 25) // 2
+        text_y = current_y + (button_height - text_height) // 2
         
         draw.text((text_x, text_y), cta_text, fill="white", font=cta_font)
         
