@@ -1321,16 +1321,15 @@ async def working_email_ad_png(
             else:  # desktop
                 w, h = 600, 400
         
-        # Get a random active campaign for the specified property
+        # Get a random active campaign (temporarily without property filter)
         conn = get_db_connection()
         cur = conn.execute("""
-            SELECT c.name, c.description, c.main_image_url, c.logo_url, c.cta_text 
-            FROM campaigns c
-            JOIN campaign_properties cp ON c.id = cp.campaign_id
-            WHERE c.active = 1 AND c.name != 'Prizies' AND cp.property_code = ? AND cp.active = 1
+            SELECT name, description, main_image_url, logo_url, cta_text 
+            FROM campaigns 
+            WHERE active = 1 AND name != 'Prizies'
             ORDER BY RANDOM() 
             LIMIT 1
-        """, (property,))
+        """)
         campaign = cur.fetchone()
         conn.close()
         
@@ -1555,18 +1554,17 @@ async def emergency_restore_12_campaigns():
             # MMM Finance campaigns (4 more)
             {"id": 2, "name": "Trading Tips", "tune_url": "https://track.modemobile.com/aff_c?offer_id=6998&aff_id=43045", "logo_url": "https://i.imgur.com/lHn301q.png", "main_image_url": "https://i.imgur.com/ZVGOktR.png", "description": "Get exclusive trading tips and market insights delivered daily to your inbox.", "cta_text": "Get Trading Tips", "offer_id": "6998", "aff_id": "43045", "active": True},
             {"id": 3, "name": "Behind The Markets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7521&aff_id=43045", "logo_url": "https://i.imgur.com/O3iEVP7.jpeg", "main_image_url": "https://i.imgur.com/NA0o7iJ.png", "description": "Discover what's really happening behind the financial markets with expert analysis.", "cta_text": "Learn More", "offer_id": "7521", "aff_id": "43045", "active": True},
-            {"id": 3, "name": "Brownstone Research", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7389&aff_id=43045", "logo_url": "https://i.imgur.com/3KVDcV7.jpeg", "main_image_url": "https://i.imgur.com/vzoiVpd.png", "description": "Advanced technology and investment research from Brownstone Research experts.", "cta_text": "View Research", "offer_id": "7389", "aff_id": "43045", "active": True},
-            {"id": 4, "name": "Hotsheets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7385&aff_id=43045", "logo_url": "https://i.imgur.com/4JoGdZr.png", "main_image_url": "https://i.imgur.com/O81cPQJ.jpeg", "description": "Daily market hotsheets with the most profitable trading opportunities.", "cta_text": "Get Hotsheets", "offer_id": "7385", "aff_id": "43045", "active": True},
-            {"id": 5, "name": "Best Gold", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7390&aff_id=43045", "logo_url": "https://i.imgur.com/5Yb0LJn.png", "main_image_url": "https://i.imgur.com/EEOyDuZ.jpeg", "description": "Premium gold investment insights and recommendations from industry experts.", "cta_text": "Learn About Gold", "offer_id": "7390", "aff_id": "43045", "active": True},
+            {"id": 4, "name": "Brownstone Research", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7389&aff_id=43045", "logo_url": "https://i.imgur.com/3KVDcV7.jpeg", "main_image_url": "https://i.imgur.com/vzoiVpd.png", "description": "Advanced technology and investment research from Brownstone Research experts.", "cta_text": "View Research", "offer_id": "7389", "aff_id": "43045", "active": True},
+            {"id": 5, "name": "Hotsheets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7385&aff_id=43045", "logo_url": "https://i.imgur.com/4JoGdZr.png", "main_image_url": "https://i.imgur.com/O81cPQJ.jpeg", "description": "Daily market hotsheets with the most profitable trading opportunities.", "cta_text": "Get Hotsheets", "offer_id": "7385", "aff_id": "43045", "active": True},
+            {"id": 6, "name": "Best Gold", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7390&aff_id=43045", "logo_url": "https://i.imgur.com/5Yb0LJn.png", "main_image_url": "https://i.imgur.com/EEOyDuZ.jpeg", "description": "Premium gold investment insights and recommendations from industry experts.", "cta_text": "Learn About Gold", "offer_id": "7390", "aff_id": "43045", "active": True},
             
             # MFF Lifestyle campaigns (7 total)
-            {"id": 6, "name": "Daily Goodie Box", "tune_url": "https://track.modemobile.com/aff_c?offer_id=6571&aff_id=42946", "logo_url": "https://i.imgur.com/DH7Tp4A.jpeg", "main_image_url": "https://i.imgur.com/JpKD9AX.png", "description": "Get your daily goodie box filled with amazing free samples and deals.", "cta_text": "Claim Now!", "offer_id": "6571", "aff_id": "42946", "active": True},
-            {"id": 7, "name": "Free Samples Guide", "tune_url": "https://track.modemobile.com/aff_c?offer_id=3907&aff_id=42946", "logo_url": "https://resources.rndsystems.com/images/promo_pages/free-sample-icon.png", "main_image_url": "https://i.imgur.com/vbgSfMi.jpeg", "description": "Get your comprehensive free samples guide with exclusive offers.", "cta_text": "Claim Now!", "offer_id": "3907", "aff_id": "42946", "active": True},
-            {"id": 8, "name": "UpLevel - Amazon Mystery Box", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Grab an Amazon Mystery Box!", "cta_text": "Get Box!", "offer_id": "4689", "aff_id": "42946", "active": True},
-            {"id": 9, "name": "Hulu - Hit Movies, TV and More!", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5555&aff_id=42946", "logo_url": "https://imgur.com/RHRuCvk.jpg", "main_image_url": "https://imgur.com/SEu1NtW.jpg", "description": "Exclusive Offers from Hulu!", "cta_text": "Get Hulu!", "offer_id": "5555", "aff_id": "42946", "active": True},
-            {"id": 10, "name": "Paramount", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5172&aff_id=42946", "logo_url": "https://imgur.com/2IpSLaY.jpg", "main_image_url": "https://imgur.com/p8o0YSR.jpg", "description": "Exclusive Offers from Paramount+!", "cta_text": "Get Paramount+!", "offer_id": "5172", "aff_id": "42946", "active": True},
-            {"id": 11, "name": "Trend'n Daily", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Daily trending offers and deals!", "cta_text": "Get Deals!", "offer_id": "4689", "aff_id": "42946", "active": True},
-            {"id": 12, "name": "UpLevelRewards", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Level up your rewards with exclusive offers!", "cta_text": "Level Up!", "offer_id": "4689", "aff_id": "42946", "active": True}
+            {"id": 7, "name": "Daily Goodie Box", "tune_url": "https://track.modemobile.com/aff_c?offer_id=6571&aff_id=42946", "logo_url": "https://i.imgur.com/DH7Tp4A.jpeg", "main_image_url": "https://i.imgur.com/JpKD9AX.png", "description": "Get your daily goodie box filled with amazing free samples and deals.", "cta_text": "Claim Now!", "offer_id": "6571", "aff_id": "42946", "active": True},
+            {"id": 8, "name": "Free Samples Guide", "tune_url": "https://track.modemobile.com/aff_c?offer_id=3907&aff_id=42946", "logo_url": "https://resources.rndsystems.com/images/promo_pages/free-sample-icon.png", "main_image_url": "https://i.imgur.com/vbgSfMi.jpeg", "description": "Get your comprehensive free samples guide with exclusive offers.", "cta_text": "Claim Now!", "offer_id": "3907", "aff_id": "42946", "active": True},
+            {"id": 9, "name": "UpLevel - Amazon Mystery Box", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Grab an Amazon Mystery Box!", "cta_text": "Get Box!", "offer_id": "4689", "aff_id": "42946", "active": True},
+            {"id": 10, "name": "Hulu - Hit Movies, TV and More!", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5555&aff_id=42946", "logo_url": "https://imgur.com/RHRuCvk.jpg", "main_image_url": "https://imgur.com/SEu1NtW.jpg", "description": "Exclusive Offers from Hulu!", "cta_text": "Get Hulu!", "offer_id": "5555", "aff_id": "42946", "active": True},
+            {"id": 11, "name": "Paramount", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5172&aff_id=42946", "logo_url": "https://imgur.com/2IpSLaY.jpg", "main_image_url": "https://imgur.com/p8o0YSR.jpg", "description": "Exclusive Offers from Paramount+!", "cta_text": "Get Paramount+!", "offer_id": "5172", "aff_id": "42946", "active": True},
+            {"id": 12, "name": "Trend'n Daily", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Daily trending offers and deals!", "cta_text": "Get Deals!", "offer_id": "4689", "aff_id": "42946", "active": True}
         ]
         
         # IMPORTANT: Use the same connection path used by init_db (DB_PATH)
