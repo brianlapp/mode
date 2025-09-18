@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel, HttpUrl
 from typing import List, Optional
 from datetime import datetime, timedelta
-from database import (
+from database_postgres import (
     get_db_connection, 
     get_campaigns_for_property,
     track_impression,

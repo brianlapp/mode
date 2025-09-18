@@ -37,11 +37,22 @@ if not DATABASE_URL:
 else:
     # PostgreSQL connection - compatible with existing SQLite code
     def get_db_connection():
-        """Get PostgreSQL connection (non-context manager for compatibility)"""
+        """Get PostgreSQL connection with SQLite compatibility shim"""
         conn = psycopg2.connect(
             DATABASE_URL,
             cursor_factory=psycopg2.extras.RealDictCursor
         )
+        
+        # Add SQLite-style execute method for compatibility
+        def execute_shim(sql, params=None):
+            cursor = conn.cursor()
+            # Convert ? placeholders to %s for PostgreSQL
+            sql_postgres = sql.replace('?', '%s')
+            cursor.execute(sql_postgres, params or ())
+            return cursor
+        
+        # Monkey patch the connection object
+        conn.execute = execute_shim
         return conn
     
     # Also provide context manager version for new code
