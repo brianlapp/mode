@@ -25,7 +25,7 @@ except ImportError:
 from routes.campaigns import router as campaigns_router
 from routes.properties import router as properties_router
 from routes.email import router as email_router
-from database_postgres import init_db
+from database import init_db
 
 # Create FastAPI app
 app = FastAPI(
@@ -69,7 +69,7 @@ startup_completed = False
 @app.get("/api/startup-status")
 async def startup_status():
     """Check if startup auto-restore ran successfully"""
-    from database_postgres import get_db_connection
+    from database import get_db_connection
     
     try:
         conn = get_db_connection()
@@ -95,7 +95,7 @@ async def startup_status():
 async def test_restore_now():
     """Test the restore function right now to see what fails"""
     import sqlite3
-    from database_postgres import get_db_path
+    from database import get_db_path
     
     restore_log = []
     
@@ -139,7 +139,7 @@ async def test_restore_now():
 async def auto_restore_campaigns_on_startup():
     """Auto-restore campaigns if database is empty or corrupted - CRITICAL for Railway deployments"""
     import sqlite3
-    from database_postgres import get_db_path
+    from database import get_db_path
     
     try:
         print("🔍 CHECKING CAMPAIGN DATABASE...")
@@ -266,7 +266,7 @@ async def health_check():
 async def create_postgres_schema():
     """Create PostgreSQL schema if it doesn't exist"""
     try:
-        from database_postgres import get_db_connection
+        from database import get_db_connection
         
         # Read schema file
         schema_file = Path(__file__).parent.parent / "create_postgres_schema.sql"
@@ -295,7 +295,7 @@ async def create_postgres_schema():
 async def test_postgres():
     """Test PostgreSQL connection and show debug info"""
     try:
-        from database_postgres import get_db_connection
+        from database import get_db_connection
         import os
         
         conn = get_db_connection()
@@ -790,7 +790,7 @@ async def font_diagnostic():
 @app.get("/debug/property-test")
 async def debug_property_test(property: str = None, host: str = None):
     """Debug endpoint to test property parameter parsing"""
-    from database_postgres import detect_property_code_from_host
+    from database import detect_property_code_from_host
     
     # Test the same logic as the optimized endpoint
     if property and property in ['mff', 'mmm', 'mcad', 'mmd']:
@@ -816,7 +816,7 @@ async def quick_fix():
         results = []
         
         # 1. Fix schema
-        from database_postgres import get_db_connection
+        from database import get_db_connection
         conn = get_db_connection()
         
         # Add featured_campaign_id column
@@ -868,7 +868,7 @@ async def quick_fix():
 @app.post("/migrate")
 async def run_migration():
     """Manual migration endpoint to fix missing columns"""
-    from database_postgres import get_db_connection
+    from database import get_db_connection
     conn = get_db_connection()
     try:
         # Add missing columns to campaign_properties table
@@ -1324,7 +1324,7 @@ async def working_email_ad_png(
 ):
     """Working email ad generation - returns campaign text"""
     try:
-        from database_postgres import get_db_connection
+        from database import get_db_connection
         
         # Set dimensions based on variant if not explicitly provided
         if w is None or h is None:
@@ -1377,7 +1377,7 @@ async def working_email_ad_png(
 async def direct_email_ad_debug(property: str = "mff", w: int = 600, h: int = 400, send: str = "qa"):
     """Get debug information for email ad generation - NEW FIXED VERSION"""
     try:
-        from database_postgres import get_db_connection
+        from database import get_db_connection
         
         # Test database connection and get campaign count
         conn = get_db_connection()
@@ -1437,7 +1437,7 @@ async def direct_email_ad_debug(property: str = "mff", w: int = 600, h: int = 40
 @app.post("/api/email/warm-cache")
 async def warm_email_image_cache():
     try:
-        from database_postgres import get_db_connection
+        from database import get_db_connection
         conn = get_db_connection()
         cur = conn.execute("SELECT logo_url, main_image_url FROM campaigns WHERE active = 1")
         rows = cur.fetchall()
@@ -1462,7 +1462,7 @@ async def warm_email_image_cache():
 async def delete_prizies_permanently():
     """Permanently delete all Prizies campaigns from database"""
     try:
-        from database_postgres import get_db_connection
+        from database import get_db_connection
         conn = get_db_connection()
         
         # Delete Prizies campaigns
@@ -1493,7 +1493,7 @@ async def emergency_restore_12_campaigns():
     """Emergency endpoint to restore all 12 campaigns with property attribution"""
     import sqlite3
     import json
-    from database_postgres import get_db_path
+    from database import get_db_path
     
     try:
         print("🚨 EMERGENCY RESTORATION: Restoring 12 campaigns")
@@ -1501,7 +1501,7 @@ async def emergency_restore_12_campaigns():
         # Ensure schema exists (idempotent) to avoid missing table errors
         try:
             init_db()
-            from database_postgres import get_db_connection
+            from database import get_db_connection
             conn = get_db_connection()
             # Explicitly create required tables if missing
             conn.execute(
@@ -1579,7 +1579,7 @@ async def emergency_restore_12_campaigns():
         ]
         
         # IMPORTANT: Use the same connection path used by init_db (DB_PATH)
-        from database_postgres import get_db_connection
+        from database import get_db_connection
         conn = get_db_connection()
         
         # Clear and restore campaigns
@@ -1666,7 +1666,7 @@ async def run_migration():
 @app.post("/api/db/fix-schema")
 async def fix_database_schema():
     """Emergency fix for missing featured column causing popup Internal Server Error"""
-    from database_postgres import get_db_connection
+    from database import get_db_connection
     conn = get_db_connection()
     try:
         results = []
@@ -1717,7 +1717,7 @@ async def fix_database_schema():
 async def db_force_init():
     try:
         init_db()
-        from database_postgres import get_db_connection
+        from database import get_db_connection
         conn = get_db_connection()
         try:
             # Ensure critical tables exist explicitly (idempotent)
@@ -1796,7 +1796,7 @@ async def db_force_init():
 @app.post("/api/db/fix-domains")
 async def fix_domain_configuration():
     """Fix missing domain mappings for property resolution"""
-    from database_postgres import get_db_connection
+    from database import get_db_connection
     conn = get_db_connection()
     try:
         results = []
@@ -1850,7 +1850,7 @@ async def fix_domain_configuration():
 @app.post("/api/db/migrate-featured-to-properties")
 async def migrate_featured_to_properties():
     """Migrate featured flag from campaigns to property-specific featured_campaign_id"""
-    from database_postgres import get_db_connection
+    from database import get_db_connection
     conn = get_db_connection()
     try:
         results = []
@@ -1916,7 +1916,7 @@ async def migrate_featured_to_properties():
 @app.get("/api/db/properties-schema")
 async def check_properties_schema():
     """Check properties table schema and data"""
-    from database_postgres import get_db_connection
+    from database import get_db_connection
     conn = get_db_connection()
     try:
         # Get table schema
