@@ -29,7 +29,7 @@
 
 ### **Database Connection:**
 ```
-DATABASE_URL=postgresql://postgres:oiOOYsoDLavzgajvmDXWnQsJsiKUxLsV@hopper.proxy.rlwy.net:59884/railway
+ask for it
 ```
 
 ### **Migrated Data:**
