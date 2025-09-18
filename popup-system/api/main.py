@@ -1023,7 +1023,7 @@ async def email_preview():
 # Include API routes
 app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
 app.include_router(properties_router, prefix="/api", tags=["properties"])
-# app.include_router(email_router, prefix="/api", tags=["email"])  # Disabled due to import issues
+app.include_router(email_router, prefix="/api/email", tags=["email"])  # Re-enabled for email PNG generation
 
 # WORKING EMAIL GENERATION - SIMPLE TEXT FORMAT
 @app.get("/api/email/popup-capture.html")
