@@ -2005,6 +2005,57 @@ async def serve_popup_script_minified():
     else:
         return PlainTextResponse("// Minified popup script not found", media_type="application/javascript")
 
+# Tracking endpoints for popup JavaScript
+@app.post("/api/impression")
+async def track_impression(request: Request):
+    """Track popup impression"""
+    try:
+        data = await request.json()
+        campaign_id = data.get('campaign_id')
+        property_code = data.get('property_code', 'unknown')
+
+        from database import get_db_connection
+        conn = get_db_connection()
+
+        # Insert impression record
+        conn.execute("""
+            INSERT INTO impressions (campaign_id, property_code, placement, timestamp)
+            VALUES (?, ?, 'thankyou', CURRENT_TIMESTAMP)
+        """, (campaign_id, property_code))
+
+        conn.commit()
+        conn.close()
+
+        return {"status": "success", "message": "Impression tracked"}
+
+    except Exception as e:
+        return {"status": "error", "message": f"Failed to track impression: {e}"}
+
+@app.post("/api/click")
+async def track_click(request: Request):
+    """Track popup click"""
+    try:
+        data = await request.json()
+        campaign_id = data.get('campaign_id')
+        property_code = data.get('property_code', 'unknown')
+
+        from database import get_db_connection
+        conn = get_db_connection()
+
+        # Insert click record with revenue estimate
+        conn.execute("""
+            INSERT INTO clicks (campaign_id, property_code, placement, revenue_estimate, timestamp)
+            VALUES (?, ?, 'thankyou', 0.45, CURRENT_TIMESTAMP)
+        """, (campaign_id, property_code))
+
+        conn.commit()
+        conn.close()
+
+        return {"status": "success", "message": "Click tracked", "revenue": 0.45}
+
+    except Exception as e:
+        return {"status": "error", "message": f"Failed to track click: {e}"}
+
 @app.get("/popup-styles.css")
 async def serve_popup_styles():
     """Serve the popup CSS styles"""
