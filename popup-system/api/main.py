@@ -338,6 +338,36 @@ async def create_postgres_schema():
     except Exception as e:
         return {"status": "error", "message": f"Schema creation failed: {str(e)}"}
 
+@app.get("/api/test-postgres")
+async def test_postgres():
+    """Test PostgreSQL connection and show debug info"""
+    try:
+        from database_postgres import get_db_connection
+        import os
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Test basic query
+        cursor.execute("SELECT version()")
+        version = cursor.fetchone()[0]
+        
+        # Check if tables exist
+        cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'")
+        tables = [row[0] for row in cursor.fetchall()]
+        
+        conn.close()
+        
+        return {
+            "status": "success",
+            "database_url_set": bool(os.getenv("DATABASE_URL")),
+            "postgresql_version": version,
+            "tables": tables
+        }
+        
+    except Exception as e:
+        return {"status": "error", "message": f"PostgreSQL test failed: {str(e)}"}
+
 # ========== EMAIL PNG GENERATION FUNCTIONS ==========
 
 # Property configurations
