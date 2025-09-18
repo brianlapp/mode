@@ -48,55 +48,59 @@ frontend_path = Path(__file__).parent.parent / "frontend"
 if frontend_path.exists():
     app.mount("/static", StaticFiles(directory=str(frontend_path / "assets")), name="static")
 
-# Initialize database on startup
-@app.on_event("startup")
-async def startup():
-    global startup_completed
-    print("🚀 STARTING MODE POPUP SYSTEM...")
-    
-    # Initialize database first
-    init_db()
-    
-    # 🛡️ BULLETPROOF AUTO-RESTORE SYSTEM - Critical for Railway deployments
-    print("🔍 CHECKING DATABASE STATUS ON STARTUP...")
-    
-    # ALWAYS run our startup check regardless of backup system
-    try:
-        await auto_restore_campaigns_on_startup()
-        print("✅ Startup database check completed")
-        startup_completed = True
-    except Exception as startup_error:
-        print(f"❌ Startup restore failed: {startup_error}")
-        startup_completed = False
+# DISABLED: Initialize database on startup - WAS CAUSING CAMPAIGN DELETION ISSUES!
+# The auto_restore_campaigns_on_startup function calls restore_12_clean_campaigns which
+# DELETES ALL CAMPAIGNS first, causing the "disappearing campaigns" issue.
+# Manual restore endpoints work fine, so startup auto-restore is disabled.
+# @app.on_event("startup")
+# async def startup():
+#     global startup_completed
+#     print("🚀 STARTING MODE POPUP SYSTEM...")
+#
+#     # Initialize database first
+#     init_db()
+#
+#     # 🛡️ BULLETPROOF AUTO-RESTORE SYSTEM - Critical for Railway deployments
+#     print("🔍 CHECKING DATABASE STATUS ON STARTUP...")
+#
+#     # ALWAYS run our startup check regardless of backup system
+#     try:
+#         await auto_restore_campaigns_on_startup()
+#         print("✅ Startup database check completed")
+#         startup_completed = True
+#     except Exception as startup_error:
+#         print(f"❌ Startup restore failed: {startup_error}")
+#         startup_completed = False
 
-# Global flag to track startup completion
-startup_completed = False
+# Global flag to track startup completion (set to True since we disabled auto-restore)
+startup_completed = True
 
-# Auto-restore middleware - runs on every request to ensure campaigns exist
-@app.middleware("http")
-async def ensure_campaigns_middleware(request, call_next):
-    """Ensure campaigns exist on every request - BULLETPROOF protection"""
-    
-    # Only check for campaign-related endpoints
-    if "/api/campaigns" in str(request.url) or "/api/email" in str(request.url):
-        try:
-            from database import get_db_connection
-            conn = get_db_connection()
-            cursor = conn.execute("SELECT COUNT(*) FROM campaigns WHERE active = 1")
-            campaign_count = cursor.fetchone()[0]
-            conn.close()
-            
-            # Auto-restore if empty
-            if campaign_count < 12:
-                print(f"🚨 MIDDLEWARE DETECTED EMPTY DATABASE: {campaign_count} campaigns")
-                print("🔄 Auto-restoring via middleware...")
-                await auto_restore_campaigns_on_startup()
-                
-        except Exception as e:
-            print(f"⚠️ Middleware auto-restore error: {e}")
-    
-    response = await call_next(request)
-    return response
+# DISABLED: Auto-restore middleware - WAS ALSO CAUSING CAMPAIGN DELETION!
+# This middleware was calling auto_restore_campaigns_on_startup() which deletes all campaigns
+# @app.middleware("http")
+# async def ensure_campaigns_middleware(request, call_next):
+#     """Ensure campaigns exist on every request - BULLETPROOF protection"""
+#
+#     # Only check for campaign-related endpoints
+#     if "/api/campaigns" in str(request.url) or "/api/email" in str(request.url):
+#         try:
+#             from database import get_db_connection
+#             conn = get_db_connection()
+#             cursor = conn.execute("SELECT COUNT(*) FROM campaigns WHERE active = 1")
+#             campaign_count = cursor.fetchone()[0]
+#             conn.close()
+#
+#             # Auto-restore if empty
+#             if campaign_count < 12:
+#                 print(f"🚨 MIDDLEWARE DETECTED EMPTY DATABASE: {campaign_count} campaigns")
+#                 print("🔄 Auto-restoring via middleware...")
+#                 await auto_restore_campaigns_on_startup()
+#
+#         except Exception as e:
+#             print(f"⚠️ Middleware auto-restore error: {e}")
+#
+#     response = await call_next(request)
+#     return response
 
 @app.get("/api/startup-status")
 async def startup_status():
