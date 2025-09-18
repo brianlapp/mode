@@ -42,8 +42,6 @@ else:
             DATABASE_URL,
             cursor_factory=psycopg2.extras.RealDictCursor
         )
-        # Make it compatible with SQLite row access
-        conn.row_factory = None
         return conn
     
     # Also provide context manager version for new code
