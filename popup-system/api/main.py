@@ -57,14 +57,46 @@ async def startup():
     # Initialize database first
     init_db()
     
-    # 🐘 POSTGRESQL DATABASE - No auto-restore needed (persistent database)
-    print("✅ PostgreSQL database connection initialized.")
-    startup_completed = True
+    # 🛡️ BULLETPROOF AUTO-RESTORE SYSTEM - Critical for Railway deployments
+    print("🔍 CHECKING DATABASE STATUS ON STARTUP...")
+    
+    # ALWAYS run our startup check regardless of backup system
+    try:
+        await auto_restore_campaigns_on_startup()
+        print("✅ Startup database check completed")
+        startup_completed = True
+    except Exception as startup_error:
+        print(f"❌ Startup restore failed: {startup_error}")
+        startup_completed = False
 
 # Global flag to track startup completion
 startup_completed = False
 
-# REMOVED: Auto-restore middleware obsolete with PostgreSQL persistent database
+# Auto-restore middleware - runs on every request to ensure campaigns exist
+@app.middleware("http")
+async def ensure_campaigns_middleware(request, call_next):
+    """Ensure campaigns exist on every request - BULLETPROOF protection"""
+    
+    # Only check for campaign-related endpoints
+    if "/api/campaigns" in str(request.url) or "/api/email" in str(request.url):
+        try:
+            from database import get_db_connection
+            conn = get_db_connection()
+            cursor = conn.execute("SELECT COUNT(*) FROM campaigns WHERE active = 1")
+            campaign_count = cursor.fetchone()[0]
+            conn.close()
+            
+            # Auto-restore if empty
+            if campaign_count < 12:
+                print(f"🚨 MIDDLEWARE DETECTED EMPTY DATABASE: {campaign_count} campaigns")
+                print("🔄 Auto-restoring via middleware...")
+                await auto_restore_campaigns_on_startup()
+                
+        except Exception as e:
+            print(f"⚠️ Middleware auto-restore error: {e}")
+    
+    response = await call_next(request)
+    return response
 
 @app.get("/api/startup-status")
 async def startup_status():
