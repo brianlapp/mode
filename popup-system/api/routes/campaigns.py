@@ -74,14 +74,20 @@ async def get_all_campaigns():
     finally:
         conn.close()
 
-@router.get("/campaigns/{property_code}", response_model=List[CampaignForPopup])
+@router.get("/campaigns/{property_code}")
 async def get_campaigns_for_property(property_code: str):
     """Get active campaigns for specific property (for popup script)"""
     if property_code not in ['mff', 'mmm', 'mcad', 'mmd']:
         raise HTTPException(status_code=400, detail="Invalid property code")
     
-    campaigns = get_active_campaigns_for_property(property_code)
-    return campaigns
+    # SIMPLE: Just return all campaigns for now to get popup working
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("SELECT * FROM campaigns WHERE active = 1 ORDER BY created_at DESC")
+        campaigns = [dict(row) for row in cursor.fetchall()]
+        return campaigns
+    finally:
+        conn.close()
 
 @router.post("/campaigns", response_model=dict)
 async def create_campaign(campaign: CampaignCreate):
