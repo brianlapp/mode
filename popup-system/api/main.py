@@ -545,7 +545,7 @@ def create_popup_style_email_ad(property_name: str, width: int, height: int, cam
             current_y = logo_margin + logo_size + 15
         else:
             # Desktop: standard spacing
-        current_y += pill_height + 15
+            current_y += pill_height + 15
         
         # Campaign title (larger, centered)
         campaign_title = campaign_data.get('name', 'Exclusive Offer')
