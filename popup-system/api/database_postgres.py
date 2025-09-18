@@ -85,17 +85,23 @@ def execute_query(query, params=None, fetch_one=False, fetch_all=False):
     """Execute query with PostgreSQL or SQLite compatibility"""
     if DATABASE_URL:
         # PostgreSQL
-        with get_db_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(query, params or ())
-                
-                if fetch_one:
-                    return cursor.fetchone()
-                elif fetch_all:
-                    return cursor.fetchall()
-                else:
-                    conn.commit()
-                    return cursor.rowcount
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(query, params or ())
+        
+        if fetch_one:
+            result = cursor.fetchone()
+            conn.close()
+            return result
+        elif fetch_all:
+            result = cursor.fetchall()
+            conn.close()
+            return result
+        else:
+            conn.commit()
+            rowcount = cursor.rowcount
+            conn.close()
+            return rowcount
     else:
         # SQLite fallback
         conn = get_db_connection()
