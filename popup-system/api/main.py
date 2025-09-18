@@ -309,6 +309,35 @@ async def restore_12_clean_campaigns(conn):
 async def health_check():
     return {"status": "healthy", "service": "Mode Popup Management API"}
 
+@app.post("/api/create-postgres-schema")
+async def create_postgres_schema():
+    """Create PostgreSQL schema if it doesn't exist"""
+    try:
+        from database_postgres import get_db_connection
+        
+        # Read schema file
+        schema_file = Path(__file__).parent.parent / "create_postgres_schema.sql"
+        with open(schema_file, 'r') as f:
+            schema_sql = f.read()
+        
+        # Execute schema creation
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Split and execute each statement
+        statements = schema_sql.split(';')
+        for statement in statements:
+            if statement.strip():
+                cursor.execute(statement.strip())
+        
+        conn.commit()
+        conn.close()
+        
+        return {"status": "success", "message": "PostgreSQL schema created successfully"}
+        
+    except Exception as e:
+        return {"status": "error", "message": f"Schema creation failed: {str(e)}"}
+
 # ========== EMAIL PNG GENERATION FUNCTIONS ==========
 
 # Property configurations
