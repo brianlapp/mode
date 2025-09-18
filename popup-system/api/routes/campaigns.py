@@ -14,7 +14,7 @@ from database import (
     track_click,
     execute_query
 )
-import psycopg2
+# import psycopg2  # Removed for SQLite rollback
 from datetime import datetime
 
 # EMBEDDED Tune API client to avoid import issues on Railway
