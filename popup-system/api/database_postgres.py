@@ -35,9 +35,20 @@ if not DATABASE_URL:
     from database import init_db
     
 else:
-    # PostgreSQL connection
-    @contextmanager
+    # PostgreSQL connection - compatible with existing SQLite code
     def get_db_connection():
+        """Get PostgreSQL connection (non-context manager for compatibility)"""
+        conn = psycopg2.connect(
+            DATABASE_URL,
+            cursor_factory=psycopg2.extras.RealDictCursor
+        )
+        # Make it compatible with SQLite row access
+        conn.row_factory = None
+        return conn
+    
+    # Also provide context manager version for new code
+    @contextmanager
+    def get_db_connection_ctx():
         """Get PostgreSQL connection with context manager"""
         conn = None
         try:
@@ -60,12 +71,13 @@ else:
         
         # Test connection
         try:
-            with get_db_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute("SELECT COUNT(*) FROM campaigns")
-                    count = cursor.fetchone()[0]
-                    print(f"✅ PostgreSQL connected - {count} campaigns found")
-                    return True
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM campaigns")
+            count = cursor.fetchone()[0]
+            print(f"✅ PostgreSQL connected - {count} campaigns found")
+            conn.close()
+            return True
         except Exception as e:
             print(f"❌ PostgreSQL connection failed: {e}")
             return False
