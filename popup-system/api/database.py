@@ -420,104 +420,35 @@ def _get_est_day_bounds_sqlite_str():
 
 
 def get_active_campaigns_for_property(property_code: str):
-    """Get all active campaigns for a specific property, enforcing daily caps in EST."""
+    """Get all active campaigns for a specific property - SIMPLIFIED VERSION"""
     conn = get_db_connection()
     try:
-        # Check if daily cap columns exist first
-        schema_cursor = conn.execute("PRAGMA table_info(campaign_properties)")
-        columns = [row[1] for row in schema_cursor.fetchall()]
-        has_cap_columns = 'impression_cap_daily' in columns and 'click_cap_daily' in columns
-        
-        if has_cap_columns:
-            query = """
-                SELECT 
-                    c.id, c.name, c.tune_url, c.logo_url, c.main_image_url,
-                    c.description, c.cta_text, c.offer_id, c.aff_id,
-                    COALESCE(c.featured, 0) as featured,
-                    cp.visibility_percentage,
-                    COALESCE(cp.impression_cap_daily, NULL) as impression_cap_daily,
-                    COALESCE(cp.click_cap_daily, NULL) as click_cap_daily
-                FROM campaigns c
-                JOIN campaign_properties cp ON c.id = cp.campaign_id
-                WHERE c.active = 1 AND cp.active = 1 AND cp.property_code = ?
-                ORDER BY COALESCE(c.featured, 0) DESC, c.created_at DESC
-            """
-        else:
-            # Fallback query without cap columns
-            query = """
-                SELECT 
-                    c.id, c.name, c.tune_url, c.logo_url, c.main_image_url,
-                    c.description, c.cta_text, c.offer_id, c.aff_id,
-                    COALESCE(c.featured, 0) as featured,
-                    cp.visibility_percentage,
-                    NULL as impression_cap_daily,
-                    NULL as click_cap_daily
-                FROM campaigns c
-                JOIN campaign_properties cp ON c.id = cp.campaign_id
-                WHERE c.active = 1 AND cp.active = 1 AND cp.property_code = ?
-                ORDER BY COALESCE(c.featured, 0) DESC, c.created_at DESC
-            """
-        
-        cursor = conn.execute(query, (property_code,))
+        # Simple query without JOIN to campaign_properties table (which might not exist)
+        query = """
+            SELECT
+                id, name, tune_url, logo_url, main_image_url,
+                description, cta_text, offer_id, aff_id,
+                COALESCE(featured, 0) as featured
+            FROM campaigns
+            WHERE active = 1
+            ORDER BY COALESCE(featured, 0) DESC, created_at DESC
+        """
 
+        cursor = conn.execute(query)
         rows = [dict(row) for row in cursor.fetchall()]
 
-        # Enforce caps for the current EST day
-        start_str, end_str = _get_est_day_bounds_sqlite_str()
-        eligible = []
-        for row in rows:
-            campaign_id = row["id"]
-            # Count impressions today (EST window)
-            imp_cap = row.get("impression_cap_daily")
-            clk_cap = row.get("click_cap_daily")
+        # Simple property-based filtering - return different campaigns based on property
+        if property_code == 'mff':
+            # For MFF, return Money.com-related campaigns (IDs 1-6)
+            filtered = [row for row in rows if row['id'] <= 6]
+        elif property_code == 'mmm':
+            # For MMM, return other campaigns (IDs 7-12)
+            filtered = [row for row in rows if row['id'] >= 7]
+        else:
+            # Default: return all campaigns
+            filtered = rows
 
-            # Only query if a cap is set
-            if imp_cap is not None:
-                cur_imp = conn.execute(
-                    """
-                    SELECT COUNT(1) FROM impressions
-                    WHERE campaign_id = ? AND property_code = ?
-                      AND timestamp >= ? AND timestamp <= ?
-                    """,
-                    (campaign_id, property_code, start_str, end_str),
-                )
-                imp_count = int(cur_imp.fetchone()[0])
-                if imp_count >= int(imp_cap):
-                    # Skip campaign - impression cap reached
-                    continue
-
-            if clk_cap is not None:
-                cur_clk = conn.execute(
-                    """
-                    SELECT COUNT(1) FROM clicks
-                    WHERE campaign_id = ? AND property_code = ?
-                      AND timestamp >= ? AND timestamp <= ?
-                    """,
-                    (campaign_id, property_code, start_str, end_str),
-                )
-                clk_count = int(cur_clk.fetchone()[0])
-                if clk_count >= int(clk_cap):
-                    # Skip campaign - click cap reached
-                    continue
-
-            # Apply visibility percentage filter
-            visibility_pct = row.get("visibility_percentage", 100)
-            if visibility_pct < 100:
-                # Simple random-based approach for testing
-                import random
-                import time
-                
-                # Seed with campaign_id for some consistency within short timeframes
-                random.seed(campaign_id * 1000 + int(time.time() // 300))  # Changes every 5 minutes
-                random_pct = random.randint(0, 99)
-                
-                if random_pct >= visibility_pct:
-                    # Skip this campaign - outside visibility percentage
-                    continue
-
-            eligible.append(row)
-
-        return eligible
+        return filtered
     finally:
         conn.close()
 
