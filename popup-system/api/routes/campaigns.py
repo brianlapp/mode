@@ -74,14 +74,40 @@ async def get_all_campaigns():
     finally:
         conn.close()
 
-@router.get("/campaigns/{property_code}", response_model=List[CampaignForPopup])
+@router.get("/campaigns/{property_code}")
 async def get_campaigns_for_property(property_code: str):
     """Get active campaigns for specific property (for popup script)"""
     if property_code not in ['mff', 'mmm', 'mcad', 'mmd']:
         raise HTTPException(status_code=400, detail="Invalid property code")
     
-    campaigns = get_active_campaigns_for_property(property_code)
-    return campaigns
+    # Simple query - just get all active campaigns for now
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("""
+            SELECT id, name, tune_url, logo_url, main_image_url, 
+                   description, cta_text, offer_id, aff_id
+            FROM campaigns 
+            WHERE active = 1
+            ORDER BY created_at DESC
+        """)
+        
+        campaigns = []
+        for row in cursor.fetchall():
+            campaigns.append({
+                "id": row[0],
+                "name": row[1], 
+                "tune_url": row[2],
+                "logo_url": row[3],
+                "main_image_url": row[4],
+                "description": row[5],
+                "cta_text": row[6] or "View Offer",
+                "offer_id": row[7],
+                "aff_id": row[8]
+            })
+        
+        return campaigns
+    finally:
+        conn.close()
 
 @router.post("/campaigns", response_model=dict)
 async def create_campaign(campaign: CampaignCreate):
@@ -455,10 +481,10 @@ async def get_tune_style_report(
         
         if start_date and end_date:
             date_filter = "AND cl.timestamp BETWEEN ? AND ?"
-            params.extend([start_date, end_date])
+                params.extend([start_date, end_date])
         elif not start_date and not end_date:
             date_filter = "AND cl.timestamp >= datetime('now', '-30 days')"
-            
+                
         # Build property filter
         property_filter = ""
         if property_code:
@@ -505,7 +531,7 @@ async def get_tune_style_report(
                 ROUND(COALESCE(SUM(cl.revenue_estimate), 0), 2) as profit
             FROM campaigns c
             LEFT JOIN clicks cl ON c.id = cl.campaign_id {date_filter}
-            LEFT JOIN impressions i ON c.id = i.campaign_id 
+            LEFT JOIN impressions i ON c.id = i.campaign_id
                 AND DATE(i.timestamp) = DATE(cl.timestamp)
                 AND i.property_code = cl.property_code
             WHERE c.active = 1 
@@ -588,7 +614,7 @@ async def get_performance_metrics():
             FROM campaigns c
             LEFT JOIN clicks cl ON c.id = cl.campaign_id 
                 AND cl.timestamp >= datetime('now', '-7 days')
-            LEFT JOIN impressions i ON c.id = i.campaign_id 
+            LEFT JOIN impressions i ON c.id = i.campaign_id
                 AND i.timestamp >= datetime('now', '-7 days')
             WHERE c.active = 1 
             GROUP BY c.id, c.name
