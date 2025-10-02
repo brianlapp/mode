@@ -302,7 +302,7 @@ async def restore_12_clean_campaigns_DISABLED_DO_NOT_USE(conn):
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "service": "Mode Popup Management API"}
+    return {"status": "healthy", "service": "Mode Popup Management API", "timestamp": datetime.datetime.now().isoformat()}
 
 @app.post("/api/create-postgres-schema")
 async def create_postgres_schema():
