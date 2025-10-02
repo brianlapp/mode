@@ -1943,4 +1943,686 @@ class AnalyticsManager {
 }
 
 // Initialize Analytics Manager
-window.analyticsManager = new AnalyticsManager(); 
+window.analyticsManager = new AnalyticsManager();
+
+/**
+ * Email Ads Manager Class
+ * Handles email ad CRUD operations and UI management
+ */
+class EmailAdsManager {
+    constructor() {
+        this.baseURL = '/api/email-ads';
+        this.emailAds = [];
+        this.properties = ['mff', 'mmm', 'mcad', 'mmd'];
+        this.propertyNames = {
+            'mff': 'ModeFreeFinds',
+            'mmm': 'ModeMarketMunchies',
+            'mcad': 'ModeClearanceDeals',
+            'mmd': 'ModeMarketDeals'
+        };
+        this.currentFilter = '';
+        this.init();
+    }
+
+    async init() {
+        console.log('📧 Email Ads Manager initializing...');
+        await this.loadEmailAds();
+        this.setupEventListeners();
+        await this.updateStats();
+        console.log('✅ Email Ads Manager ready');
+    }
+
+    async loadEmailAds() {
+        try {
+            const url = this.currentFilter
+                ? `${this.baseURL}/?property=${this.currentFilter}`
+                : `${this.baseURL}/`;
+
+            console.log(`🔄 Fetching email ads from: ${url}`);
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            this.emailAds = await response.json();
+            console.log(`✅ Loaded ${this.emailAds.length} email ads`);
+            this.renderEmailAds();
+        } catch (error) {
+            console.error('❌ Failed to load email ads:', error);
+            this.showAlert('Failed to load email ads', 'error');
+        }
+    }
+
+    renderEmailAds() {
+        const grid = document.getElementById('email-ads-grid');
+        if (!grid) return;
+
+        if (this.emailAds.length === 0) {
+            grid.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center text-gray-500 col-span-full">
+                    <div class="mb-4">
+                        <svg class="w-16 h-16 mx-auto text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">No Email Ads Found</h3>
+                    <p class="text-sm">
+                        ${this.currentFilter
+                            ? `No email ads found for ${this.propertyNames[this.currentFilter]}`
+                            : 'Click "Add Email Ad" to create your first email advertisement'
+                        }
+                    </p>
+                </div>
+            `;
+            return;
+        }
+
+        const emailAdCards = this.emailAds.map(ad => `
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-200">
+                <!-- Email Ad Header -->
+                <div class="p-4 border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white ${this.getPropertyColor(ad.property_code)}">
+                                ${ad.property_code.toUpperCase()}
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">${ad.name}</h3>
+                                <p class="text-xs text-gray-500">${this.propertyNames[ad.property_code] || ad.property_code}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ad.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${ad.active ? 'Active' : 'Inactive'}
+                            </span>
+                            <div class="relative">
+                                <button onclick="window.emailAdsManager.showEmailAdActions(${ad.id}, event)" class="p-1 text-gray-400 hover:text-gray-600 rounded">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Ad Preview -->
+                <div class="p-4">
+                    <div class="mb-3">
+                        <img src="${ad.desktop_image_url}" alt="${ad.name}"
+                             class="w-full h-32 object-cover rounded-lg border border-gray-200"
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjE2MCIgdmlld0JveD0iMCAwIDYwMCAxNjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iMTYwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjMwMCIgeT0iODAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzlDQTNBRiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSI+SW1hZ2UgTm90IEZvdW5kPC90ZXh0Pgo8L3N2Zz4K'">
+                    </div>
+
+                    ${ad.description ? `<p class="text-sm text-gray-600 mb-3">${ad.description}</p>` : ''}
+
+                    <div class="flex items-center justify-between text-xs text-gray-500">
+                        <span>Visibility: ${ad.visibility_percentage}%</span>
+                        <span>Created: ${new Date(ad.created_at).toLocaleDateString()}</span>
+                    </div>
+                </div>
+
+                <!-- Email Ad Actions -->
+                <div class="px-4 pb-4 flex gap-2">
+                    <button onclick="window.emailAdsManager.editEmailAd(${ad.id})"
+                            class="flex-1 bg-mode-blue text-white py-2 px-3 rounded-lg text-sm font-medium hover:shadow-lg transition-all duration-200">
+                        Edit
+                    </button>
+                    <button onclick="window.emailAdsManager.toggleEmailAdStatus(${ad.id}, ${!ad.active})"
+                            class="flex-1 ${ad.active ? 'bg-red-500' : 'bg-green-500'} text-white py-2 px-3 rounded-lg text-sm font-medium hover:shadow-lg transition-all duration-200">
+                        ${ad.active ? 'Disable' : 'Enable'}
+                    </button>
+                    <button onclick="window.emailAdsManager.previewEmailAd(${ad.id})"
+                            class="bg-gray-500 text-white py-2 px-3 rounded-lg text-sm font-medium hover:shadow-lg transition-all duration-200">
+                        Preview
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+        grid.innerHTML = emailAdCards;
+    }
+
+    getPropertyColor(propertyCode) {
+        const colors = {
+            'mff': 'bg-mode-pink',
+            'mmm': 'bg-mode-blue',
+            'mcad': 'bg-green-500',
+            'mmd': 'bg-yellow-500'
+        };
+        return colors[propertyCode] || 'bg-gray-500';
+    }
+
+    setupEventListeners() {
+        // Add Email Ad button
+        const addBtn = document.getElementById('add-email-ad-btn');
+        if (addBtn) {
+            addBtn.addEventListener('click', () => this.showAddEmailAdModal());
+        }
+
+        // Property filter
+        const filter = document.getElementById('email-property-filter');
+        if (filter) {
+            filter.addEventListener('change', (e) => {
+                this.currentFilter = e.target.value;
+                this.loadEmailAds();
+            });
+        }
+
+        // Close modal on outside click
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('email-ad-modal')) {
+                this.closeEmailAdModal();
+            }
+        });
+    }
+
+    async updateStats() {
+        try {
+            const analyticsResponse = await fetch(`${this.baseURL}/analytics/summary${this.currentFilter ? `?property=${this.currentFilter}` : ''}`);
+            if (analyticsResponse.ok) {
+                const analytics = await analyticsResponse.json();
+                this.updateStatsDisplay(analytics.summary);
+            }
+        } catch (error) {
+            console.error('Failed to load email ads analytics:', error);
+        }
+    }
+
+    updateStatsDisplay(summary) {
+        const totalAds = this.emailAds.length;
+        const totalImpressions = summary.reduce((sum, item) => sum + item.impressions, 0);
+        const totalClicks = summary.reduce((sum, item) => sum + item.clicks, 0);
+        const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions * 100).toFixed(2) : '0';
+
+        document.getElementById('total-email-ads').textContent = totalAds;
+        document.getElementById('email-impressions').textContent = totalImpressions.toLocaleString();
+        document.getElementById('email-clicks').textContent = totalClicks.toLocaleString();
+        document.getElementById('email-ctr').textContent = `${ctr}%`;
+    }
+
+    showAddEmailAdModal() {
+        const modal = this.createEmailAdModal();
+        document.body.appendChild(modal);
+        modal.classList.remove('hidden');
+    }
+
+    createEmailAdModal(emailAd = null) {
+        const isEdit = !!emailAd;
+        const modalId = isEdit ? 'edit-email-ad-modal' : 'add-email-ad-modal';
+
+        const modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'email-ad-modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50';
+
+        modal.innerHTML = `
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-screen overflow-y-auto">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-900">
+                        ${isEdit ? 'Edit Email Ad' : 'Add New Email Ad'}
+                    </h2>
+                    <button onclick="window.emailAdsManager.closeEmailAdModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Left Panel - Form -->
+                    <div class="space-y-6">
+                        <form id="email-ad-form">
+                            <!-- Email Ad Name -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Email Ad Name <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="email-ad-name" name="name" required
+                                       value="${emailAd?.name || ''}"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mode-pink focus:border-transparent"
+                                       placeholder="e.g., MFF Newsletter Banner #1">
+                            </div>
+
+                            <!-- Property -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Property <span class="text-red-500">*</span>
+                                </label>
+                                <select id="email-ad-property" name="property_code" required
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mode-pink focus:border-transparent">
+                                    <option value="">Select Property</option>
+                                    ${this.properties.map(prop => `
+                                        <option value="${prop}" ${emailAd?.property_code === prop ? 'selected' : ''}>
+                                            ${this.propertyNames[prop]} (${prop.toUpperCase()})
+                                        </option>
+                                    `).join('')}
+                                </select>
+                            </div>
+
+                            <!-- Desktop Image URL -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Desktop Image URL <span class="text-red-500">*</span>
+                                </label>
+                                <input type="url" id="email-ad-desktop-image" name="desktop_image_url" required
+                                       value="${emailAd?.desktop_image_url || ''}"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mode-pink focus:border-transparent"
+                                       placeholder="https://example.com/desktop-banner.png">
+                                <p class="text-xs text-gray-500 mt-1">Recommended: 600px width</p>
+                            </div>
+
+                            <!-- Mobile Image URL -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Mobile Image URL (Optional)
+                                </label>
+                                <input type="url" id="email-ad-mobile-image" name="mobile_image_url"
+                                       value="${emailAd?.mobile_image_url || ''}"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mode-pink focus:border-transparent"
+                                       placeholder="https://example.com/mobile-banner.png">
+                                <p class="text-xs text-gray-500 mt-1">Recommended: 320px width</p>
+                            </div>
+
+                            <!-- Click URL -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Click URL <span class="text-red-500">*</span>
+                                </label>
+                                <input type="url" id="email-ad-click-url" name="click_url" required
+                                       value="${emailAd?.click_url || ''}"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mode-pink focus:border-transparent"
+                                       placeholder="https://example.com/landing-page">
+                            </div>
+
+                            <!-- Description -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Description (Optional)
+                                </label>
+                                <textarea id="email-ad-description" name="description" rows="3"
+                                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mode-pink focus:border-transparent"
+                                          placeholder="Brief description for internal use...">${emailAd?.description || ''}</textarea>
+                            </div>
+
+                            <!-- Visibility Percentage -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Visibility Percentage: <span id="visibility-display">${emailAd?.visibility_percentage || 100}</span>%
+                                </label>
+                                <input type="range" id="email-ad-visibility" name="visibility_percentage"
+                                       min="0" max="100" value="${emailAd?.visibility_percentage || 100}"
+                                       class="w-full"
+                                       oninput="document.getElementById('visibility-display').textContent = this.value">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>0% (Hidden)</span>
+                                    <span>50% (Half Rotation)</span>
+                                    <span>100% (Full Rotation)</span>
+                                </div>
+                            </div>
+
+                            <!-- Active Toggle -->
+                            <div class="flex items-center">
+                                <input type="checkbox" id="email-ad-active" name="active"
+                                       ${emailAd?.active !== false ? 'checked' : ''}
+                                       class="h-4 w-4 text-mode-pink focus:ring-mode-pink border-gray-300 rounded">
+                                <label for="email-ad-active" class="ml-2 block text-sm text-gray-700">
+                                    Email ad is active
+                                </label>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right Panel - Preview -->
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Live Preview</h3>
+                            <div class="bg-gray-50 rounded-lg p-4 min-h-[400px]">
+                                <div class="text-center mb-4">
+                                    <div class="inline-flex bg-white rounded-lg p-1 shadow-sm">
+                                        <button onclick="window.emailAdsManager.switchPreview('desktop')"
+                                                id="preview-desktop-btn"
+                                                class="px-3 py-1 rounded text-sm font-medium bg-mode-pink text-white">
+                                            Desktop
+                                        </button>
+                                        <button onclick="window.emailAdsManager.switchPreview('mobile')"
+                                                id="preview-mobile-btn"
+                                                class="px-3 py-1 rounded text-sm font-medium text-gray-600">
+                                            Mobile
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="email-ad-preview" class="bg-white rounded-lg shadow-sm p-4">
+                                    <div class="text-center text-gray-500">
+                                        <p>Enter image URL to see preview</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Integration Code -->
+                            <div class="mt-6">
+                                <h4 class="font-medium text-gray-900 mb-2">Email Integration Code</h4>
+                                <div class="bg-gray-900 text-green-400 p-3 rounded text-xs font-mono overflow-x-auto">
+                                    <div id="integration-code">
+                                        Select property and enter details to generate integration code
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex items-center justify-end gap-4 p-6 border-t border-gray-200">
+                    <button onclick="window.emailAdsManager.closeEmailAdModal()"
+                            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button onclick="window.emailAdsManager.${isEdit ? 'updateEmailAd' : 'createEmailAd'}(${isEdit ? emailAd.id : ''})"
+                            class="px-6 py-2 bg-gradient-to-r from-mode-pink to-mode-blue text-white rounded-lg hover:shadow-lg">
+                        ${isEdit ? 'Update Email Ad' : 'Create Email Ad'}
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Add real-time preview updates
+        setTimeout(() => {
+            const form = modal.querySelector('#email-ad-form');
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.addEventListener('input', () => this.updatePreview());
+            });
+            this.updatePreview();
+        }, 100);
+
+        return modal;
+    }
+
+    updatePreview() {
+        const desktopImageUrl = document.getElementById('email-ad-desktop-image')?.value;
+        const mobileImageUrl = document.getElementById('email-ad-mobile-image')?.value;
+        const name = document.getElementById('email-ad-name')?.value;
+        const property = document.getElementById('email-ad-property')?.value;
+
+        const preview = document.getElementById('email-ad-preview');
+        const currentView = document.getElementById('preview-desktop-btn')?.classList.contains('bg-mode-pink') ? 'desktop' : 'mobile';
+        const imageUrl = currentView === 'desktop' ? desktopImageUrl : (mobileImageUrl || desktopImageUrl);
+
+        if (preview && imageUrl) {
+            preview.innerHTML = `
+                <div class="text-center">
+                    <img src="${imageUrl}" alt="${name || 'Email Ad'}"
+                         class="max-w-full h-auto rounded border shadow-sm mx-auto"
+                         style="max-height: 300px;"
+                         onerror="this.parentElement.innerHTML='<p class=\\'text-red-500\\'>Image failed to load</p>'">
+                    <p class="text-sm text-gray-600 mt-2">${currentView === 'desktop' ? 'Desktop' : 'Mobile'} Preview</p>
+                </div>
+            `;
+        } else if (preview) {
+            preview.innerHTML = '<div class="text-center text-gray-500"><p>Enter image URL to see preview</p></div>';
+        }
+
+        // Update integration code
+        if (property && name) {
+            this.updateIntegrationCode(property);
+        }
+    }
+
+    updateIntegrationCode(property) {
+        const codeElement = document.getElementById('integration-code');
+        if (codeElement) {
+            codeElement.innerHTML = `
+&lt;!-- Desktop Version --&gt;<br>
+&lt;div class="desktop-only" style="display:block;"&gt;<br>
+&nbsp;&nbsp;&lt;a href="https://mode-dash-production.up.railway.app/api/email-ads/ad.png?property=${property}&variant=desktop&recipient={{recipient_id}}"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;img src="https://mode-dash-production.up.railway.app/api/email-ads/ad.png?property=${property}&variant=desktop&recipient={{recipient_id}}"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;alt="Mode Offer" style="max-width:600px;width:100%;height:auto;"&gt;<br>
+&nbsp;&nbsp;&lt;/a&gt;<br>
+&lt;/div&gt;<br><br>
+
+&lt;!-- Mobile Version --&gt;<br>
+&lt;div class="mobile-only" style="display:none;"&gt;<br>
+&nbsp;&nbsp;&lt;a href="https://mode-dash-production.up.railway.app/api/email-ads/ad.png?property=${property}&variant=mobile&recipient={{recipient_id}}"&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;img src="https://mode-dash-production.up.railway.app/api/email-ads/ad.png?property=${property}&variant=mobile&recipient={{recipient_id}}"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;alt="Mode Offer" style="max-width:320px;width:100%;height:auto;"&gt;<br>
+&nbsp;&nbsp;&lt;/a&gt;<br>
+&lt;/div&gt;
+            `.trim();
+        }
+    }
+
+    switchPreview(type) {
+        const desktopBtn = document.getElementById('preview-desktop-btn');
+        const mobileBtn = document.getElementById('preview-mobile-btn');
+
+        if (type === 'desktop') {
+            desktopBtn.className = 'px-3 py-1 rounded text-sm font-medium bg-mode-pink text-white';
+            mobileBtn.className = 'px-3 py-1 rounded text-sm font-medium text-gray-600';
+        } else {
+            mobileBtn.className = 'px-3 py-1 rounded text-sm font-medium bg-mode-pink text-white';
+            desktopBtn.className = 'px-3 py-1 rounded text-sm font-medium text-gray-600';
+        }
+
+        this.updatePreview();
+    }
+
+    async createEmailAd() {
+        const form = document.getElementById('email-ad-form');
+        const formData = new FormData(form);
+
+        const emailAdData = {
+            name: formData.get('name'),
+            property_code: formData.get('property_code'),
+            desktop_image_url: formData.get('desktop_image_url'),
+            mobile_image_url: formData.get('mobile_image_url') || null,
+            click_url: formData.get('click_url'),
+            description: formData.get('description') || null,
+            visibility_percentage: parseInt(formData.get('visibility_percentage')),
+            active: formData.get('active') === 'on'
+        };
+
+        try {
+            const response = await fetch(this.baseURL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(emailAdData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            this.showAlert('Email ad created successfully!', 'success');
+            this.closeEmailAdModal();
+            await this.loadEmailAds();
+        } catch (error) {
+            console.error('Failed to create email ad:', error);
+            this.showAlert('Failed to create email ad', 'error');
+        }
+    }
+
+    async editEmailAd(emailAdId) {
+        try {
+            const response = await fetch(`${this.baseURL}/${emailAdId}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const emailAd = await response.json();
+            const modal = this.createEmailAdModal(emailAd);
+            document.body.appendChild(modal);
+            modal.classList.remove('hidden');
+        } catch (error) {
+            console.error('Failed to load email ad for editing:', error);
+            this.showAlert('Failed to load email ad', 'error');
+        }
+    }
+
+    async updateEmailAd(emailAdId) {
+        const form = document.getElementById('email-ad-form');
+        const formData = new FormData(form);
+
+        const emailAdData = {};
+        for (const [key, value] of formData.entries()) {
+            if (value !== '') {
+                if (key === 'visibility_percentage') {
+                    emailAdData[key] = parseInt(value);
+                } else if (key === 'active') {
+                    emailAdData[key] = value === 'on';
+                } else {
+                    emailAdData[key] = value;
+                }
+            }
+        }
+
+        try {
+            const response = await fetch(`${this.baseURL}/${emailAdId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(emailAdData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            this.showAlert('Email ad updated successfully!', 'success');
+            this.closeEmailAdModal();
+            await this.loadEmailAds();
+        } catch (error) {
+            console.error('Failed to update email ad:', error);
+            this.showAlert('Failed to update email ad', 'error');
+        }
+    }
+
+    async toggleEmailAdStatus(emailAdId, newStatus) {
+        try {
+            const response = await fetch(`${this.baseURL}/${emailAdId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ active: newStatus })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            this.showAlert(`Email ad ${newStatus ? 'enabled' : 'disabled'} successfully!`, 'success');
+            await this.loadEmailAds();
+        } catch (error) {
+            console.error('Failed to toggle email ad status:', error);
+            this.showAlert('Failed to update email ad status', 'error');
+        }
+    }
+
+    async deleteEmailAd(emailAdId) {
+        if (!confirm('Are you sure you want to delete this email ad? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`${this.baseURL}/${emailAdId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            this.showAlert('Email ad deleted successfully!', 'success');
+            await this.loadEmailAds();
+        } catch (error) {
+            console.error('Failed to delete email ad:', error);
+            this.showAlert('Failed to delete email ad', 'error');
+        }
+    }
+
+    previewEmailAd(emailAdId) {
+        const emailAd = this.emailAds.find(ad => ad.id === emailAdId);
+        if (!emailAd) return;
+
+        const previewWindow = window.open('', '_blank', 'width=700,height=500,scrollbars=yes');
+        previewWindow.document.write(`
+            <html>
+                <head>
+                    <title>Email Ad Preview - ${emailAd.name}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+                        .preview-container { background: white; padding: 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; }
+                        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+                        .tab { padding: 8px 16px; background: #eee; border: none; cursor: pointer; border-radius: 4px; }
+                        .tab.active { background: #F7007C; color: white; }
+                        .preview-content { text-align: center; }
+                        img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; }
+                        .info { background: #f9f9f9; padding: 15px; border-radius: 4px; margin-top: 20px; text-align: left; }
+                    </style>
+                </head>
+                <body>
+                    <div class="preview-container">
+                        <h2>${emailAd.name}</h2>
+                        <div class="tabs">
+                            <button class="tab active" onclick="showDesktop()">Desktop Preview</button>
+                            <button class="tab" onclick="showMobile()">Mobile Preview</button>
+                        </div>
+                        <div class="preview-content">
+                            <div id="desktop-preview">
+                                <img src="${emailAd.desktop_image_url}" alt="Desktop Preview" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDYwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjMwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM5Q0EzQUYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPkRlc2t0b3AgSW1hZ2UgTm90IEZvdW5kPC90ZXh0Pgo8L3N2Zz4K';">
+                            </div>
+                            <div id="mobile-preview" style="display: none;">
+                                <img src="${emailAd.mobile_image_url || emailAd.desktop_image_url}" alt="Mobile Preview" style="max-width: 320px;" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMyMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIzMjAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRjNGNEY2Ii8+Cjx0ZXh0IHg9IjE2MCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5Q0EzQUYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGRvbWluYW50LWJhc2VsaW5lPSJtaWRkbGUiPk1vYmlsZSBJbWFnZSBOb3QgRm91bmQ8L3RleHQ+Cjwvc3ZnPgo=';">
+                            </div>
+                        </div>
+                        <div class="info">
+                            <h3>Email Ad Details</h3>
+                            <p><strong>Property:</strong> ${emailAd.property_code.toUpperCase()}</p>
+                            <p><strong>Click URL:</strong> <a href="${emailAd.click_url}" target="_blank">${emailAd.click_url}</a></p>
+                            <p><strong>Visibility:</strong> ${emailAd.visibility_percentage}%</p>
+                            <p><strong>Status:</strong> ${emailAd.active ? 'Active' : 'Inactive'}</p>
+                            ${emailAd.description ? `<p><strong>Description:</strong> ${emailAd.description}</p>` : ''}
+                        </div>
+                    </div>
+                    <script>
+                        function showDesktop() {
+                            document.getElementById('desktop-preview').style.display = 'block';
+                            document.getElementById('mobile-preview').style.display = 'none';
+                            document.querySelectorAll('.tab')[0].classList.add('active');
+                            document.querySelectorAll('.tab')[1].classList.remove('active');
+                        }
+                        function showMobile() {
+                            document.getElementById('desktop-preview').style.display = 'none';
+                            document.getElementById('mobile-preview').style.display = 'block';
+                            document.querySelectorAll('.tab')[0].classList.remove('active');
+                            document.querySelectorAll('.tab')[1].classList.add('active');
+                        }
+                    </script>
+                </body>
+            </html>
+        `);
+    }
+
+    showEmailAdActions(emailAdId, event) {
+        event.stopPropagation();
+        // Create a simple context menu for additional actions
+        alert('Email Ad Actions:\n\n• Edit - Modify email ad details\n• Enable/Disable - Toggle active status\n• Preview - View in new window\n• Delete - Available via Edit dialog');
+    }
+
+    closeEmailAdModal() {
+        const modals = document.querySelectorAll('.email-ad-modal');
+        modals.forEach(modal => modal.remove());
+    }
+
+    showAlert(message, type = 'info') {
+        // Reuse existing alert system from CampaignManager
+        if (window.campaignManager) {
+            window.campaignManager.showAlert(message, type);
+        } else {
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+    }
+}
+
+// Initialize Email Ads Manager
+window.emailAdsManager = new EmailAdsManager();

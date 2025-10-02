@@ -27,10 +27,10 @@ class TuneAPIClient:
             'NetworkToken': self.api_key,
             'Target': 'Report',
             'Method': method,
-            'fields[]': ['Stat.clicks', 'Stat.conversions', 'Stat.payout', 'Stat.revenue', 'Stat.offer_id'],
+            'fields[]': ['Stat.clicks', 'Stat.conversions', 'Stat.payout', 'Stat.revenue', 'Stat.offer_id', 'Stat.aff_sub3'],
             'filters[Stat.offer_id][conditional]': 'EQUAL_TO',
             'filters[Stat.offer_id][values][]': popup_offer_ids,
-            'group_by[]': ['Stat.offer_id'],
+            'group_by[]': ['Stat.offer_id', 'Stat.aff_sub3'],
             'totals': 1,
             'limit': 1000,
             **additional_params  # Merge additional parameters

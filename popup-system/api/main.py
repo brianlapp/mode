@@ -25,6 +25,7 @@ except ImportError:
 from routes.campaigns import router as campaigns_router
 from routes.properties import router as properties_router
 from routes.email import router as email_router
+from routes.email_ads import router as email_ads_router
 from database import init_db
 
 # Create FastAPI app
@@ -1024,6 +1025,7 @@ async def email_preview():
 app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
 app.include_router(properties_router, prefix="/api", tags=["properties"])
 app.include_router(email_router, prefix="/api/email", tags=["email"])  # Re-enabled for email PNG generation
+app.include_router(email_ads_router, prefix="/api/email-ads", tags=["email-ads"])  # New email ad management system
 
 # WORKING EMAIL GENERATION - SIMPLE TEXT FORMAT
 @app.get("/api/email/popup-capture.html")

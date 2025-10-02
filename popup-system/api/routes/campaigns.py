@@ -1056,12 +1056,13 @@ async def track_click(request: Request):
         conn = get_db_connection()
         
         # Insert click record with Phase 2 tracking
+        utm_source = data.get("source", "direct")[:100]  # Capture for aff_sub3
         conn.execute("""
             INSERT INTO clicks (
                 campaign_id, property_code, session_id, placement,
                 user_agent, timestamp, ip_hash, revenue_estimate,
-                source, subsource, utm_campaign, referrer, landing_page
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                source, subsource, utm_campaign, referrer, landing_page, aff_sub3
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             data["campaign_id"],
             data["property_code"],
@@ -1071,11 +1072,12 @@ async def track_click(request: Request):
             data.get("timestamp", datetime.now().isoformat()),
             hash(str(request.client.host)) if request.client else 0,  # Simple IP hash
             0.45,  # Default estimated revenue (Mike's proven CPL)
-            data.get("source", "")[:100],      # Phase 2: Traffic source
+            utm_source,                         # Phase 2: Traffic source (utm_source)
             data.get("subsource", "")[:100],   # Phase 2: Traffic subsource
             data.get("utm_campaign", "")[:100], # Phase 2: Campaign parameter
             data.get("referrer", "")[:255],    # Phase 2: Referrer URL
-            data.get("landing_page", "")[:255] # Phase 2: Landing page URL
+            data.get("landing_page", "")[:255], # Phase 2: Landing page URL
+            utm_source                          # aff_sub3: Same as source for Tune reporting
         ))
         
         conn.commit()
