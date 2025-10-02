@@ -2007,6 +2007,29 @@ async def serve_popup_script_minified():
     else:
         return PlainTextResponse("// Minified popup script not found", media_type="application/javascript")
 
+# Migration endpoint for aff_sub3
+@app.post("/api/db/migrate-aff-sub3")
+async def migrate_aff_sub3():
+    """Add aff_sub3 column to clicks table"""
+    try:
+        from database import get_db_connection
+        conn = get_db_connection()
+        
+        # Check if column exists
+        cursor = conn.execute("PRAGMA table_info(clicks)")
+        columns = [row[1] for row in cursor.fetchall()]
+        
+        if 'aff_sub3' not in columns:
+            conn.execute("ALTER TABLE clicks ADD COLUMN aff_sub3 TEXT")
+            conn.commit()
+            conn.close()
+            return {"success": True, "message": "aff_sub3 column added to clicks table"}
+        else:
+            conn.close()
+            return {"success": True, "message": "aff_sub3 column already exists"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 # Tracking endpoints for popup JavaScript
 @app.post("/api/impression")
 async def track_impression(request: Request):
