@@ -205,17 +205,16 @@ async def auto_restore_campaigns_on_startup():
                 cursor.execute("SELECT COUNT(*) FROM campaigns WHERE active = 1")
                 campaign_count = cursor.fetchone()[0]
             
-            # Auto-restore if empty or corrupted (should have exactly 12 campaigns)
+            # Check campaign count but DO NOT auto-restore (causes data loss)
             if campaign_count < 12:
-                print(f"⚠️ INSUFFICIENT CAMPAIGNS: Found {campaign_count}, need 12. Auto-restoring...")
-                await restore_12_clean_campaigns(conn)
+                print(f"⚠️ INSUFFICIENT CAMPAIGNS: Found {campaign_count}, need 12")
+                print(f"⚠️ Use /api/emergency-restore-12-campaigns endpoint to restore")
             else:
                 print(f"✅ Database healthy with {campaign_count} campaigns")
                 
         except Exception as e:
             print(f"❌ Database check failed: {e}")
-            print("🔄 Forcing emergency restore...")
-            await restore_12_clean_campaigns(conn)
+            print("⚠️ Use /api/emergency-restore-12-campaigns endpoint to restore if needed")
         
         finally:
             conn.close()
