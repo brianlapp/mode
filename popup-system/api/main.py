@@ -1541,7 +1541,7 @@ async def emergency_restore_12_campaigns():
         print("🚨 EMERGENCY RESTORATION: Loading from golden backup...")
         
         # Ensure schema exists first
-        init_db()
+            init_db()
         
         # Load GOLDEN backup (verified working data with real image URLs)
         # Backups are in popup-system/backups/ (one level up from api/)
@@ -1584,17 +1584,34 @@ async def emergency_restore_12_campaigns():
             ))
         
         # Restore property settings if available
-        for prop in properties_data:
+        if properties_data:
+            # Ensure campaign_properties table exists
             conn.execute('''
-                INSERT OR REPLACE INTO campaign_properties (
-                    campaign_id, property_code, visibility_percentage, active,
-                    impression_cap_daily, click_cap_daily
-                ) VALUES (?, ?, ?, ?, ?, ?)
+                CREATE TABLE IF NOT EXISTS campaign_properties (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    campaign_id INTEGER NOT NULL,
+                    property_code TEXT NOT NULL,
+                    visibility_percentage INTEGER DEFAULT 100,
+                    active BOOLEAN DEFAULT 1,
+                    impression_cap_daily INTEGER NULL,
+                    click_cap_daily INTEGER NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+                    UNIQUE(campaign_id, property_code)
+                )
+            ''')
+        
+            for prop in properties_data:
+            conn.execute('''
+                    INSERT OR REPLACE INTO campaign_properties (
+                        campaign_id, property_code, visibility_percentage, active,
+                        impression_cap_daily, click_cap_daily
+                    ) VALUES (?, ?, ?, ?, ?, ?)
             ''', (
-                prop['campaign_id'], prop['property_code'], 
-                prop.get('visibility_percentage', 100), prop.get('active', True),
-                prop.get('impression_cap_daily'), prop.get('click_cap_daily')
-            ))
+                    prop['campaign_id'], prop['property_code'], 
+                    prop.get('visibility_percentage', 100), prop.get('active', True),
+                    prop.get('impression_cap_daily'), prop.get('click_cap_daily')
+                ))
         
         conn.commit()
         conn.close()
