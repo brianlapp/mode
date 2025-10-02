@@ -3,7 +3,7 @@ Mode Popup Management System - Main API
 Simple campaign management dashboard + embeddable popup script
 """
 
-from fastapi import FastAPI, HTTPException, Depends, Response
+from fastapi import FastAPI, HTTPException, Depends, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse
