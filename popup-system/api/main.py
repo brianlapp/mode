@@ -224,7 +224,15 @@ async def auto_restore_campaigns_on_startup():
         print(f"❌ Startup auto-restore failed: {e}")
 
 async def restore_12_clean_campaigns(conn):
-    """Restore exactly 12 clean campaigns - NO PRIZIES"""
+    """DISABLED: This function was nuking campaigns in production
+    Use /api/emergency-restore-12-campaigns endpoint instead"""
+    print("⚠️ restore_12_clean_campaigns() is DISABLED to prevent data loss")
+    print("⚠️ Use /api/emergency-restore-12-campaigns endpoint instead")
+    return False
+    
+async def restore_12_clean_campaigns_DISABLED_DO_NOT_USE(conn):
+    """Restore exactly 12 clean campaigns - NO PRIZIES
+    DISABLED BECAUSE IT DELETES ALL CAMPAIGNS"""
     try:
         print("🔄 RESTORING 12 CLEAN CAMPAIGNS...")
         
@@ -247,11 +255,10 @@ async def restore_12_clean_campaigns(conn):
             {"id": 12, "name": "Trend'n Daily", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946&aff_sub2=perks", "logo_url": "https://i.imgur.com/trendn-logo.png", "main_image_url": "https://i.imgur.com/trendn-deals.jpg", "description": "Daily trending offers and deals!", "cta_text": "Get Deals!", "offer_id": "4689", "aff_id": "42946", "property": "mff"}
         ]
         
-        # Clear existing campaigns and properties
-        print("🗑️ Clearing existing data...")
-        conn.execute("DELETE FROM campaign_properties")
-        conn.execute("DELETE FROM campaigns")
-        print("✅ Existing data cleared")
+        # DISABLED: DO NOT DELETE CAMPAIGNS IN PRODUCTION
+        # This was causing data loss - campaigns should only be added, never cleared
+        # If you need to restore, use /api/emergency-restore-12-campaigns instead
+        print("⚠️ Skipping dangerous DELETE operations to protect production data")
         
         # Restore the 12 good campaigns
         print(f"📊 Restoring {len(clean_campaigns)} campaigns...")
