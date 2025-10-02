@@ -545,13 +545,9 @@
             // Track click
             this.trackClick(campaign);
             
-            // Open campaign URL with aff_sub3 for traffic source tracking
+            // Open campaign URL
             if (campaign.tune_url) {
-                const utm_source = this.trackingData.source || 'direct';
-                const separator = campaign.tune_url.includes('?') ? '&' : '?';
-                const trackingUrl = `${campaign.tune_url}${separator}aff_sub3=${encodeURIComponent(utm_source)}`;
-                this.debug('Opening Tune URL with aff_sub3:', trackingUrl);
-                window.open(trackingUrl, '_blank');
+                window.open(campaign.tune_url, '_blank');
             }
             
             // Hide popup after click

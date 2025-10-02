@@ -268,14 +268,6 @@ def init_db():
                 except Exception as e:
                     print(f"⚠️ Failed to add {column} to clicks: {e}")
         
-        # Add aff_sub3 column for Tune traffic source tracking
-        if 'aff_sub3' not in existing_columns:
-            try:
-                conn.execute("ALTER TABLE clicks ADD COLUMN aff_sub3 TEXT")
-                print("✅ Added aff_sub3 to clicks table for Tune reporting")
-            except Exception as e:
-                print(f"⚠️ Failed to add aff_sub3 to clicks: {e}")
-        
         print("✅ Phase 2 tracking fields verified/added")
 
         # Add daily cap columns to campaign_properties table if they don't exist
@@ -340,52 +332,6 @@ def init_db():
         conn.execute("CREATE INDEX IF NOT EXISTS idx_conversions_property ON conversions(property_code, timestamp)")
         
         print("✅ Mike's attribution reporting columns verified/added")
-        # CREATE EMAIL ADS TABLES - NEW FUNCTIONALITY
-        # Email ads table
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS email_ads (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                property_code TEXT NOT NULL,           -- 'mff', 'mmm', 'mcad', 'mmd'
-                name TEXT NOT NULL,                    -- "MFF Finance Newsletter Ad #1"
-                desktop_image_url TEXT NOT NULL,       -- Desktop version (600px wide)
-                mobile_image_url TEXT,                 -- Mobile version (320px wide, optional)
-                click_url TEXT NOT NULL,               -- Where email click goes
-                description TEXT,                      -- Internal description
-                visibility_percentage INTEGER DEFAULT 100,  -- 0-100% rotation weight
-                active BOOLEAN DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (property_code) REFERENCES properties(code)
-            )
-        """)
-
-        # Email ad impressions table
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS email_ad_impressions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email_ad_id INTEGER NOT NULL,
-                property_code TEXT NOT NULL,
-                variant TEXT NOT NULL,                 -- 'desktop' or 'mobile'
-                recipient_hash TEXT,                   -- Anonymized recipient ID
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (email_ad_id) REFERENCES email_ads(id) ON DELETE CASCADE
-            )
-        """)
-
-        # Email ad clicks table
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS email_ad_clicks (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email_ad_id INTEGER NOT NULL,
-                property_code TEXT NOT NULL,
-                variant TEXT NOT NULL,
-                recipient_hash TEXT,
-                revenue_estimate DECIMAL(10,2) DEFAULT 0.25,  -- Lower than popup clicks
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (email_ad_id) REFERENCES email_ads(id) ON DELETE CASCADE
-            )
-        """)
-
         # Create indexes for performance
         conn.execute("CREATE INDEX IF NOT EXISTS idx_campaign_active ON campaigns(active)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_property_active ON campaign_properties(property_code, active)")
@@ -394,13 +340,6 @@ def init_db():
         conn.execute("CREATE INDEX IF NOT EXISTS idx_clicks_date ON clicks(timestamp)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_clicks_campaign ON clicks(campaign_id, timestamp)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_property_stats ON impressions(property_code, timestamp)")
-
-        # Email ads performance indexes
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_email_ads_property ON email_ads(property_code, active)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_email_ad_impressions_ad ON email_ad_impressions(email_ad_id, timestamp)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_email_ad_clicks_ad ON email_ad_clicks(email_ad_id, timestamp)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_email_ad_impressions_property ON email_ad_impressions(property_code, timestamp)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_email_ad_clicks_property ON email_ad_clicks(property_code, timestamp)")
         
         conn.commit()
         print("✅ Database initialized successfully")

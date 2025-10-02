@@ -3,7 +3,7 @@ Mode Popup Management System - Main API
 Simple campaign management dashboard + embeddable popup script
 """
 
-from fastapi import FastAPI, HTTPException, Depends, Response, Request
+from fastapi import FastAPI, HTTPException, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse
@@ -25,7 +25,6 @@ except ImportError:
 from routes.campaigns import router as campaigns_router
 from routes.properties import router as properties_router
 from routes.email import router as email_router
-from routes.email_ads import router as email_ads_router
 from database import init_db
 
 # Create FastAPI app
@@ -1025,7 +1024,6 @@ async def email_preview():
 app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
 app.include_router(properties_router, prefix="/api", tags=["properties"])
 app.include_router(email_router, prefix="/api/email", tags=["email"])  # Re-enabled for email PNG generation
-app.include_router(email_ads_router, prefix="/api/email-ads", tags=["email-ads"])  # New email ad management system
 
 # WORKING EMAIL GENERATION - SIMPLE TEXT FORMAT
 @app.get("/api/email/popup-capture.html")
@@ -1757,10 +1755,6 @@ async def db_force_init():
         init_db()
         from database import get_db_connection
         conn = get_db_connection()
-        
-        # Also seed the 12 campaigns
-        await restore_12_clean_campaigns(conn)
-        
         try:
             # Ensure critical tables exist explicitly (idempotent)
             conn.execute(
@@ -2010,29 +2004,6 @@ async def serve_popup_script_minified():
         return FileResponse(script_path, media_type="application/javascript")
     else:
         return PlainTextResponse("// Minified popup script not found", media_type="application/javascript")
-
-# Migration endpoint for aff_sub3
-@app.post("/api/db/migrate-aff-sub3")
-async def migrate_aff_sub3():
-    """Add aff_sub3 column to clicks table"""
-    try:
-        from database import get_db_connection
-        conn = get_db_connection()
-        
-        # Check if column exists
-        cursor = conn.execute("PRAGMA table_info(clicks)")
-        columns = [row[1] for row in cursor.fetchall()]
-        
-        if 'aff_sub3' not in columns:
-            conn.execute("ALTER TABLE clicks ADD COLUMN aff_sub3 TEXT")
-            conn.commit()
-            conn.close()
-            return {"success": True, "message": "aff_sub3 column added to clicks table"}
-        else:
-            conn.close()
-            return {"success": True, "message": "aff_sub3 column already exists"}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
 
 # Tracking endpoints for popup JavaScript
 @app.post("/api/impression")
