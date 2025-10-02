@@ -1544,7 +1544,8 @@ async def emergency_restore_12_campaigns():
         init_db()
         
         # Load GOLDEN backup (verified working data with real image URLs)
-        backup_dir = Path(__file__).parent / "backups"
+        # Backups are in popup-system/backups/ (one level up from api/)
+        backup_dir = Path(__file__).parent.parent / "backups"
         campaigns_file = backup_dir / "GOLDEN_campaigns_20251002_183051.json"
         properties_file = backup_dir / "GOLDEN_properties_20251002_183051.json"
         
