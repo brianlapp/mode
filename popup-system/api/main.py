@@ -1757,6 +1757,10 @@ async def db_force_init():
         init_db()
         from database import get_db_connection
         conn = get_db_connection()
+        
+        # Also seed the 12 campaigns
+        await restore_12_clean_campaigns(conn)
+        
         try:
             # Ensure critical tables exist explicitly (idempotent)
             conn.execute(
