@@ -48,31 +48,21 @@ frontend_path = Path(__file__).parent.parent / "frontend"
 if frontend_path.exists():
     app.mount("/static", StaticFiles(directory=str(frontend_path / "assets")), name="static")
 
-# DISABLED: Initialize database on startup - WAS CAUSING CAMPAIGN DELETION ISSUES!
-# The auto_restore_campaigns_on_startup function calls restore_12_clean_campaigns which
-# DELETES ALL CAMPAIGNS first, causing the "disappearing campaigns" issue.
-# Manual restore endpoints work fine, so startup auto-restore is disabled.
-# @app.on_event("startup")
-# async def startup():
-#     global startup_completed
-#     print("🚀 STARTING MODE POPUP SYSTEM...")
-#
-#     # Initialize database first
-#     init_db()
-#
-#     # 🛡️ BULLETPROOF AUTO-RESTORE SYSTEM - Critical for Railway deployments
-#     print("🔍 CHECKING DATABASE STATUS ON STARTUP...")
-#
-#     # ALWAYS run our startup check regardless of backup system
-#     try:
-#         await auto_restore_campaigns_on_startup()
-#         print("✅ Startup database check completed")
-#         startup_completed = True
-#     except Exception as startup_error:
-#         print(f"❌ Startup restore failed: {startup_error}")
-#         startup_completed = False
+# Initialize database on startup - SAFE VERSION (no auto-restore)
+@app.on_event("startup")
+async def startup():
+    """Initialize database schema ONLY - no dangerous auto-restore"""
+    print("🚀 STARTING MODE POPUP SYSTEM...")
+    print("📦 Initializing database schema...")
+    
+    # ONLY initialize database schema (create tables)
+    # DO NOT auto-restore campaigns (that was causing deletions)
+    init_db()
+    
+    print("✅ Database schema ready")
+    print("⚠️ If campaigns missing, call /api/emergency-restore-12-campaigns")
 
-# Global flag to track startup completion (set to True since we disabled auto-restore)
+# Global flag to track startup completion
 startup_completed = True
 
 # DISABLED: Auto-restore middleware - WAS ALSO CAUSING CAMPAIGN DELETION!
@@ -1529,166 +1519,113 @@ async def delete_prizies_permanently():
             "message": f"Failed to delete Prizies: {e}"
         }
 
-# Emergency restoration endpoint for Railway deployment fixes
+# Emergency restoration endpoint - SAFE VERSION using golden backup
 @app.post("/api/emergency-restore-12-campaigns")
 async def emergency_restore_12_campaigns():
-    """Emergency endpoint to restore all 12 campaigns with property attribution"""
-    import sqlite3
+    """Emergency endpoint to restore campaigns from GOLDEN BACKUP - NO DELETE!"""
     import json
-    from database import get_db_path
+    from pathlib import Path
+    from database import get_db_connection
     
     try:
-        print("🚨 EMERGENCY RESTORATION: Restoring 12 campaigns")
+        print("🚨 EMERGENCY RESTORATION: Loading from golden backup...")
         
-        # Ensure schema exists (idempotent) to avoid missing table errors
-        try:
+        # Ensure schema exists first
             init_db()
-            from database import get_db_connection
-            conn = get_db_connection()
-            # Explicitly create required tables if missing
-            conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS campaigns (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    tune_url TEXT NOT NULL,
-                    logo_url TEXT NOT NULL,
-                    main_image_url TEXT NOT NULL,
-                    description TEXT,
-                    cta_text TEXT DEFAULT 'View Offer',
-                    active BOOLEAN DEFAULT 1,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    offer_id TEXT,
-                    aff_id TEXT,
-                    featured BOOLEAN DEFAULT 0
-                )
-                """
-            )
-            conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS campaign_properties (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    campaign_id INTEGER NOT NULL,
-                    property_code TEXT NOT NULL,
-                    visibility_percentage INTEGER DEFAULT 100,
-                    active BOOLEAN DEFAULT 1,
-                    impression_cap_daily INTEGER NULL,
-                    click_cap_daily INTEGER NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
-                    UNIQUE(campaign_id, property_code)
-                )
-                """
-            )
-            conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS properties (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    code TEXT UNIQUE NOT NULL,
-                    name TEXT NOT NULL,
-                    domain TEXT,
-                    active BOOLEAN DEFAULT 1,
-                    popup_enabled BOOLEAN DEFAULT 1,
-                    popup_frequency TEXT DEFAULT 'session',
-                    popup_placement TEXT DEFAULT 'thankyou',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-                """
-            )
-            conn.commit()
-            conn.close()
-        except Exception as e:
-            print(f"⚠️ Schema ensure failed (will attempt restore anyway): {e}")
-
-        # COMPLETE 12 CAMPAIGNS WITH UNIQUE LOGOS - PROPER DATA
-        campaigns_data = [
-            # Money.com FIRST as requested - MMM Finance (6 total)
-            {"id": 1, "name": "Money.com - Online Stock Brokers", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7521&aff_id=43092", "logo_url": "https://i.imgur.com/4JoGdZr.png", "main_image_url": "https://i.imgur.com/O81cPQJ.jpeg", "description": "Compare online stock brokers and find the best platform for your trading needs.", "cta_text": "Compare Brokers", "offer_id": "7521", "aff_id": "43092", "active": True},
-            {"id": 2, "name": "Trading Tips", "tune_url": "https://track.modemobile.com/aff_c?offer_id=6998&aff_id=43045", "logo_url": "https://i.imgur.com/lHn301q.png", "main_image_url": "https://i.imgur.com/ZVGOktR.png", "description": "Get exclusive trading tips and market insights delivered daily to your inbox.", "cta_text": "Get Trading Tips", "offer_id": "6998", "aff_id": "43045", "active": True},
-            {"id": 3, "name": "Behind The Markets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7521&aff_id=43045", "logo_url": "https://i.imgur.com/O3iEVP7.jpeg", "main_image_url": "https://i.imgur.com/NA0o7iJ.png", "description": "Discover what's really happening behind the financial markets with expert analysis.", "cta_text": "Learn More", "offer_id": "7521", "aff_id": "43045", "active": True},
-            {"id": 4, "name": "Brownstone Research", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7389&aff_id=43045", "logo_url": "https://i.imgur.com/3KVDcV7.jpeg", "main_image_url": "https://i.imgur.com/vzoiVpd.png", "description": "Advanced technology and investment research from Brownstone Research experts.", "cta_text": "View Research", "offer_id": "7389", "aff_id": "43045", "active": True},
-            {"id": 5, "name": "Hotsheets", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7385&aff_id=43045", "logo_url": "https://i.imgur.com/5Yb0LJn.png", "main_image_url": "https://i.imgur.com/O81cPQJ.jpeg", "description": "Daily market hotsheets with the most profitable trading opportunities.", "cta_text": "Get Hotsheets", "offer_id": "7385", "aff_id": "43045", "active": True},
-            {"id": 6, "name": "Best Gold", "tune_url": "https://track.modemobile.com/aff_c?offer_id=7390&aff_id=43045", "logo_url": "https://i.imgur.com/5Yb0LJn.png", "main_image_url": "https://i.imgur.com/EEOyDuZ.jpeg", "description": "Premium gold investment insights and recommendations from industry experts.", "cta_text": "Learn About Gold", "offer_id": "7390", "aff_id": "43045", "active": True},
-            
-            # MFF Lifestyle campaigns (6 total - CLEAN UNIQUE DATA)
-            {"id": 7, "name": "Daily Goodie Box", "tune_url": "https://track.modemobile.com/aff_c?offer_id=6571&aff_id=42946", "logo_url": "https://i.imgur.com/DH7Tp4A.jpeg", "main_image_url": "https://i.imgur.com/JpKD9AX.png", "description": "Get your daily goodie box filled with amazing free samples and deals.", "cta_text": "Claim Now!", "offer_id": "6571", "aff_id": "42946", "active": True},
-            {"id": 8, "name": "Free Samples Guide", "tune_url": "https://track.modemobile.com/aff_c?offer_id=3907&aff_id=42946", "logo_url": "https://i.imgur.com/DH7Tp4A.jpeg", "main_image_url": "https://i.imgur.com/vbgSfMi.jpeg", "description": "Get your comprehensive free samples guide with exclusive offers.", "cta_text": "Claim Now!", "offer_id": "3907", "aff_id": "42946", "active": True},
-            {"id": 9, "name": "UpLevel - Amazon Mystery Box", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Grab an Amazon Mystery Box!", "cta_text": "Get Box!", "offer_id": "4689", "aff_id": "42946", "active": True},
-            {"id": 10, "name": "Hulu - Hit Movies, TV and More!", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5555&aff_id=42946", "logo_url": "https://i.imgur.com/RHRuCvk.jpg", "main_image_url": "https://i.imgur.com/SEu1NtW.jpg", "description": "Exclusive Offers from Hulu!", "cta_text": "Get Hulu!", "offer_id": "5555", "aff_id": "42946", "active": True},
-            {"id": 11, "name": "Paramount", "tune_url": "https://track.modemobile.com/aff_c?offer_id=5172&aff_id=42946", "logo_url": "https://i.imgur.com/2IpSLaY.jpg", "main_image_url": "https://i.imgur.com/p8o0YSR.jpg", "description": "Exclusive Offers from Paramount+!", "cta_text": "Get Paramount+!", "offer_id": "5172", "aff_id": "42946", "active": True},
-            {"id": 12, "name": "Trend'n Daily", "tune_url": "https://track.modemobile.com/aff_c?offer_id=4689&aff_id=42946", "logo_url": "https://imgur.com/Xmb1P8t.jpg", "main_image_url": "https://imgur.com/tA8fYBO.jpg", "description": "Daily trending offers and deals!", "cta_text": "Get Deals!", "offer_id": "4689", "aff_id": "42946", "active": True}
-        ]
         
-        # IMPORTANT: Use the same connection path used by init_db (DB_PATH)
-        from database import get_db_connection
+        # Load GOLDEN backup (verified working data with real image URLs)
+        # Backups are in popup-system/backups/ (one level up from api/)
+        backup_dir = Path(__file__).parent.parent / "backups"
+        campaigns_file = backup_dir / "GOLDEN_campaigns_20251002_183051.json"
+        properties_file = backup_dir / "GOLDEN_properties_20251002_183051.json"
+        
+        if not campaigns_file.exists():
+            raise FileNotFoundError(f"Golden backup not found: {campaigns_file}")
+            
+        with open(campaigns_file, 'r') as f:
+            campaigns_data = json.load(f)
+        
+        print(f"📦 Loaded {len(campaigns_data)} campaigns from golden backup")
+        
+        # Load properties if available
+        properties_data = []
+        if properties_file.exists():
+            with open(properties_file, 'r') as f:
+                props_raw = json.load(f)
+                # Flatten nested arrays [[{...}], [{...}]] to [{...}, {...}]
+                properties_data = [item for sublist in props_raw for item in sublist]
+            print(f"📦 Loaded {len(properties_data)} property settings")
+        
         conn = get_db_connection()
         
-        # Clear and restore campaigns
-        try:
-            conn.execute("DELETE FROM campaign_properties")
-        except Exception:
-            # If table somehow missing, create and continue
-            conn.execute(
-                """
-                CREATE TABLE IF NOT EXISTS campaign_properties (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    campaign_id INTEGER NOT NULL,
-                    property_code TEXT NOT NULL,
-                    visibility_percentage INTEGER DEFAULT 100,
-                    active BOOLEAN DEFAULT 1,
-                    impression_cap_daily INTEGER NULL,
-                    click_cap_daily INTEGER NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
-                    UNIQUE(campaign_id, property_code)
-                )
-                """
-            )
-        conn.execute("DELETE FROM campaigns")
-        
+        # SAFE RESTORE: Use INSERT OR REPLACE (no DELETE!)
         for campaign in campaigns_data:
-            # No special fixes needed - all campaigns should have correct data
-                
             conn.execute('''
-                INSERT INTO campaigns (
+                INSERT OR REPLACE INTO campaigns (
                     id, name, tune_url, logo_url, main_image_url, description,
                     cta_text, offer_id, aff_id, active, featured, created_at, updated_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
             ''', (
                 campaign['id'], campaign['name'], campaign['tune_url'],
-                campaign['logo_url'], campaign['main_image_url'], campaign['description'],
-                campaign['cta_text'], campaign['offer_id'], campaign['aff_id'], 
-                campaign['active'], campaign.get('created_at', '2025-01-28 12:00:00'),
+                campaign['logo_url'], campaign['main_image_url'], campaign.get('description', ''),
+                campaign.get('cta_text', 'View Offer'), campaign.get('offer_id'), campaign.get('aff_id'), 
+                campaign.get('active', True), campaign.get('created_at', '2025-01-28 12:00:00'),
                 campaign.get('updated_at', '2025-01-28 12:00:00')
             ))
-            
-            # Set property assignment (allow explicit property_code or finance affiliates)
-            property_code = campaign.get('property_code')
-            if not property_code:
-                finance_affiliates = {"43045", "43092"}  # include Money.com affiliate
-                property_code = 'mmm' if str(campaign.get('aff_id', '')) in finance_affiliates else 'mff'
+        
+        # Restore property settings if available
+        if properties_data:
+            # Ensure campaign_properties table exists
             conn.execute('''
-                INSERT INTO campaign_properties (
-                    campaign_id, property_code, visibility_percentage, active
-                ) VALUES (?, ?, 100, 1)
-            ''', (campaign['id'], property_code))
+                CREATE TABLE IF NOT EXISTS campaign_properties (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    campaign_id INTEGER NOT NULL,
+                    property_code TEXT NOT NULL,
+                    visibility_percentage INTEGER DEFAULT 100,
+                    active BOOLEAN DEFAULT 1,
+                    impression_cap_daily INTEGER NULL,
+                    click_cap_daily INTEGER NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+                    UNIQUE(campaign_id, property_code)
+                )
+            ''')
+        
+            for prop in properties_data:
+            conn.execute('''
+                    INSERT OR REPLACE INTO campaign_properties (
+                        campaign_id, property_code, visibility_percentage, active,
+                        impression_cap_daily, click_cap_daily
+                    ) VALUES (?, ?, ?, ?, ?, ?)
+            ''', (
+                    prop['campaign_id'], prop['property_code'], 
+                    prop.get('visibility_percentage', 100), prop.get('active', True),
+                    prop.get('impression_cap_daily'), prop.get('click_cap_daily')
+                ))
         
         conn.commit()
         conn.close()
         
-        print("✅ Emergency restoration complete: 12 campaigns with property attribution")
+        print("✅ Emergency restoration complete from golden backup (NO DELETE used!)")
+        
+        mmm_count = sum(1 for c in campaigns_data if c.get('aff_id') in ['43045', '43092'])
+        mff_count = len(campaigns_data) - mmm_count
         
         return {
             "status": "success",
-            "message": "All 12 campaigns restored with property attribution",
+            "message": "Campaigns restored from GOLDEN BACKUP with verified image URLs",
             "campaigns_restored": len(campaigns_data),
-            "mmm_campaigns": 5,
-            "mff_campaigns": 7
+            "properties_restored": len(properties_data),
+            "mmm_campaigns": mmm_count,
+            "mff_campaigns": mff_count,
+            "method": "INSERT OR REPLACE (safe, no DELETE)",
+            "source": "GOLDEN_campaigns_20251002_183051.json"
         }
         
     except Exception as e:
         print(f"❌ Emergency restoration failed: {e}")
+        import traceback
+        traceback.print_exc()
         return {
             "status": "error", 
             "message": f"Restoration failed: {e}"
