@@ -628,13 +628,52 @@
             // Track click
             this.trackClick(campaign);
             
-            // Open campaign URL
+            // Build attributed Tune URL with UTM source
             if (campaign.tune_url) {
-                window.open(campaign.tune_url, '_blank');
+                const attributedUrl = this.buildAttributedTuneUrl(campaign.tune_url, this.trackingData);
+                window.open(attributedUrl, '_blank');
+                
+                // Debug log the attribution
+                this.debug('Opening attributed URL', {
+                    campaign: campaign.name,
+                    originalUrl: campaign.tune_url,
+                    attributedUrl: attributedUrl,
+                    utmSource: this.trackingData.source
+                });
             }
             
             // Hide popup after click
             setTimeout(() => this.hidePopup(), 500);
+        }
+
+        /**
+         * Build attributed Tune URL with UTM source as aff_sub3
+         * @param {string} baseUrl - Original campaign tune_url
+         * @param {Object} trackingData - Captured UTM parameters
+         * @returns {string} - Enhanced URL with attribution
+         */
+        buildAttributedTuneUrl(baseUrl, trackingData) {
+            try {
+                const url = new URL(baseUrl);
+                
+                // Add UTM source as aff_sub3 if:
+                // 1. We have a valid source from UTM parameters
+                // 2. aff_sub3 slot is not already used
+                if (trackingData.source && !url.searchParams.has('aff_sub3')) {
+                    url.searchParams.set('aff_sub3', trackingData.source);
+                    this.debug('Added aff_sub3 attribution', {
+                        source: trackingData.source,
+                        originalUrl: baseUrl,
+                        enhancedUrl: url.toString()
+                    });
+                }
+                
+                return url.toString();
+            } catch (error) {
+                this.debug('Error building attributed URL', error);
+                // Fallback to original URL if construction fails
+                return baseUrl;
+            }
         }
 
         /**
