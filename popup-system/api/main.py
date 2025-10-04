@@ -48,32 +48,27 @@ frontend_path = Path(__file__).parent.parent / "frontend"
 if frontend_path.exists():
     app.mount("/static", StaticFiles(directory=str(frontend_path / "assets")), name="static")
 
-# DISABLED: Initialize database on startup - WAS CAUSING CAMPAIGN DELETION ISSUES!
-# The auto_restore_campaigns_on_startup function calls restore_12_clean_campaigns which
-# DELETES ALL CAMPAIGNS first, causing the "disappearing campaigns" issue.
-# Manual restore endpoints work fine, so startup auto-restore is disabled.
-# @app.on_event("startup")
-# async def startup():
-#     global startup_completed
-#     print("🚀 STARTING MODE POPUP SYSTEM...")
-#
-#     # Initialize database first
-#     init_db()
-#
-#     # 🛡️ BULLETPROOF AUTO-RESTORE SYSTEM - Critical for Railway deployments
-#     print("🔍 CHECKING DATABASE STATUS ON STARTUP...")
-#
-#     # ALWAYS run our startup check regardless of backup system
-#     try:
-#         await auto_restore_campaigns_on_startup()
-#         print("✅ Startup database check completed")
-#         startup_completed = True
-#     except Exception as startup_error:
-#         print(f"❌ Startup restore failed: {startup_error}")
-#         startup_completed = False
+# ✅ SAFE STARTUP: Initialize schema ONLY (no auto-restore to prevent data deletion)
+@app.on_event("startup")
+async def startup():
+    global startup_completed
+    print("🚀 STARTING MODE POPUP SYSTEM...")
+    
+    # Initialize database schema ONLY - adds missing columns but doesn't delete data
+    # This is SAFE because init_db() uses CREATE TABLE IF NOT EXISTS and ALTER TABLE IF NOT EXISTS
+    try:
+        init_db()
+        print("✅ Database schema initialized/updated")
+        startup_completed = True
+    except Exception as startup_error:
+        print(f"❌ Database schema init failed: {startup_error}")
+        startup_completed = False
+    
+    # NOTE: auto_restore_campaigns_on_startup() is NOT called here to prevent campaign deletion
+    # Use /api/emergency-restore-12-campaigns endpoint if campaigns are missing
 
-# Global flag to track startup completion (set to True since we disabled auto-restore)
-startup_completed = True
+# Global flag to track startup completion
+startup_completed = False
 
 # DISABLED: Auto-restore middleware - WAS ALSO CAUSING CAMPAIGN DELETION!
 # This middleware was calling auto_restore_campaigns_on_startup() which deletes all campaigns
