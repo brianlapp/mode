@@ -86,8 +86,11 @@ def init_db():
             print(f"Featured column check: {e}")
             
         # Add updated_at column if missing (fix Railway startup error)
+        # Use NULL default because SQLite doesn't support non-constant defaults in ALTER TABLE
         try:
-            conn.execute("ALTER TABLE campaigns ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+            conn.execute("ALTER TABLE campaigns ADD COLUMN updated_at TIMESTAMP DEFAULT NULL")
+            # Backfill existing rows with current timestamp
+            conn.execute("UPDATE campaigns SET updated_at = CURRENT_TIMESTAMP WHERE updated_at IS NULL")
             print("✅ Added updated_at column to campaigns table")
         except Exception as e:
             # Column already exists or other error - this is okay
@@ -127,11 +130,14 @@ def init_db():
                 )
 
         # Ensure properties table has required columns
+        # Use NULL default because SQLite doesn't support non-constant defaults in ALTER TABLE
         try:
             cursor = conn.execute("PRAGMA table_info(properties)")
             prop_cols = [row[1] for row in cursor.fetchall()]
             if 'updated_at' not in prop_cols:
-                conn.execute("ALTER TABLE properties ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+                conn.execute("ALTER TABLE properties ADD COLUMN updated_at TIMESTAMP DEFAULT NULL")
+                # Backfill existing rows with current timestamp
+                conn.execute("UPDATE properties SET updated_at = CURRENT_TIMESTAMP WHERE updated_at IS NULL")
                 print("✅ Added updated_at column to properties table")
         except Exception as e:
             print(f"⚠️ Failed to ensure updated_at on properties: {e}")
