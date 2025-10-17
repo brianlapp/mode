@@ -6,7 +6,7 @@ buildCommand = "cd popup-system && echo 'Building from popup-system directory'"
 buildImage = "python:3.12-bullseye"
 
 [deploy]
-startCommand = "cd popup-system/api && uvicorn main:app --host 0.0.0.0 --port $PORT --workers 2"
+startCommand = "cd popup-system/api && uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
