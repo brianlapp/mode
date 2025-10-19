@@ -1767,21 +1767,31 @@ async def tune_health():
 
 @router.get("/analytics/performance-metrics")
 async def get_performance_metrics():
-    """Real-time performance metrics using REAL Tune API data"""
+    """Real-time performance metrics using REAL Tune API data - OPTIMIZED for speed"""
     conn = get_db_connection()
     try:
         # Get TODAY's metrics (actual daily data)
+        # PERFORMANCE FIX: Use timestamp comparisons instead of DATE() to use indexes
         
-        # Count today's impressions (since midnight)
-        cursor = conn.execute("SELECT COUNT(*) FROM impressions WHERE DATE(timestamp) = DATE('now')")
+        # Count today's impressions (since midnight) - INDEX-OPTIMIZED
+        cursor = conn.execute("""
+            SELECT COUNT(*) FROM impressions 
+            WHERE timestamp >= datetime('now', 'start of day')
+        """)
         today_impressions = cursor.fetchone()[0]
         
-        # Count today's clicks  
-        cursor = conn.execute("SELECT COUNT(*) FROM clicks WHERE DATE(timestamp) = DATE('now')")
+        # Count today's clicks - INDEX-OPTIMIZED
+        cursor = conn.execute("""
+            SELECT COUNT(*) FROM clicks 
+            WHERE timestamp >= datetime('now', 'start of day')
+        """)
         today_clicks = cursor.fetchone()[0]
         
-        # Sum today's revenue
-        cursor = conn.execute("SELECT COALESCE(SUM(revenue_estimate), 0) FROM clicks WHERE DATE(timestamp) = DATE('now')")
+        # Sum today's revenue - INDEX-OPTIMIZED
+        cursor = conn.execute("""
+            SELECT COALESCE(SUM(revenue_estimate), 0) FROM clicks 
+            WHERE timestamp >= datetime('now', 'start of day')
+        """)
         today_revenue = cursor.fetchone()[0]
         
         today_data = {
@@ -1790,7 +1800,7 @@ async def get_performance_metrics():
             'today_revenue': today_revenue
         }
         
-        # Get best performing campaign (today)
+        # Get best performing campaign (today) - INDEX-OPTIMIZED
         cursor = conn.execute("""
             SELECT 
                 c.name,
@@ -1798,9 +1808,12 @@ async def get_performance_metrics():
                 COUNT(DISTINCT cl.id) as clicks,
                 SUM(cl.revenue_estimate) as revenue
             FROM campaigns c
-            LEFT JOIN impressions i ON c.id = i.campaign_id
-            LEFT JOIN clicks cl ON c.id = cl.campaign_id AND i.property_code = cl.property_code
-            WHERE DATE(i.timestamp) = DATE('now')
+            LEFT JOIN impressions i ON c.id = i.campaign_id 
+                AND i.timestamp >= datetime('now', 'start of day')
+            LEFT JOIN clicks cl ON c.id = cl.campaign_id 
+                AND cl.timestamp >= datetime('now', 'start of day')
+                AND i.property_code = cl.property_code
+            WHERE i.id IS NOT NULL
             GROUP BY c.offer_id, c.name
             ORDER BY revenue DESC, impressions DESC
             LIMIT 1
