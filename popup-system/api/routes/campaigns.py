@@ -1808,7 +1808,7 @@ async def get_performance_metrics():
                 COUNT(DISTINCT cl.id) as clicks,
                 SUM(cl.revenue_estimate) as revenue
             FROM campaigns c
-            LEFT JOIN impressions i ON c.id = i.campaign_id 
+            LEFT JOIN impressions i ON c.id = i.campaign_id
                 AND i.timestamp >= datetime('now', 'start of day')
             LEFT JOIN clicks cl ON c.id = cl.campaign_id 
                 AND cl.timestamp >= datetime('now', 'start of day')
