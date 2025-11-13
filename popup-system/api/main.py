@@ -59,7 +59,7 @@ async def startup():
     try:
         init_db()
         print("✅ Database schema initialized/updated")
-startup_completed = True
+        startup_completed = True
     except Exception as startup_error:
         print(f"❌ Database schema init failed: {startup_error}")
         startup_completed = False
