@@ -1386,7 +1386,7 @@ async def get_tune_style_report(
             db_conn = get_db_connection()
             try:
                 cursor = db_conn.execute("SELECT DISTINCT offer_id FROM campaigns WHERE active = 1 AND offer_id IS NOT NULL")
-                popup_offer_ids = [int(row[0]) for row in cursor.fetchall() if row[0]]
+                popup_offer_ids = [int(row[0]) for row in cursor.fetchall() if row[0] and str(row[0]).strip()]
                 print(f"📊 Dynamic analytics: Found {len(popup_offer_ids)} active offer IDs: {popup_offer_ids}")
                 
                 # Keep connection open for campaign data query below
@@ -1410,7 +1410,7 @@ async def get_tune_style_report(
             affiliate_ids = []
             try:
                 cursor = db_conn.execute("SELECT DISTINCT aff_id FROM campaigns WHERE active = 1 AND aff_id IS NOT NULL")
-                affiliate_ids = [str(row[0]) for row in cursor.fetchall() if row[0]]
+                affiliate_ids = [str(row[0]) for row in cursor.fetchall() if row[0] and str(row[0]).strip()]
             except Exception as e:
                 print(f"⚠️ Could not load affiliate_ids: {e}")
 
@@ -1512,7 +1512,8 @@ async def get_tune_style_report(
                         seen_offer_ids = set()
                         for campaign in campaigns:
                             stats = campaign.get('Stat', {})
-                            offer_id = int(stats.get('offer_id', 0))
+                            offer_id_raw = stats.get('offer_id', 0)
+                            offer_id = int(offer_id_raw) if offer_id_raw and str(offer_id_raw).strip() else 0
                             seen_offer_ids.add(offer_id)
                             campaign_info = campaign_data.get(offer_id, {'name': f'Offer {offer_id}', 'property': 'Unknown'})
                             name = campaign_info['name']
