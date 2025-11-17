@@ -144,7 +144,8 @@ class EmbeddedTuneAPIClient:
                     if isinstance(campaign, dict):
                         stats = campaign.get('Stat', {})
                         if isinstance(stats, dict):
-                            offer_id = int(stats.get('offer_id', 0))
+                            offer_id_raw = stats.get('offer_id', 0)
+                            offer_id = int(offer_id_raw) if offer_id_raw and str(offer_id_raw).strip() else 0
                             campaign_lookup[offer_id] = stats
                         else:
                             print(f"🔧 DEBUG: stats is not dict: {type(stats)}")
@@ -1443,7 +1444,8 @@ async def get_tune_style_report(
                         # Filter for popup campaigns in Python code
                         campaigns = []
                         for campaign in all_campaigns:
-                            offer_id = int(campaign.get('Stat', {}).get('offer_id', 0))
+                            offer_id_raw = campaign.get('Stat', {}).get('offer_id', 0)
+                            offer_id = int(offer_id_raw) if offer_id_raw and str(offer_id_raw).strip() else 0
                             if offer_id in popup_offer_ids:
                                 campaigns.append(campaign)
                         
@@ -1462,10 +1464,11 @@ async def get_tune_style_report(
                             WHERE c.active = 1 AND c.offer_id IS NOT NULL
                         """)
                         for offer_id, name, property_code in cursor.fetchall():
-                            campaign_data[int(offer_id)] = {
-                                'name': name,
-                                'property': 'MMM' if property_code == 'mmm' else 'MFF'
-                            }
+                            if offer_id and str(offer_id).strip():
+                                campaign_data[int(offer_id)] = {
+                                    'name': name,
+                                    'property': 'MMM' if property_code == 'mmm' else 'MFF'
+                                }
 
                         # Get REAL impressions from local DB grouped by offer_id within date range
                         impressions_params = [start_date, end_date]
@@ -1484,7 +1487,7 @@ async def get_tune_style_report(
                             WHERE DATE(i.timestamp) BETWEEN ? AND ? {impressions_filter_sql}
                             GROUP BY c.offer_id
                         """, impressions_params)
-                        impressions_by_offer = {int(row[0]): int(row[1]) for row in cursor.fetchall()}
+                        impressions_by_offer = {int(row[0]): int(row[1]) for row in cursor.fetchall() if row[0] and str(row[0]).strip()}
 
                         # Get LOCAL clicks from our DB grouped by offer_id within date range (align scope with impressions)
                         clicks_params = [start_date, end_date]
@@ -1503,7 +1506,7 @@ async def get_tune_style_report(
                             WHERE DATE(cl.timestamp) BETWEEN ? AND ? {clicks_filter_sql}
                             GROUP BY c.offer_id
                         """, clicks_params)
-                        clicks_by_offer = {int(row[0]): {"clicks": int(row[1]), "local_rev": float(row[2] or 0)} for row in cursor.fetchall()}
+                        clicks_by_offer = {int(row[0]): {"clicks": int(row[1]), "local_rev": float(row[2] or 0)} for row in cursor.fetchall() if row[0] and str(row[0]).strip()}
                         
                         # Close database connection after queries complete
                         db_conn.close()
