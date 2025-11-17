@@ -181,7 +181,8 @@
             this.isVisible = true;
             this.markPopupShown();
             
-            // Track impression
+            // 🎯 Track impression ONCE per popup view (not per offer rotation)
+            // This gives the popup unit its own RPM: 1 impression = 1 popup view
             this.trackImpression();
             
             // Start auto-rotation if enabled and multiple campaigns
@@ -618,8 +619,8 @@
                 popup.style.opacity = '1';
                 popup.style.transform = 'scale(1)';
                 
-                // Track impression for new campaign
-                this.trackImpression();
+                // ✅ NO impression tracking on rotation - only track initial popup view
+                // This prevents impression inflation (1 impression = 1 popup view)
                 
             }, 100);
         }
@@ -629,7 +630,19 @@
          */
         startAutoRotation() {
             this.stopAutoRotation();
+            this.rotationCount = 0;
+            this.maxRotations = this.campaigns.length * 2; // Allow 2 full cycles then stop
+            
             this.autoRotateTimer = setInterval(() => {
+                this.rotationCount++;
+                
+                // Stop after max rotations to prevent runaway impressions
+                if (this.rotationCount >= this.maxRotations) {
+                    this.debug(`Auto-rotation stopped after ${this.rotationCount} rotations`);
+                    this.stopAutoRotation();
+                    return;
+                }
+                
                 this.nextCampaign();
             }, CONFIG.ROTATION_DELAY);
         }
