@@ -298,6 +298,82 @@ async def ensure_money_campaign():
     finally:
         conn.close()
 
+@router.post("/campaigns/fix-missing-offer-ids")
+async def fix_missing_offer_ids():
+    """Extract and update offer_id and aff_id from tune_url for campaigns missing them.
+    
+    This fixes campaigns where the tune_url contains the offer_id/aff_id but those fields
+    weren't populated when the campaign was created. This is critical for analytics tracking.
+    """
+    import re
+    
+    conn = get_db_connection()
+    try:
+        # Find campaigns with empty offer_id or aff_id but valid tune_url
+        cursor = conn.execute("""
+            SELECT id, name, tune_url, offer_id, aff_id 
+            FROM campaigns 
+            WHERE active = 1 
+            AND tune_url IS NOT NULL 
+            AND tune_url != ''
+            AND (offer_id IS NULL OR offer_id = '' OR aff_id IS NULL OR aff_id = '')
+        """)
+        
+        campaigns_to_fix = cursor.fetchall()
+        fixed = []
+        errors = []
+        
+        for row in campaigns_to_fix:
+            campaign_id, name, tune_url, current_offer_id, current_aff_id = row
+            
+            # Extract offer_id from tune_url
+            offer_match = re.search(r'offer_id=(\d+)', tune_url)
+            aff_match = re.search(r'aff_id=(\d+)', tune_url)
+            
+            new_offer_id = offer_match.group(1) if offer_match else None
+            new_aff_id = aff_match.group(1) if aff_match else None
+            
+            updates = []
+            params = []
+            
+            # Only update if we found values and current is empty
+            if new_offer_id and (not current_offer_id or current_offer_id == ''):
+                updates.append("offer_id = ?")
+                params.append(new_offer_id)
+            
+            if new_aff_id and (not current_aff_id or current_aff_id == ''):
+                updates.append("aff_id = ?")
+                params.append(new_aff_id)
+            
+            if updates:
+                try:
+                    params.append(campaign_id)
+                    conn.execute(f"UPDATE campaigns SET {', '.join(updates)} WHERE id = ?", params)
+                    fixed.append({
+                        "id": campaign_id,
+                        "name": name,
+                        "offer_id": new_offer_id,
+                        "aff_id": new_aff_id
+                    })
+                except Exception as e:
+                    errors.append({"id": campaign_id, "name": name, "error": str(e)})
+        
+        conn.commit()
+        
+        return {
+            "success": True,
+            "message": f"Fixed {len(fixed)} campaigns with missing offer_id/aff_id",
+            "fixed": fixed,
+            "errors": errors,
+            "total_checked": len(campaigns_to_fix)
+        }
+        
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
 @router.get("/test-tune-api")
 async def test_tune_api():
     """Test if Tune API is accessible from Railway"""
@@ -388,6 +464,7 @@ class CampaignUpdate(BaseModel):
     main_image_url: Optional[str] = None
     description: Optional[str] = None
     cta_text: Optional[str] = None
+    offer_id: Optional[str] = None  # Added for analytics tracking
     aff_id: Optional[str] = None
     active: Optional[bool] = None
 

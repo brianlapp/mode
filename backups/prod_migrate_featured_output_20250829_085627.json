@@ -1,1 +1,0 @@
-{"success":true,"message":"Featured campaign migration completed","results":["✅ Added featured_campaign_id column to properties table","📋 No currently featured campaigns found","✅ Cleared all campaign-level featured flags"],"properties":[]}

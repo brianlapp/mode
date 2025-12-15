@@ -1,7 +1,0 @@
-[
-  {
-    "timestamp": "2025-09-15T23:13:55.224219",
-    "event": "agent_directory_initialized",
-    "details": "Initial setup of .agent directory"
-  }
-]
