@@ -1737,6 +1737,43 @@ async def fix_database_schema():
         else:
             results.append("✅ click_cap_daily column already exists")
         
+        # FIX MISSING OFFER_IDs - Extract from tune_url
+        import re
+        cursor = conn.execute("""
+            SELECT id, name, tune_url, offer_id, aff_id 
+            FROM campaigns 
+            WHERE active = 1 
+            AND tune_url IS NOT NULL 
+            AND tune_url != ''
+            AND (offer_id IS NULL OR offer_id = '' OR aff_id IS NULL OR aff_id = '')
+        """)
+        campaigns_to_fix = cursor.fetchall()
+        
+        for row in campaigns_to_fix:
+            campaign_id, name, tune_url, current_offer_id, current_aff_id = row
+            offer_match = re.search(r'offer_id=(\d+)', tune_url)
+            aff_match = re.search(r'aff_id=(\d+)', tune_url)
+            
+            new_offer_id = offer_match.group(1) if offer_match else None
+            new_aff_id = aff_match.group(1) if aff_match else None
+            
+            if new_offer_id or new_aff_id:
+                updates = []
+                params = []
+                if new_offer_id and (not current_offer_id or current_offer_id == ''):
+                    updates.append("offer_id = ?")
+                    params.append(new_offer_id)
+                if new_aff_id and (not current_aff_id or current_aff_id == ''):
+                    updates.append("aff_id = ?")
+                    params.append(new_aff_id)
+                
+                if updates:
+                    params.append(campaign_id)
+                    conn.execute(f"UPDATE campaigns SET {', '.join(updates)} WHERE id = ?", params)
+                    results.append(f"✅ Fixed campaign {campaign_id} ({name}): offer_id={new_offer_id}, aff_id={new_aff_id}")
+        
+        conn.commit()
+        
         return {
             "success": True, 
             "message": "Schema fix completed",
