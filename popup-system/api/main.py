@@ -1699,6 +1699,32 @@ async def run_migration():
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+# HARDCODED FIX for missing offer_ids - extracted from tune_urls
+@app.post("/api/db/fix-offer-ids-now")
+async def fix_offer_ids_now():
+    """Directly fix the 3 campaigns missing offer_ids"""
+    from database import get_db_connection
+    conn = get_db_connection()
+    try:
+        fixes = [
+            (18, "9341", "43093", "SlotsWise"),
+            (17, "9368", "43093", "ConsumerTestConnect"),
+            (16, "7833", "43093", "Survey Junkie"),
+        ]
+        results = []
+        for campaign_id, offer_id, aff_id, name in fixes:
+            conn.execute(
+                "UPDATE campaigns SET offer_id = ?, aff_id = ? WHERE id = ?",
+                (offer_id, aff_id, campaign_id)
+            )
+            results.append(f"✅ Fixed {name} (ID {campaign_id}): offer_id={offer_id}, aff_id={aff_id}")
+        conn.commit()
+        return {"success": True, "message": "Offer IDs fixed!", "results": results}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+    finally:
+        conn.close()
+
 # Emergency schema fix endpoint
 @app.post("/api/db/fix-schema")
 async def fix_database_schema():
@@ -1738,6 +1764,7 @@ async def fix_database_schema():
             results.append("✅ click_cap_daily column already exists")
         
         # FIX MISSING OFFER_IDs - Extract from tune_url
+        results.append("🔧 Checking for missing offer_ids...")
         import re
         cursor = conn.execute("""
             SELECT id, name, tune_url, offer_id, aff_id 
