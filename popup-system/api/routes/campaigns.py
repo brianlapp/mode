@@ -1924,3 +1924,62 @@ async def get_performance_metrics():
         raise HTTPException(status_code=500, detail=f"Failed to get performance metrics: {str(e)}")
     finally:
         conn.close()
+
+
+@router.post("/fix-offer-ids")
+async def fix_missing_offer_ids():
+    """Extract and populate offer_id/aff_id from tune_url for campaigns missing them.
+    
+    This is critical for analytics - campaigns without offer_id won't show in Tune reports.
+    """
+    import re
+    conn = get_db_connection()
+    try:
+        # Find campaigns with empty offer_id but valid tune_url
+        cursor = conn.execute("""
+            SELECT id, name, tune_url, offer_id, aff_id 
+            FROM campaigns 
+            WHERE active = 1 
+            AND tune_url IS NOT NULL 
+            AND tune_url != ''
+            AND (offer_id IS NULL OR offer_id = '')
+        """)
+        
+        campaigns_to_fix = cursor.fetchall()
+        fixed = []
+        
+        for row in campaigns_to_fix:
+            campaign_id, name, tune_url, current_offer_id, current_aff_id = row
+            
+            # Extract offer_id from tune_url (e.g., offer_id=9341)
+            offer_match = re.search(r'offer_id=(\d+)', tune_url)
+            aff_match = re.search(r'aff_id=(\d+)', tune_url)
+            
+            new_offer_id = offer_match.group(1) if offer_match else None
+            new_aff_id = aff_match.group(1) if aff_match else current_aff_id
+            
+            if new_offer_id:
+                conn.execute(
+                    "UPDATE campaigns SET offer_id = ?, aff_id = ? WHERE id = ?",
+                    (new_offer_id, new_aff_id, campaign_id)
+                )
+                fixed.append({
+                    "id": campaign_id,
+                    "name": name,
+                    "offer_id": new_offer_id,
+                    "aff_id": new_aff_id
+                })
+        
+        conn.commit()
+        
+        return {
+            "success": True,
+            "fixed_count": len(fixed),
+            "fixed_campaigns": fixed,
+            "message": f"Fixed {len(fixed)} campaigns with missing offer_ids"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Fix offer_ids failed: {str(e)}")
+    finally:
+        conn.close()
