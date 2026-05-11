@@ -1620,6 +1620,16 @@ class AnalyticsManager {
                 this.exportToCSV();
             });
         }
+
+        // Referrer card controls (lookback + refresh)
+        const refDays = document.getElementById('referrer-days');
+        if (refDays) {
+            refDays.addEventListener('change', () => this.loadReferrerStats());
+        }
+        const refRefresh = document.getElementById('referrer-refresh');
+        if (refRefresh) {
+            refRefresh.addEventListener('click', () => this.loadReferrerStats());
+        }
     }
 
     async loadAnalyticsData() {
@@ -1661,6 +1671,11 @@ class AnalyticsManager {
             this.updateTuneStyleReport(reportData);
             this.currentData = reportData;
 
+            // Load referrer stats in parallel (non-fatal)
+            this.loadReferrerStats().catch((err) => {
+                console.error('⚠️ Referrer stats failed (non-fatal):', err);
+            });
+
             // Hide loading state
             this.hideLoading();
 
@@ -1670,6 +1685,67 @@ class AnalyticsManager {
             this.showAnalyticsError(error);
         }
     }
+
+    async loadReferrerStats() {
+        const daysSel = document.getElementById('referrer-days');
+        const tbody = document.getElementById('referrer-table-body');
+        const summary = document.getElementById('referrer-summary');
+        if (!tbody) return;
+
+        const days = daysSel ? parseInt(daysSel.value, 10) || 30 : 30;
+        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-6 text-center text-gray-400">Loading referrer data&hellip;</td></tr>';
+        if (summary) summary.textContent = '';
+
+        try {
+            const res = await fetch(`${this.baseURL}/analytics/referrers?days=${days}&limit=50`);
+            const data = res.ok ? await res.json() : { success: false, error: `HTTP ${res.status}` };
+
+            if (!data.success) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-red-600">Failed to load referrers: ${this._escape(data.error || 'unknown error')}</td></tr>`;
+                return;
+            }
+
+            const rows = data.by_host || [];
+            if (summary) {
+                const s = data.summary || {};
+                summary.textContent = `${s.unique_hosts || 0} unique hosts · ${(s.impressions_with_referrer || 0).toLocaleString()} impressions with referrer · ${(s.impressions_without_referrer || 0).toLocaleString()} without (direct/blocked)`;
+            }
+
+            if (rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-6 text-center text-gray-400">No referrer data captured in this window yet.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = rows.map((r) => {
+                const host = this._escape(r.host || '(unknown)');
+                const sampleLP = r.sample_landing_page
+                    ? `<a href="${this._escapeAttr(r.sample_landing_page)}" target="_blank" rel="noopener noreferrer" class="text-mode-blue hover:underline break-all">${this._escape(this._trim(r.sample_landing_page, 80))}</a>`
+                    : '<span class="text-gray-400">&mdash;</span>';
+                const lastSeen = r.last_seen ? this._escape(String(r.last_seen).replace('T', ' ').slice(0, 19)) : '&mdash;';
+                return `
+                    <tr>
+                        <td class="px-6 py-3 font-medium text-mode-dark">${host}</td>
+                        <td class="px-6 py-3">${(r.impressions || 0).toLocaleString()}</td>
+                        <td class="px-6 py-3">${r.properties || 0}</td>
+                        <td class="px-6 py-3">${r.campaigns || 0}</td>
+                        <td class="px-6 py-3 max-w-md">${sampleLP}</td>
+                        <td class="px-6 py-3 text-gray-500 text-sm">${lastSeen}</td>
+                    </tr>
+                `;
+            }).join('');
+        } catch (err) {
+            console.error('❌ loadReferrerStats error:', err);
+            tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-red-600">Failed to load referrers: ${this._escape(err.message || String(err))}</td></tr>`;
+        }
+    }
+
+    _escape(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    _escapeAttr(s) { return this._escape(s); }
+    _trim(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 
     updatePerformanceMetrics(data) {
         // If Tune API failed, show N/A and surface error

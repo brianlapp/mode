@@ -1983,3 +1983,106 @@ async def fix_missing_offer_ids():
         raise HTTPException(status_code=500, detail=f"Fix offer_ids failed: {str(e)}")
     finally:
         conn.close()
+
+
+@router.get("/analytics/referrers")
+async def get_referrer_analytics(days: int = 30, limit: int = 50):
+    """READ-ONLY: aggregate top referring hosts where the popup is being displayed.
+
+    Mike's ask: identify where the popup is currently placed across referral URLs.
+    Pure SELECT — no writes, no schema changes (referrer/landing_page columns
+    already exist on impressions). Safe for production.
+    """
+    from urllib.parse import urlparse
+    from collections import defaultdict
+
+    safe_days = max(1, min(int(days), 365))
+    safe_limit = max(1, min(int(limit), 500))
+    window = f'-{safe_days} days'
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute(
+            """
+            SELECT referrer, landing_page, property_code, campaign_id, timestamp
+            FROM impressions
+            WHERE referrer IS NOT NULL AND referrer <> ''
+              AND timestamp >= datetime('now', ?)
+            """,
+            (window,),
+        )
+
+        host_stats = defaultdict(lambda: {
+            'impressions': 0,
+            'properties': set(),
+            'campaigns': set(),
+            'sample_referrer': None,
+            'sample_landing_page': None,
+            'last_seen': None,
+        })
+
+        for row in cursor.fetchall():
+            referrer = (row['referrer'] or '').strip()
+            try:
+                host = urlparse(referrer).hostname or '(unparseable)'
+            except Exception:
+                host = '(unparseable)'
+
+            s = host_stats[host]
+            s['impressions'] += 1
+            if row['property_code']:
+                s['properties'].add(row['property_code'])
+            if row['campaign_id'] is not None:
+                s['campaigns'].add(row['campaign_id'])
+            if not s['sample_referrer']:
+                s['sample_referrer'] = referrer
+                s['sample_landing_page'] = row['landing_page']
+            ts = row['timestamp']
+            if ts and (not s['last_seen'] or ts > s['last_seen']):
+                s['last_seen'] = ts
+
+        cur_no_ref = conn.execute(
+            """
+            SELECT COUNT(*) FROM impressions
+            WHERE (referrer IS NULL OR referrer = '')
+              AND timestamp >= datetime('now', ?)
+            """,
+            (window,),
+        )
+        no_referrer_count = cur_no_ref.fetchone()[0]
+
+        rows_out = [
+            {
+                'host': host,
+                'impressions': s['impressions'],
+                'properties': len(s['properties']),
+                'campaigns': len(s['campaigns']),
+                'sample_referrer': s['sample_referrer'],
+                'sample_landing_page': s['sample_landing_page'],
+                'last_seen': s['last_seen'],
+            }
+            for host, s in host_stats.items()
+        ]
+        rows_out.sort(key=lambda r: r['impressions'], reverse=True)
+        rows_out = rows_out[:safe_limit]
+
+        return {
+            'success': True,
+            'period_days': safe_days,
+            'summary': {
+                'unique_hosts': len(host_stats),
+                'impressions_with_referrer': sum(s['impressions'] for s in host_stats.values()),
+                'impressions_without_referrer': no_referrer_count,
+            },
+            'by_host': rows_out,
+        }
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e),
+            'period_days': safe_days,
+            'summary': {},
+            'by_host': [],
+        }
+    finally:
+        conn.close()
