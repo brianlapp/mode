@@ -130,6 +130,18 @@ add_action('pre_get_posts', function ($q) {
     $q->set('post__not_in', array_merge((array) $q->get('post__not_in'), $ids));
 });
 
+// Jetpack Search answers the site's search box from its own index and skips post__not_in
+// above, so drop hidden posts from the results it hands back too (10/26: search still
+// listed the JCPenney test post).
+add_filter('the_posts', function ($posts, $q) {
+    if (is_admin() || $q->is_singular()) return $posts;
+    $ids = mode_rokt_demo_ids();
+    if (!$ids || !$posts) return $posts;
+    return array_values(array_filter($posts, function ($p) use ($ids) {
+        return !in_array((int) (is_object($p) ? $p->ID : $p), $ids, true);
+    }));
+}, 10, 2);
+
 add_filter('wp_robots', function ($robots) {
     if (is_singular() && mode_rokt_is_demo()) {
         $robots['noindex'] = true;
