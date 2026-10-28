@@ -1,10 +1,11 @@
 <?php
 /**
  * Plugin Name: Mode Rokt Demo Post
- * Description: Rokt per post, with a choice of Rokt placement (Mike 10/26): "Article"
- *   (prod.rokt.freefindsarticle, option `mode_rokt_popup_post_ids`) or "Overlay"
- *   (prod.rokt.freefindsoverlay, option `mode_rokt_overlay_post_ids`). Set from the Posts list hover
- *   links (Rokt: Article / Rokt: Overlay / Disable Rokt) or the editor sidebar box "Rokt". Those posts
+ * Description: Rokt per post, with a choice of Rokt placement (Mike 10/26, 10/28): "Article"
+ *   (prod.rokt.freefindsarticle, option `mode_rokt_popup_post_ids`), "Overlay"
+ *   (prod.rokt.freefindsoverlay, option `mode_rokt_overlay_post_ids`) or "Downstream"
+ *   (prod.rokt.freefindsdownstream, option `mode_rokt_downstream_post_ids`). Set from the Posts list hover
+ *   links (Rokt: Article / Rokt: Overlay / Rokt: Downstream / Disable Rokt) or the editor sidebar box "Rokt". Those posts
  *   get the Rokt ad on landing, and the Mode Popup Waterfall plus the site's other ad networks
  *   (AdSense, Taboola, SmartRecognition) are switched off there so only Rokt shows. Each placement
  *   is its own Rokt page, so each reports separately.
@@ -20,6 +21,7 @@ function mode_rokt_units() {
     return [
         'article' => ['Article', 'mode_rokt_popup_post_ids', 'rokt.freefindsarticle'],
         'overlay' => ['Overlay', 'mode_rokt_overlay_post_ids', 'rokt.freefindsoverlay'],
+        'downstream' => ['Downstream', 'mode_rokt_downstream_post_ids', 'rokt.freefindsdownstream'],
     ];
 }
 
@@ -28,7 +30,7 @@ function mode_rokt_unit_ids($unit) {
     return $u ? array_map('intval', (array) get_option($u[1], [])) : [];
 }
 
-// The placement this post runs ('article' / 'overlay'), or '' when Rokt is off.
+// The placement this post runs ('article' / 'overlay' / 'downstream'), or '' when Rokt is off.
 function mode_rokt_unit($post_id = null) {
     $post_id = (int) ($post_id ?: get_queried_object_id());
     if (!$post_id) return '';
@@ -60,7 +62,7 @@ function mode_rokt_set_unit($post_id, $unit) {
     }
 }
 
-/* ---------- Posts list: Rokt: Article / Rokt: Overlay / Disable Rokt ---------- */
+/* ---------- Posts list: Rokt: Article / Overlay / Downstream / Disable Rokt ---------- */
 
 add_filter('post_row_actions', function ($actions, $post) {
     if ($post->post_type !== 'post' || !current_user_can('edit_post', $post->ID)) return $actions;
@@ -109,7 +111,7 @@ add_action('add_meta_boxes_post', function () {
         <p style="margin:4px 0"><label><input type="radio" name="mode_rokt_unit" value="<?php echo esc_attr($key); ?>" <?php checked($now, $key); ?> />
           <?php echo esc_html($text); ?></label></p>
         <?php } ?>
-        <p class="description">Article or Overlay shows that Rokt placement on landing and switches off the other popups and ads on this post.</p>
+        <p class="description">Any Rokt placement shows on landing and switches off the other popups and ads on this post.</p>
         <?php
     }, 'post', 'side', 'high');
 });
@@ -264,10 +266,10 @@ add_action('wp_head', function () {
 add_action('wp_footer', function () {
     if (!is_singular() || !mode_rokt_has_popup()) return;
     ?>
-    <?php // Rokt QA (Mike 10/26): the hidden JCPenney test post (28805, Overlay ID) opens the popup right away,
-          // even before Rokt sends an ad, so Rokt can review the placement while the Overlay ID isn't active.
-          // Every other post still waits for an ad. Remove once Rokt has signed off. ?>
-    <div id="mode-overlay" class="<?php echo get_queried_object_id() === 28805 ? '' : 'mode-waiting'; ?>" role="dialog" aria-modal="true" aria-label="Offer">
+    <?php // Rokt QA (Mike 10/26, 10/28): the hidden JCPenney test posts (28805 Overlay ID, 30667 Downstream ID) open
+          // the popup right away, even before Rokt sends an ad, so Rokt can review the placement while the ID isn't
+          // active. Every other post still waits for an ad. Remove each once Rokt has signed off on it. ?>
+    <div id="mode-overlay" class="<?php echo in_array(get_queried_object_id(), [28805, 30667], true) ? '' : 'mode-waiting'; ?>" role="dialog" aria-modal="true" aria-label="Offer">
       <div id="mode-popup">
         <button type="button" class="mode-close" aria-label="Close">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
