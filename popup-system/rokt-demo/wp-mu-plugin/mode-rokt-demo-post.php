@@ -197,12 +197,19 @@ add_filter('googlesitekit_adsense_tag_blocked', function ($blocked) {
 add_action('template_redirect', function () {
     if (!is_singular() || !mode_rokt_has_popup()) return;
     ob_start(function ($html) {
-        return preg_replace([
+        $out = preg_replace([
             '#<script[^>]*adsbygoogle\.js[^>]*>\s*</script>#i',
             '#<!-- BEGIN SMART RECOGNITION CODE -->.*?<!-- END SMART RECOGNITION CODE -->#is',
-            '#<script[^>]*>(?:(?!</script>).)*_taboola(?:(?!</script>).)*</script>#is',
             '#<div id="taboola-[^"]*"></div>#i',
         ], '', $html);
+        // Taboola scripts: match each <script> lazily and test it, instead of one look-ahead-per-character
+        // pattern, which ran out of PCRE JIT stack on a 339KB page and blanked it (Katie, 10/29).
+        if ($out !== null) {
+            $out = preg_replace_callback('#<script\b[^>]*>.*?</script>#is', function ($m) {
+                return stripos($m[0], '_taboola') === false ? $m[0] : '';
+            }, $out);
+        }
+        return $out ?? $html; // a regex failure must never send an empty page
     });
 });
 
